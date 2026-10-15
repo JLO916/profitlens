@@ -36,6 +36,8 @@ V41-3（v4.1.1）起，同一組命令也涵蓋 3 支示範影片（`verificatio
 
 版本號改變不需要重拍（D-V41-22）。v4.1 每批完整的命令順序（含 `launch-check`、Lighthouse 與禁區、邊界五條）見 [CLAUDE.md](../CLAUDE.md) 的「驗收命令」與 `docs/revamp-v4.1/06_BATCHES.md` 的「共通驗收」。
 
+V41-6（v4.1.2）起，`npm test -- --run` 另含 `tests/vercelignore.test.ts`：用 `git check-ignore --no-index` 對 `.vercelignore` 檢查追蹤檔，`public/`、`src/`、`fixtures/` 與建置設定檔一個都不被排除，根目錄的 `docs/`、`templates/`、`tests/`、`scripts/`、`verification/` 仍被排除（D-V41-26；v2.0.0 到 v4.1.1 的正式站因為 `docs/`、`templates/` 沒有前導斜線，連 `public/docs/`、`public/templates/` 一起被排除，範例檔回 404）。`scripts/launch-check.mjs` 的補充檢查由 14 項增為 19 項：4 個範例檔與 `ORDER_AGGREGATION.md` 各檢查 200、content-type，且位元組與 repo 的 `public/` 相同（D-V41-30）；這 5 項只有對 Vercel 的部署（preview 或正式站）跑才能證明排除清單沒有擋掉 `public/` 的檔，本機 `next start` 直接讀工作目錄，一定通過。
+
 ## Revamp v2 批次驗收紀錄
 
 Revamp v2（`docs/revamp/`，R0–R7）把產品從稽核員工具改成經理人每週使用的工具；財務核心（`src/domain`、golden／demo／errors／refund_only／zero_ad fixtures、`contribution-v1`、`docs/METRICS.md` 公式）不改，R4 起只做加法。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑；細節、失敗與重跑紀錄以各批驗收檔為準。
@@ -55,7 +57,7 @@ R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verificatio
 
 ## Revamp v3 批次驗收紀錄
 
-Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（2026-10-14 上線，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；v4.1 的 V41-5 起為 **4.1.0**（見 [RELEASES](RELEASES.md) 的 v4.1.0 段落；說明頁 `/guide`）；V41-3 起為 **4.1.1**（見 [RELEASES](RELEASES.md) 的 v4.1.1 段落；說明頁的 3 支示範影片與 `source-map-js` 1.2.2）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
+Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（2026-10-14 上線，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；v4.1 的 V41-5 起為 **4.1.0**（見 [RELEASES](RELEASES.md) 的 v4.1.0 段落；說明頁 `/guide`）；V41-3 起為 **4.1.1**（見 [RELEASES](RELEASES.md) 的 v4.1.1 段落；說明頁的 3 支示範影片與 `source-map-js` 1.2.2）；V41-6 起為 **4.1.2**（見 [RELEASES](RELEASES.md) 的 v4.1.2 段落；範例檔在正式站的修正與「操作導覽」入口）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
 
 | 批次 | 內容 | 單元／整合 | E2E（四尺寸） | 驗收紀錄 |
 |---|---|---|---|---|
@@ -92,10 +94,10 @@ Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `
 | [AI_CONTRACT.md](AI_CONTRACT.md)、[M5_EVALUATION.md](M5_EVALUATION.md) | 選配 AI 的契約與評估 |
 | [PRD.md](PRD.md)、[ACCEPTANCE.md](ACCEPTANCE.md)、[TASKS.md](TASKS.md) | 原始產品規格、驗收條件與 M0–M6 關卡 |
 | [PILOT_PLAN.md](PILOT_PLAN.md)、[PILOT_WORKSHEET.md](PILOT_WORKSHEET.md) | 真實使用者試用計畫與工作表 |
-| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.1.1，2026-10-15，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線，服務介紹與使用說明；v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
+| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.1.2，2026-10-15，範例檔修正與操作導覽入口；v4.1.1 已於 2026-10-15 上線，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線，服務介紹與使用說明；v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
 | [revamp-v3/](revamp-v3/) | Revamp v3 規格套件：`00_README`、`01_PRD`、`06_BATCHES`、`09_DECISIONS_PENDING`、`GLOSSARY`、`copy-rewrite.csv`、`usability-test` |
 | [revamp-v4.1/](revamp-v4.1/) | v4.1 規格套件（服務介紹與使用說明）：[`00_README`](revamp-v4.1/00_README.md)、[`01_PRD`](revamp-v4.1/01_PRD.md)（§2.2 有成功指標的實測值）、[`GUIDE_CONTENT`](revamp-v4.1/GUIDE_CONTENT.md)、[`06_BATCHES`](revamp-v4.1/06_BATCHES.md)、[`09_DECISIONS_PENDING`](revamp-v4.1/09_DECISIONS_PENDING.md)；H6 的 T5、T6 在 [revamp-v4/usability-test.md](revamp-v4/usability-test.md) |
-| v4.1 各批驗收 | [V41-0](../verification/revamp-v41-V41-0-acceptance.md)、[V41-1](../verification/revamp-v41-V41-1-acceptance.md)、[V41-2a](../verification/revamp-v41-V41-2a-acceptance.md)、[V41-2b](../verification/revamp-v41-V41-2b-acceptance.md)、[V41-4](../verification/revamp-v41-V41-4-acceptance.md)、[V41-5](../verification/revamp-v41-V41-5-acceptance.md)、[V41-3](../verification/revamp-v41-V41-3-acceptance.md)（v4.1.0 上線後的示範影片與 v4.1.1 發布）；基準、清單與每批量測在 `verification/revamp-v41/`，說明頁媒體的擷取腳本與基準 PNG 在 `verification/guide-media/` |
+| v4.1 各批驗收 | [V41-0](../verification/revamp-v41-V41-0-acceptance.md)、[V41-1](../verification/revamp-v41-V41-1-acceptance.md)、[V41-2a](../verification/revamp-v41-V41-2a-acceptance.md)、[V41-2b](../verification/revamp-v41-V41-2b-acceptance.md)、[V41-4](../verification/revamp-v41-V41-4-acceptance.md)、[V41-5](../verification/revamp-v41-V41-5-acceptance.md)、[V41-3](../verification/revamp-v41-V41-3-acceptance.md)（v4.1.0 上線後的示範影片與 v4.1.1 發布）、[V41-6](../verification/revamp-v41-V41-6-acceptance.md)（v4.1.1 上線後的修正批：範例檔與「操作導覽」入口，v4.1.2 發布）；基準、清單與每批量測在 `verification/revamp-v41/`，說明頁媒體的擷取腳本與基準 PNG 在 `verification/guide-media/` |
 | 使用者可見文字 | `src/i18n/labels.zh-TW.ts`（單一來源；元件、匯出、AI 預覽都從這裡取字）；說明頁 `/guide` 的文字另在 `src/i18n/guide.zh-TW.ts`（只給伺服器模組使用，不進工作台首載，D-V41-12） |
 
 ### 名詞對照（閱讀下方歷史原文用）
@@ -141,7 +143,7 @@ Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `
 
 Vercel 的 Production、Preview、Development 均設定 `APP_MODE=PUBLIC_DEMO`、`PUBLIC_DEMO=true`、`ENABLE_LIVE_AI=false`；沒有 OpenAI key。可載入合成資料或在自己的分頁匯入標準 CSV、查看診斷與試算；匯入原文預設留在瀏覽器記憶體，重新整理會清空目前工作區。只有明確同意才保存本機副本，恢復仍須預覽及確認，不自動跨分頁共用。公開站的 AI 後端關閉，使用規則診斷。
 
-Vercel 已連接私人 GitHub 的 `main` 分支。後續推送 main 會交給 Vercel 建置，更新前應先執行下方工程驗收；本次沒有新增 CI 測試阻擋規則。`vercel.json` 指定 Next.js、`npm ci` 與 `npm run build`；`.vercelignore` 排除 CLI 上傳的環境檔、測試報告、verification 與本機私人目錄。既有規格及驗收證據留在私人 GitHub。
+Vercel 已連接私人 GitHub 的 `main` 分支。後續推送 main 會交給 Vercel 建置，更新前應先執行下方工程驗收；本次沒有新增 CI 測試阻擋規則。`vercel.json` 指定 Next.js、`npm ci` 與 `npm run build`；`.vercelignore` 在 CLI 上傳與 Git 整合建置時都會生效（建置紀錄寫「Found .vercelignore」），排除環境檔、測試報告、verification 與本機私人目錄；V41-6 起根目錄的 `docs/`、`templates/` 寫成 `/docs/`、`/templates/`，不再連 `public/` 底下同名的資料夾一起排除（D-V41-26）。既有規格及驗收證據留在私人 GitHub。
 
 ## 本機啟動
 

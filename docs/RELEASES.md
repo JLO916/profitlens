@@ -2,6 +2,57 @@
 
 > 新的在上。正式站：<https://profitlens-tau.vercel.app>。工程驗收命令與各批驗收紀錄見 [ENGINEERING](ENGINEERING.md)；每批真實執行結果見 [STATUS](STATUS.md)；取捨見 [DECISIONS](DECISIONS.md)。
 
+## v4.1.2（2026-10-15，範例檔修正與操作導覽入口）
+
+發布日期：2026-10-15。
+
+**發布方式**：v4.1.1 上線後，使用者 2026-10-15 回報兩項要修正：「匯入範本＞範例檔，三個需要的檔案都無法正確下載」與「側邊選單的『使用說明』改為『操作導覽』並增加 ? 的 icon」，開工修正批 V41-6（D-V41-26 到 D-V41-30 依建議值；版本號 4.1.2 依 D-V41-29）。上線步驟：經使用者當次同意後推送 `revamp/v4.1` 與 `main`（`main` 從 `66c241a` fast-forward 到發布 commit），由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.2` 指向發布 commit 並推送；對正式站跑 13 項 HTTP 與補充 19 項。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.2。
+
+**正式站檢查**：PROD_PLACEHOLDER
+
+**上線時沒有完成的事**：
+- H6（v4 可用性複測與外部盲評，含 v4.1 加的 T5、T6）仍待人工；依 D-V41-17 不擋上線。T5 答案鍵的入口名已同步改成「操作導覽」。
+- 匯出檔的人工開檔檢查（PPT、PDF、Excel）未執行。
+- Vercel Skew Protection 沒有開啟，由使用者本人在 Vercel 專案設定決定（D-V41-16）。
+
+上一版正式站是 v4.1.1（發布 commit `36659ff`、tag `v4.1.1`，deployment `dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`；之後只改文件的上線紀錄 commit `66c241a` 推到 `main`，重建為 `dpl_Hfh6Nv7vbvmghP4P2LJXCvVWEbbL`）。每一次部署（含 preview）都要使用者當次同意（D-V41-24）。
+
+v4.1.2（V41-6，基準 v4.1.1＝tag `v4.1.1`）：修正範例檔在正式站無法下載（`.vercelignore` 的兩行）；側欄、「更多」、頁尾與說明頁麵包屑的入口由「使用說明」改名「操作導覽」，側欄入口加問號圖示。財務口徑不變，工作台其他版面與文字不變，沒有新增依賴。
+
+### 給使用者
+
+**範例檔可以下載了**
+- 「匯入範本」的「範例檔」欄（頂欄「匯出」選單、首頁空狀態的「需要的檔案」、資料來源頁、匯入精靈第 1 步）的三份 CSV 與 `manifest.json`，以及匯入精靈與說明頁「匯入資料」連到的訂單明細整理說明（`/docs/ORDER_AGGREGATION.md`），在正式站都回 404，按下載得不到正確的檔案；從 v2.0.0 起每一版都是如此。原因是部署時的排除清單 `.vercelignore` 把 `docs/` 與 `templates/` 寫成沒有前導斜線的樣式，照 gitignore 的語意連 `public/` 底下同名的資料夾一起排除了，這 5 個檔從來沒有上傳到正式站；本機 `next start` 直接讀工作目錄，所以本機的測試與上線檢查都測不到（D-V41-26）。
+- 修法是把這兩行改成 `/docs/`、`/templates/`（只動這兩行，其餘樣式不動）。用 `git check-ignore` 對全部追蹤檔比對，改前改後的差異正好是這 5 個檔；`public/`、`src/`、`fixtures/` 與建置設定檔沒有任何一個被排除。
+- 加了兩道護欄：`tests/vercelignore.test.ts` 每批都跑，確認 `public/`、`src/`、`fixtures/` 與建置設定檔不被排除、根目錄的 `docs/`、`templates/`、`tests/`、`scripts/`、`verification/` 仍被排除；`scripts/launch-check.mjs` 的補充檢查加 5 項（4 個範例檔與 `ORDER_AGGREGATION.md` 各檢查 200、content-type，且位元組與 repo 的 `public/` 相同），補充由 14 項增為 19 項，每次部署後對正式站跑（D-V41-30）。
+- 範例檔的內容沒有改，與 repo 的 `templates/examples/`、`docs/ORDER_AGGREGATION.md` 逐位元組相同（`tests/templates.test.ts`）。「空白範本」欄的檔案由瀏覽器當場產生，不經過這份排除清單。
+
+**入口改名「操作導覽」，側欄加問號圖示**
+- 側欄導覽下方、手機「更多」的最後一列、頁尾「指標定義」旁，以及說明頁功能區頁的麵包屑，都由「使用說明」改名「操作導覽」（四處是同一個連結、同一個字串 `shell.guideV41.entry`，D-V41-27）；首頁空狀態那一行由「使用說明：每一頁怎麼用」改為「操作導覽：每一頁怎麼用」。
+- 側欄的入口在文字前加一個問號圓圈圖示，與手機「更多」那一列的圖示同款（20px）；頁尾與首頁空狀態不加圖示，390 寬的頁尾不會再多折一行（D-V41-28）。圖示只是裝飾，讀屏器讀到的仍是「操作導覽（另開分頁）」。
+- 說明首頁的標題「服務介紹與使用說明」不變；點了入口仍另開分頁，工作台裡還沒保存的資料不受影響。
+- 說明頁的截圖與影片跟著重拍：畫面裡有這個入口的 3 張截圖（`start-nav`、`start-mobile-m`、`start-load`）與 3 支影片重新擷取、重錄，其餘 41 張截圖沒有重拍；影片的字幕文字不變，長度與大小見驗收文件。
+
+### 不變的事
+- 財務口徑 `contribution-v1`、其他常用指標 `assist-kpi-v1`、損益兩平 `breakeven-mer-v1` 不變；`src/domain`、`fixtures/`、`docs/METRICS.md` 與兩個指標的程式檔、測試檔對 `625bfa5` 的 diff 為空。固定答案不變：Golden 本期扣廣告後貢獻 255.00、兩期差額 −315.00；假設試算 DTC 284.00／264.00、MARKETPLACE 19.70。這一版不產生任何新數字。
+- 工作台七頁的版面、功能與其他文字不變：`src/i18n/labels.zh-TW.ts` 只改 `shell.guideV41.entry` 與 `shell.guideV41.homeHint` 兩個值，key 名不變，其餘字串一字不改；既有的 `data-testid` 都還在。工作台首頁要下載的程式量與 v4.1.1 相當（數字見驗收文件）；說明頁的文字仍放在獨立的檔案，不進工作台的首載。
+- 沒有新增依賴：`package.json` 只改版本號；`package-lock.json` 只改版本號的兩行。`.vercelignore` 其餘樣式不動，根目錄的 `docs/`、`templates/`、`tests/`、`scripts/`、`verification/` 與私人目錄仍不上傳。
+- 資料不上傳：原始 CSV 只在瀏覽器處理；沒有登入、資料庫或伺服器端保存；本機保存要先同意。分析事件沒有新增（D-V41-23）。
+- AI 解釋在公開版仍未啟用：`APP_MODE=PUBLIC_DEMO`、`ENABLE_LIVE_AI=false`，`/api/insights` 的封鎖邏輯不變；`src/app/api`、`vercel.json`、`src/application/analytics.ts` 對 `872662d` 的 diff 為空。
+- 匯出與備份不變：CSV、JSON、PDF、PPT、Excel、Markdown 的格式與內容不變，下載的檔案種類仍是 5 種；備份格式仍是 `profitlens-workspace-v5`，v1–v5 的備份都能還原。
+
+### 已知限制
+- **H6 未執行**：v4 的可用性複測與外部盲評，以及 v4.1 加的 T5、T6，都待人工，依 D-V41-17 不擋上線；題目與答案鍵在 [usability-test](revamp-v4/usability-test.md)，T5 答案鍵的入口名已改成「操作導覽」。
+- **匯出檔的人工開檔檢查未執行**：沿用 v4.0.0、v4.1.0 與 v4.1.1，PPT、PDF、Excel 都還沒用軟體開檔檢查。
+- **Skew Protection 沒有開啟**（D-V41-16）：部署新版後還開著的舊分頁，切到沒載入過的頁面時可能拿不到舊程式，會顯示錯誤說明與「再試一次」，重新整理頁面就好；重新整理會丟掉還沒保存的試算、待辦與會議稿。要開請使用者在 Vercel 專案設定操作。
+- **截圖裡的英文**：截圖用無頭 Chromium 擷取，瀏覽器的原生控制項顯示英文，共 3 張：「匯出、儲存與備份」頁有兩張的檔案選擇欄寫「Choose File」，「待辦」頁編輯截圖的日期欄是 mm/dd/yyyy。截圖不修圖。
+- **手機上的寬截圖**：390 寬時，44 張中有 21 張的顯示比例低於 0.45，字比較小，每張都能點開原尺寸。
+- 其他沿用 v4.1.1 與 v4.1.0 段落的限制（重錄影片要本機 `ffmpeg`、影片裡沒有游標、動機段是產品口吻等），見下方兩段的「已知限制」。
+
+### 驗收
+- V41-6（修正批與 v4.1.2 發布）：[verification/revamp-v41-V41-6-acceptance.md](../verification/revamp-v41-V41-6-acceptance.md)；數字見驗收文件。要過的關卡：禁區與邊界五條命令為空；`tests/vercelignore.test.ts` 通過；launch-check 本機 13 項與補充 19 項全過，部署後對正式站再跑一次；`/` 的 First Load JS 不超過 520,451 bytes，且 `GUIDE_SENTINELS` 在首載 chunk 出現 0 次；`GUIDE_MEDIA=check` 47 件 0 差異；64 張畫面基準只有允許變動的 42 張有差異；E2E 四尺寸全過；axe 四尺寸 0 serious；390 的五個 TBT 都在門檻內；說明頁 Lighthouse 無障礙與 SEO 100。
+- 規格與拍板：[批次](revamp-v4.1/06_BATCHES.md)（V41-6）、[拍板表](revamp-v4.1/09_DECISIONS_PENDING.md)（D-V41-26 到 D-V41-30）；根因的調查紀錄在驗收文件。
+
 ## v4.1.1（2026-10-15，示範影片與依賴修正）
 
 發布日期：2026-10-15。
