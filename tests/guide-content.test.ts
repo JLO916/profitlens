@@ -258,14 +258,26 @@ describe("V41-3 示範影片同步（清單、MP4、字幕、poster、cue 比對
     expect(problems, WRITE_HINT).toEqual([]);
   });
 
-  it("poster：WebP 存在、大小＝posterBytes", () => {
+  /** WebP 的寬高（只讀檔頭，不加依賴）：VP8（有損）、VP8L（無損）、VP8X（延伸）三種。 */
+  const webpSize = (file: Buffer) => {
+    const chunk = file.subarray(12, 16).toString("latin1");
+    if (chunk === "VP8 ") return { width: file.readUInt16LE(26) & 0x3fff, height: file.readUInt16LE(28) & 0x3fff };
+    if (chunk === "VP8L") { const bits = file.readUInt32LE(21); return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 }; }
+    if (chunk === "VP8X") return { width: file.readUIntLE(24, 3) + 1, height: file.readUIntLE(27, 3) + 1 };
+    return null;
+  };
+
+  it("poster：WebP 存在、大小＝posterBytes、寬 ≤ 800（V41-3 驗收：原尺寸 poster 拉長手機 LCP）、比例同影片", () => {
     const problems: string[] = [];
     for (const entry of manifestVideos) {
       const path = resolve(MEDIA_PUBLIC_DIR, entry.poster);
       if (!existsSync(path)) { problems.push(`${entry.id}：缺 public/${entry.poster}`); continue; }
       const poster = readFileSync(path);
       if (poster.length !== entry.posterBytes) problems.push(`${entry.id}：poster ${poster.length} bytes，清單 ${entry.posterBytes}`);
-      if (poster.subarray(0, 4).toString("latin1") !== "RIFF" || poster.subarray(8, 12).toString("latin1") !== "WEBP") problems.push(`${entry.id}：poster 不是 WebP`);
+      if (poster.subarray(0, 4).toString("latin1") !== "RIFF" || poster.subarray(8, 12).toString("latin1") !== "WEBP") { problems.push(`${entry.id}：poster 不是 WebP`); continue; }
+      const size = webpSize(poster);
+      if (!size) problems.push(`${entry.id}：讀不到 poster 的寬高`);
+      else if (size.width > 800 || Math.abs(size.width / size.height - entry.width / entry.height) > 0.01) problems.push(`${entry.id}：poster ${size.width}×${size.height}（寬要 ≤ 800、比例同影片 ${entry.width}×${entry.height}）`);
     }
     expect(problems, WRITE_HINT).toEqual([]);
   });

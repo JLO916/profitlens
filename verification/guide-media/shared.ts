@@ -297,19 +297,21 @@ async function writeManifest(manifest: GuideMediaManifest) {
 }
 
 /** 基準 PNG → WebP：在空白頁把 PNG 畫進 canvas，toDataURL("image/webp", 0.9)（Chromium 內建編碼器，有損；不需外部工具，D-V41-20）。 */
-export async function pngToWebp(browser: Browser, png: Buffer): Promise<Buffer> {
+export async function pngToWebp(browser: Browser, png: Buffer, maxWidth?: number): Promise<Buffer> {
   const page = await browser.newPage();
   try {
-    const base64 = await page.evaluate(async source => {
+    // maxWidth（V41-3 影片 poster）：比它寬的圖等比縮到這個寬再轉；截圖不傳，維持原尺寸。
+    const base64 = await page.evaluate(async ({ source, limit }) => {
       const image = new Image();
       image.src = `data:image/png;base64,${source}`;
       await image.decode();
+      const scale = limit && image.naturalWidth > limit ? limit / image.naturalWidth : 1;
       const canvas = document.createElement("canvas");
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
-      canvas.getContext("2d")!.drawImage(image, 0, 0);
+      canvas.width = Math.round(image.naturalWidth * scale);
+      canvas.height = Math.round(image.naturalHeight * scale);
+      canvas.getContext("2d")!.drawImage(image, 0, 0, canvas.width, canvas.height);
       return canvas.toDataURL("image/webp", 0.9).replace(/^data:image\/webp;base64,/, "");
-    }, png.toString("base64"));
+    }, { source: png.toString("base64"), limit: maxWidth ?? 0 });
     return Buffer.from(base64, "base64");
   } finally {
     await page.close();
@@ -579,10 +581,20 @@ async function writeVtt(entry: GuideVideoEntry, texts: Record<string, string>): 
 }
 
 /**
+ * 影片 poster 的寬度上限（CSS px）。說明頁的影片最寬顯示約 760px，1280×800 的原尺寸 poster（start-30s 約 97 KB）會在頁面載入時一起下載，
+ * 拉長手機 LCP（V41-3 驗收：/guide 390 由 1.9 秒升到 2.3–2.5 秒）；縮到 800×500 再轉 WebP。
+ */
+export const VIDEO_POSTER_MAX_WIDTH = 800;
+/** poster＝第一個 cue 的基準 PNG 等比縮到 VIDEO_POSTER_MAX_WIDTH 再轉 WebP（Chromium canvas 0.9，同截圖）。 */
+async function videoPoster(browser: Browser, video: GuideVideo): Promise<Buffer> {
+  return pngToWebp(browser, await readFile(videoCueBaselinePath(video.id, video.cues[0].key)), VIDEO_POSTER_MAX_WIDTH);
+}
+
+/**
  * write 模式在錄完一支影片（頁面已關、raw 是 Playwright 存下的 WebM）之後呼叫：
  * - 每個 cue 的基準都沒被改寫、清單有這一筆且 cue 與基準雜湊相符、MP4 與 poster 都在 → 丟掉這次的錄影，不動影片與 poster；
  *   只在字幕文字或被引用的介面字串改了時重寫 .vtt、更新 labels_hash（不改 updated）。
- * - 否則（有 cue 不同或新增、或 MP4／poster 不在）：ffmpeg 轉 MP4、poster＝第一個 cue 的基準 PNG 轉 WebP（Chromium canvas 0.9，同截圖）、寫字幕與清單這一筆，updated 改成今天。
+ * - 否則（有 cue 不同或新增、或 MP4／poster 不在）：ffmpeg 轉 MP4、poster＝第一個 cue 的基準 PNG 縮到 800 寬轉 WebP（videoPoster）、寫字幕與清單這一筆，updated 改成今天。
  *   只改了 cue 之間的過程（例如強調框、捲動）而每個 cue 的畫面都相同時不會重錄：要重錄就先刪掉 public/guide/video/{id}.mp4 再跑 write。
  * 影片時間的起點＝第一個 cue 開始的時刻：用片頭對時色塊算出 WebM 與 Node 時間的差（findSyncFlashes），cue 1 在 WebM 裡的位置＝cue 1 開始的 Node 時刻＋差；
  * 片尾色塊算出的差與片頭相差超過 VIDEO_SYNC_TOLERANCE_MS（錄影時間軸漂移）就失敗。cue 的 startMs＝開始時刻 − cue 1 開始時刻。
@@ -601,8 +613,17 @@ export async function syncVideo(browser: Browser, video: GuideVideo, raw: string
     const hashChanged = existing.labels_hash !== hash;
     existing.labels_hash = hash;
     const vttChanged = await writeVtt(existing, texts);
-    if (hashChanged) await writeManifest(manifest);
-    return `${video.id}: unchanged（不重錄）${vttChanged ? "；重寫字幕" : ""}${hashChanged ? "；更新 labels_hash" : ""}${note}`;
+    // poster 由第一個 cue 的基準 PNG 決定性轉出；轉出來與現有檔不同（例如 poster 規格改了）就只重做 poster，不重錄。
+    const poster = await videoPoster(browser, video);
+    const posterPath = resolve("public", existing.poster);
+    const posterChanged = !(await readFile(posterPath)).equals(poster);
+    if (posterChanged) {
+      await writeFile(posterPath, poster);
+      existing.posterBytes = poster.length;
+      manifest.updated = taipeiToday();
+    }
+    if (hashChanged || posterChanged) await writeManifest(manifest);
+    return `${video.id}: unchanged（不重錄）${vttChanged ? "；重寫字幕" : ""}${hashChanged ? "；更新 labels_hash" : ""}${posterChanged ? `；重做 poster（${poster.length} bytes）` : ""}${note}`;
   }
   const first = timeline.cues[0].at;
   const total = timeline.end - first;
@@ -623,7 +644,7 @@ export async function syncVideo(browser: Browser, video: GuideVideo, raw: string
     endMs: index + 1 < timeline.cues.length ? timeline.cues[index + 1].at - first : info.durationMs,
     sha256: baselines[index].sha256 ?? "",
   }));
-  const poster = await pngToWebp(browser, await readFile(videoCueBaselinePath(video.id, video.cues[0].key)));
+  const poster = await videoPoster(browser, video);
   await writeFile(resolve("public", videoPosterFile(video.id)), poster);
   const entry: GuideVideoEntry = {
     id: video.id, file: videoFile(video.id), vtt: videoVttFile(video.id), poster: videoPosterFile(video.id), ...VIDEO_SIZE,

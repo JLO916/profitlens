@@ -407,7 +407,7 @@
       "width": 1280,
       "height": 800,
       "bytes": 706627,
-      "posterBytes": 96996,
+      "posterBytes": 47408,
       "durationMs": 25640,
       "cues": [
         {
@@ -451,7 +451,7 @@
       "width": 1280,
       "height": 800,
       "bytes": 549898,
-      "posterBytes": 57848,
+      "posterBytes": 28220,
       "durationMs": 27640,
       "cues": [
         {
@@ -495,7 +495,7 @@
       "width": 1280,
       "height": 800,
       "bytes": 1133113,
-      "posterBytes": 40966,
+      "posterBytes": 20490,
       "durationMs": 33680,
       "cues": [
         {
