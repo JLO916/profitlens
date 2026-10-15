@@ -403,6 +403,8 @@ const VIDEO_PAGES = { "start-30s": ["hub", "start"], "import-wizard": ["import"]
 describe("V41-3 示範影片的資料（GUIDE_VIDEOS、guideLabels.guide.videos）", () => {
   it("3 支影片、各 5 個 cue；放置頁＝GUIDE_CONTENT §3（說明首頁與 start、import、meeting）；guide.videos 的鍵與 cue 順序＝GUIDE_VIDEOS", () => {
     expect(Object.fromEntries(GUIDE_VIDEOS.map(video => [video.id, [...video.pages]]))).toEqual(VIDEO_PAGES);
+    // 資料來源註記（GUIDE_CONTENT §0；同截圖的 guideDataNote）：import-wizard 用 tests/fixtures/inclusive_tax（S3，合成資料），其餘是示範資料（S1、S6–S8）。
+    expect(Object.fromEntries(GUIDE_VIDEOS.map(video => [video.id, video.note]))).toEqual({ "start-30s": "demo", "import-wizard": "synthetic", "meeting-weekly": "demo" });
     for (const video of GUIDE_VIDEOS) expect(video.cues, video.id).toHaveLength(5);
     expect(Object.keys(g.videos)).toEqual(GUIDE_VIDEOS.map(video => video.id));
     for (const video of GUIDE_VIDEOS) {
@@ -446,9 +448,9 @@ describe.each(GUIDE_VIDEOS.map(video => [video.id, video] as const))("V41-3 Guid
   const title = text(copy.title);
   const videoTag = html.match(/<video\b[^>]*>/)![0];
 
-  it("<figure class=guide-video data-testid=guide-video-{id}>：圖說＝影片標題，接著 <video>、影片說明一行、逐字稿 <ol>", () => {
-    expect(html).toMatch(new RegExp(`^<figure class="guide-video" data-testid="guide-video-${id}"><figcaption>[^<]+</figcaption><video\\b[^>]*>.*</video><p class="guide-video-note">[^<]+</p><ol class="guide-video-transcript">.*</ol></figure>$`));
-    expect(decode(html)).toContain(`<figcaption>${title}</figcaption>`);
+  it("<figure class=guide-video data-testid=guide-video-{id}>：圖說＝影片標題＋資料來源註記（同截圖），接著 <video>、影片說明一行、逐字稿 <ol>", () => {
+    expect(html).toMatch(new RegExp(`^<figure class="guide-video" data-testid="guide-video-${id}"><figcaption><span>[^<]+</span><span class="guide-shot-note">[^<]+</span></figcaption><video\\b[^>]*>.*</video><p class="guide-video-note">[^<]+</p><ol class="guide-video-transcript">.*</ol></figure>$`));
+    expect(decode(html)).toContain(`<figcaption><span>${title}</span><span class="guide-shot-note">${video.note === "synthetic" ? g.common.syntheticCaption : g.common.demoCaption}</span></figcaption>`);
     expect(decode(html)).toContain(`<p class="guide-video-note">${g.common.videoNote}</p>`);
     expect(html).not.toContain("{ui:");
   });

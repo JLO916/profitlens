@@ -3147,6 +3147,7 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
    原生 controls（不自動播放、不循環），焦點框沿用全站的 :focus-visible。逐字稿是一般的編號清單；只用既有 token 與字級。 */
 .guide-video { margin: var(--space-5) 0 0; }
 .guide-video figcaption { margin-bottom: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.guide-video .guide-shot-note { font-weight: var(--weight-regular); }
 .guide-video video { display: block; width: 100%; max-width: 100%; height: auto; background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
 .guide-video-note { margin-top: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
 .guide-video-transcript { display: grid; gap: var(--space-1); margin: var(--space-2) 0 0; padding-left: var(--space-5); list-style: decimal; font-size: var(--text-14); line-height: var(--leading-14); }

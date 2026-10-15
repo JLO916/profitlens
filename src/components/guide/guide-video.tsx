@@ -1,5 +1,5 @@
 // V41-3（D-V41-6＝A、D-V41-7＝A、D-V41-8；docs/revamp-v4.1/01_PRD.md §3.3 第 7 項、§3.5「影片」「字幕與逐字稿」、§3.6、§3.7；GUIDE_CONTENT.md §3）：說明頁的示範影片。
-// 伺服器元件（不加 "use client"）。<figure>（testid guide-video-{id}）：圖說（guide.videos.{id}.title）→ <video>（原生 controls、preload="none"、playsInline、poster；
+// 伺服器元件（不加 "use client"）。<figure>（testid guide-video-{id}）：圖說（guide.videos.{id}.title，另起一行同截圖的資料來源註記 demoCaption／syntheticCaption，依 GUIDE_VIDEOS 的 note）→ <video>（原生 controls、preload="none"、playsInline、poster；
 // 不自動播放、不循環、沒有靜音自動播放）內一個 MP4 <source> 與一條預設開啟的中文字幕 <track kind="captions">（axe video-caption）→ 一行 guide.common.videoNote →
 // <ol> 逐字稿（與字幕檔同一組 cue 文字，{ui:…} 換成純文字；WCAG 1.2.1 純影像的替代）。檔案都在自家網域 public/guide/video/（不嵌第三方平台）。
 // 影片、字幕檔與 poster 由媒體管線產生（verification/guide-media/），寫進 src/application/guide-media.json 的 videos；清單沒有這支影片時不渲染（只有文字）。
@@ -66,7 +66,7 @@ export function GuideVideo({ video, entry }: { video: GuideVideoData; entry: Gui
   const copy = videoCopy(video);
   const title = guideText(copy.title);
   return <figure className="guide-video" data-testid={`guide-video-${video.id}`}>
-    <figcaption>{title}</figcaption>
+    <figcaption><span>{title}</span><span className="guide-shot-note">{guideText(video.note === "synthetic" ? common.syntheticCaption : common.demoCaption)}</span></figcaption>
     <video controls preload="none" playsInline poster={`/${entry.poster}`} width={entry.width} height={entry.height} style={{ aspectRatio: `${entry.width} / ${entry.height}` }} aria-label={title}>
       <source src={`/${entry.file}`} type="video/mp4" />
       <track kind="captions" srcLang="zh-Hant-TW" label={guideText(common.captionsLabel)} src={`/${entry.vtt}`} default />

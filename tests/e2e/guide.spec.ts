@@ -347,7 +347,8 @@ test.describe("V41-3 示範影片", () => {
       await expect(player).toHaveAccessibleName(text(copy.title));
       await expect(player).toHaveAttribute("preload", "none");
       await expect(player).toHaveAttribute("poster", `/${entry!.poster}`);
-      await expect(figure.locator("figcaption")).toHaveText(text(copy.title));
+      // 圖說＝影片標題，另起一行資料來源註記（同截圖：import-wizard 是合成資料，其餘是示範資料；GUIDE_CONTENT §0）。
+      await expect(figure.locator("figcaption > span")).toHaveText([text(copy.title), text(video.note === "synthetic" ? g.common.syntheticCaption : g.common.demoCaption)]);
       const state = await player.evaluate((el: HTMLVideoElement) => ({ controls: el.controls, autoplay: el.autoplay, loop: el.loop, muted: el.muted, paused: el.paused, readyState: el.readyState, sources: [...el.querySelectorAll("source")].map(source => [source.getAttribute("src"), source.getAttribute("type")]) }));
       expect(state).toEqual({ controls: true, autoplay: false, loop: false, muted: false, paused: true, readyState: 0, sources: [[`/${entry!.file}`, "video/mp4"]] });
 

@@ -70,6 +70,8 @@ export interface GuideVideo {
   id: string;
   pages: readonly GuideVideoPage[];
   cues: readonly GuideVideoCue[];
+  /** 圖說後另起一行的資料來源註記（同截圖的 guideDataNote；GUIDE_CONTENT §0：S1、S6–S8＝demo，S3–S5＝synthetic）；影片畫面都有金額，沒有 none。 */
+  note: Exclude<GuideDataNote, "none">;
 }
 
 /**
@@ -79,11 +81,11 @@ export interface GuideVideo {
  */
 export const GUIDE_VIDEOS: readonly GuideVideo[] = [
   // S0 → S1：載入示範資料 → 讀本期一句話與關鍵數字 → 捲到貢獻變化拆解 → 點扣廣告後貢獻打開計算與來源 → 關閉。
-  { id: "start-30s", pages: ["hub", "start"], cues: [{ key: "load" }, { key: "snapshot" }, { key: "bridge" }, { key: "evidence" }, { key: "close" }] },
+  { id: "start-30s", pages: ["hub", "start"], note: "demo", cues: [{ key: "load" }, { key: "snapshot" }, { key: "bridge" }, { key: "evidence" }, { key: "close" }] },
   // S3：選三個檔 → 確認欄位對照 → 選含稅、確認期間 → 看檢核結果 → 套用，回到經營總覽。
-  { id: "import-wizard", pages: ["import"], cues: [{ key: "files" }, { key: "mapping" }, { key: "basis" }, { key: "review" }, { key: "apply" }] },
+  { id: "import-wizard", pages: ["import"], note: "synthetic", cues: [{ key: "files" }, { key: "mapping" }, { key: "basis" }, { key: "review" }, { key: "apply" }] },
   // S1 → S8：健檢第一項加入待辦 → 假設試算用維持現況試算並選入會議 → 會議紀錄寫決議 → 結束會議 → 開匯出選單。
-  { id: "meeting-weekly", pages: ["meeting"], cues: [{ key: "action" }, { key: "scenario" }, { key: "decision" }, { key: "finalize" }, { key: "export" }] },
+  { id: "meeting-weekly", pages: ["meeting"], note: "demo", cues: [{ key: "action" }, { key: "scenario" }, { key: "decision" }, { key: "finalize" }, { key: "export" }] },
 ];
 
 /**
