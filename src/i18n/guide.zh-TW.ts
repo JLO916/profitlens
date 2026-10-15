@@ -21,6 +21,11 @@ export const guideLabels = {
       syntheticCaption: "畫面為虛構的合成資料",
       /** 說明頁頁尾：{date}＝src/application/guide-media.json 的 updated（只有實際更新了媒體時才變；還沒有媒體時整句不顯示）。截圖有示範資料也有合成資料（都是虛構的），所以寫「虛構資料」。 */
       mediaUpdated: "截圖是虛構資料的畫面，更新於 {date}。",
+      // ── V41-3 錨點：示範影片的共用字（GUIDE_CONTENT §1.7、§3；PRD §3.3 第 7 項、§3.6）。
+      /** 每支影片下方、逐字稿之前的一行（GUIDE_CONTENT §1.7 原文）。 */
+      videoNote: "影片沒有聲音；下方是影片的逐步文字。",
+      /** 字幕軌（<track kind="captions" srclang="zh-Hant-TW">）的名稱：顯示在播放器的字幕選單。 */
+      captionsLabel: "中文字幕",
     },
     /** V41-2a：功能區頁的麵包屑與連結用字。 */
     areaPage: {
@@ -503,6 +508,46 @@ export const guideLabels = {
           },
         },
         notes: ["{ui:storage.replacement.saveOptionsCaution}"],
+      },
+    },
+    /**
+     * ── V41-3 錨點：3 支無聲示範影片（D-V41-6＝A；GUIDE_CONTENT §3；代號與 cue 順序＝src/application/guide.ts 的 GUIDE_VIDEOS）。
+     * title：影片的短名稱（影片上方的圖說，也是 <video> 的可及名稱）。cues.{key}：每個 cue 一句字幕，寫影片在那一段做的事，與功能區步驟同義但較短；
+     * 介面字串一樣用 {ui:…}。字幕檔 public/guide/video/{id}.vtt 與影片下方的逐字稿 <ol> 都由這裡產生（{ui:…} 換成純文字）。不寫示範資料的數字。
+     */
+    videos: {
+      // S0 → S1：載入示範資料 → 讀本期一句話與關鍵數字 → 捲到貢獻變化拆解 → 點扣廣告後貢獻打開計算與來源 → 關閉。
+      "start-30s": {
+        title: "示範影片：30 秒上手",
+        cues: {
+          load: "在首頁按「{ui:shell.buttons.loadDemo}」。",
+          snapshot: "先讀最上面的{ui:overview.snapshotUi.heading}與五個關鍵數字。",
+          bridge: "往下捲到{ui:overview.sections.bridge}，看兩期差額拆成哪幾項。",
+          evidence: "點扣廣告後貢獻的金額，打開{ui:evidence.sections.evidence}，看算法、檔名與行號。",
+          close: "關閉{ui:evidence.sections.evidence}，回到{ui:shell.nav.overview.headline}。",
+        },
+      },
+      // S3：選三個檔 → 確認欄位對照 → 選含稅、確認期間 → 看檢核結果 → 套用，回到經營總覽。
+      "import-wizard": {
+        title: "示範影片：{ui:shell.buttons.importData}",
+        cues: {
+          files: "按「{ui:shell.buttons.importData}」，選三份檔案，系統依檔名自動歸位。",
+          mapping: "在「{ui:importWizard.steps.1}」這一步確認欄名都已對上。",
+          basis: "金額基準選含稅，確認期間後開始檢核。",
+          review: "在「{ui:importWizard.steps.3}」這一步看檢核結果與對帳表。",
+          apply: "按「{ui:importWizard.commit}」，回到{ui:shell.nav.overview.headline}。",
+        },
+      },
+      // S1 → S8：健檢第一項加入待辦 → 假設試算用維持現況試算並選入會議 → 會議紀錄寫決議 → 結束會議 → 開匯出選單。
+      "meeting-weekly": {
+        title: "示範影片：週會流程",
+        cues: {
+          action: "在{ui:shell.nav.diagnosis.headline}把第一項「{ui:actions.buttons.addToActions}」。",
+          scenario: "到{ui:shell.nav.scenarios.headline}用「{ui:scenarios.presets.items.keep.name}」試算，再按「{ui:meeting.buttons.selectForMeeting}」。",
+          decision: "到{ui:shell.nav.meeting.headline}寫下這次的決議。",
+          finalize: "按「{ui:meeting.buttons.finalizeMeeting}」並確認，這次會議存入{ui:meeting.page.history}。",
+          export: "打開匯出選單，選要下載的格式。",
+        },
       },
     },
   },

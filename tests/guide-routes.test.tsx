@@ -3,16 +3,17 @@ import { dirname, join, relative, resolve } from "node:path";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import ts from "typescript";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_BEFORE_AREAS, GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_CODES, GUIDE_AREA_GROUP, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_PUBLISHED_AREAS, guideAreaHref, guideDataNote, resolveUiRefs, type GuideAreaCode, type GuideMediaEntry, type GuideMediaManifest } from "@/application/guide";
+import { GUIDE_AREA_BEFORE_AREAS, GUIDE_AREA_BEFORE_LINKS, GUIDE_AREA_CODES, GUIDE_AREA_GROUP, GUIDE_AREA_NEXT, GUIDE_AREA_NOTE_LINKS, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_PUBLISHED_AREAS, GUIDE_VIDEOS, guideAreaHref, guideDataNote, resolveUiRefs, type GuideAreaCode, type GuideMediaEntry, type GuideMediaManifest, type GuideVideo as GuideVideoData } from "@/application/guide";
 import guideMedia from "@/application/guide-media.json";
 import { ORDER_AGGREGATION_DOC_URL } from "@/application/import-wizard";
 import GuideLayout from "@/app/guide/layout";
 import GuideHubPage, { metadata as hubMetadata } from "@/app/guide/page";
 import GuideAreaPage, { dynamicParams, generateMetadata, generateStaticParams } from "@/app/guide/[area]/page";
 import { GuideStep } from "@/components/guide/guide-step";
+import { GuideVideo, GuideVideos, guideVideosFor, manifestVideos, type GuideVideoEntry } from "@/components/guide/guide-video";
 
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項、01_PRD.md §3.1、§3.8、§3.10）：說明頁路由。
 // 說明首頁（外框＋頁面）以 react-dom/server SSR：h1 唯一、guide-hub／guide-toc、頁內錨點都有對應 id、沒有連到還沒上線的功能區頁（不產生 404 連結）；
@@ -380,6 +381,168 @@ describe("V41-2a GuideStep（假的媒體清單項目；不依賴 src/applicatio
   });
 });
 
+// ---------------------------------------------------------------- V41-3 示範影片
+
+/*
+ * V41-3（docs/revamp-v4.1/06_BATCHES.md V41-3 第 3 項；01_PRD.md §3.3 第 7 項、§3.6、§3.7；GUIDE_CONTENT.md §3）：src/components/guide/guide-video.tsx 與它在說明頁的位置。
+ * 影片、字幕檔與 poster 是媒體管線（verification/guide-media/）產生的，本檔不依賴它們存在：元件與位置都以「假的媒體清單項目」斷言（GuideVideo 直接傳入；
+ * 頁面上的位置以 vi.doMock 換掉 src/application/guide-media.json 再重新載入頁面模組）。真的清單有哪支影片，頁面就渲染哪支（最後一個 describe）。
+ */
+/** 假的媒體清單項目（檔名同媒體清單的約定：guide/video/{id}.mp4、.vtt、-poster.webp；1280×800；每個 cue 6 秒）。 */
+const fakeVideoEntry = (video: GuideVideoData): GuideVideoEntry => ({
+  id: video.id, file: `guide/video/${video.id}.mp4`, vtt: `guide/video/${video.id}.vtt`, poster: `guide/video/${video.id}-poster.webp`, width: 1280, height: 800, bytes: 1, posterBytes: 1,
+  durationMs: video.cues.length * 6000, cues: video.cues.map((cue, index) => ({ key: cue.key, startMs: index * 6000, endMs: (index + 1) * 6000, sha256: "0".repeat(64) })), labels_hash: "0".repeat(64),
+});
+/** 一支影片的文字（guide.videos.{id}）。 */
+const videoCopyOf = (id: string) => (g.videos as unknown as Record<string, { title: string; cues: Record<string, string> }>)[id];
+/** 一段 HTML 裡的 guide-video-{id}（依出現順序）。 */
+const videoIdsIn = (html: string) => [...html.matchAll(/data-testid="guide-video-([^"]+)"/g)].map(match => match[1]);
+/** 影片放在哪些頁（GUIDE_CONTENT §3「放在」欄；hub＝說明首頁「30 秒上手」）。 */
+const VIDEO_PAGES = { "start-30s": ["hub", "start"], "import-wizard": ["import"], "meeting-weekly": ["meeting"] } as const;
+
+describe("V41-3 示範影片的資料（GUIDE_VIDEOS、guideLabels.guide.videos）", () => {
+  it("3 支影片、各 5 個 cue；放置頁＝GUIDE_CONTENT §3（說明首頁與 start、import、meeting）；guide.videos 的鍵與 cue 順序＝GUIDE_VIDEOS", () => {
+    expect(Object.fromEntries(GUIDE_VIDEOS.map(video => [video.id, [...video.pages]]))).toEqual(VIDEO_PAGES);
+    for (const video of GUIDE_VIDEOS) expect(video.cues, video.id).toHaveLength(5);
+    expect(Object.keys(g.videos)).toEqual(GUIDE_VIDEOS.map(video => video.id));
+    for (const video of GUIDE_VIDEOS) {
+      const copy = videoCopyOf(video.id);
+      expect(Object.keys(copy).sort(), video.id).toEqual(["cues", "title"]);
+      expect(Object.keys(copy.cues), video.id).toEqual(video.cues.map(cue => cue.key));
+      for (const value of [copy.title, ...Object.values(copy.cues)]) expect(text(value).trim().length, video.id).toBeGreaterThan(0);
+    }
+  });
+
+  it("字幕與逐字稿一句一個 cue（句末一個句號、沒有換行）；影片說明是 GUIDE_CONTENT §1.7 的原文；字幕軌名稱有字", () => {
+    for (const video of GUIDE_VIDEOS) for (const [key, value] of Object.entries(videoCopyOf(video.id).cues)) {
+      const plain = text(value);
+      expect(plain, `${video.id}.${key}`).toMatch(/。$/);
+      expect(plain.slice(0, -1), `${video.id}.${key}：一句`).not.toMatch(/[。\n]/);
+    }
+    expect(g.common.videoNote).toBe("影片沒有聲音；下方是影片的逐步文字。");
+    expect(text(g.common.captionsLabel).length).toBeGreaterThan(0);
+  });
+
+  it("manifestVideos：清單沒有 videos（V41-3 之前）時是空陣列；guideVideosFor 依頁面與清單挑影片（清單沒有的不挑）", () => {
+    expect(manifestVideos({ updated: null, media: [] })).toEqual([]);
+    expect(manifestVideos(null)).toEqual([]);
+    const entries = GUIDE_VIDEOS.map(fakeVideoEntry);
+    expect(manifestVideos({ updated: null, media: [], videos: entries })).toEqual(entries);
+    const ids = (page: Parameters<typeof guideVideosFor>[0], list: readonly GuideVideoEntry[] = entries) => guideVideosFor(page, list).map(item => item.video.id);
+    expect(ids("hub")).toEqual(["start-30s"]);
+    expect(ids("start")).toEqual(["start-30s"]);
+    expect(ids("import")).toEqual(["import-wizard"]);
+    expect(ids("meeting")).toEqual(["meeting-weekly"]);
+    for (const area of GUIDE_AREA_CODES.filter(code => !["start", "import", "meeting"].includes(code))) expect(ids(area), area).toEqual([]);
+    expect(ids("hub", [])).toEqual([]);
+    expect(ids("meeting", entries.filter(entry => entry.id !== "meeting-weekly"))).toEqual([]);
+  });
+});
+
+describe.each(GUIDE_VIDEOS.map(video => [video.id, video] as const))("V41-3 GuideVideo %s（假的媒體清單項目）", (id, video) => {
+  const entry = fakeVideoEntry(video);
+  const html = renderToStaticMarkup(createElement(GuideVideo, { video, entry }));
+  const copy = videoCopyOf(id);
+  const title = text(copy.title);
+  const videoTag = html.match(/<video\b[^>]*>/)![0];
+
+  it("<figure class=guide-video data-testid=guide-video-{id}>：圖說＝影片標題，接著 <video>、影片說明一行、逐字稿 <ol>", () => {
+    expect(html).toMatch(new RegExp(`^<figure class="guide-video" data-testid="guide-video-${id}"><figcaption>[^<]+</figcaption><video\\b[^>]*>.*</video><p class="guide-video-note">[^<]+</p><ol class="guide-video-transcript">.*</ol></figure>$`));
+    expect(decode(html)).toContain(`<figcaption>${title}</figcaption>`);
+    expect(decode(html)).toContain(`<p class="guide-video-note">${g.common.videoNote}</p>`);
+    expect(html).not.toContain("{ui:");
+  });
+
+  it("<video>：原生 controls、preload=none、playsinline、poster、寬高取自清單（同一組 aspect-ratio）、可及名稱＝影片標題；沒有 autoplay、loop、muted", () => {
+    const attributes = Object.fromEntries([...videoTag.matchAll(/\s([\w-]+)="([^"]*)"/g)].map(match => [match[1].toLowerCase(), decode(match[2])]));
+    expect(attributes).toEqual({ controls: "", preload: "none", playsinline: "", poster: `/guide/video/${id}-poster.webp`, width: "1280", height: "800", style: "aspect-ratio:1280 / 800", "aria-label": title });
+    expect(videoTag).not.toMatch(/autoplay|loop|muted/i);
+  });
+
+  it("<video> 內一個 MP4 <source> 與一條預設開啟的中文字幕 <track kind=captions srclang=zh-Hant-TW>（字幕檔在 public/guide/video/）", () => {
+    const inner = html.match(/<video\b[^>]*>(.*)<\/video>/)![1];
+    expect(inner).toBe(`<source src="/guide/video/${id}.mp4" type="video/mp4"/><track kind="captions" srcLang="zh-Hant-TW" label="${g.common.captionsLabel}" src="/guide/video/${id}.vtt" default=""/>`);
+    expect(inner.match(/<source\b/g)).toHaveLength(1);
+    expect(inner.match(/<track\b/g)).toHaveLength(1);
+  });
+
+  it("逐字稿 <ol>：li 數＝cue 數，依 GUIDE_VIDEOS 的順序，每一項＝guide.videos.{id}.cues.{key} 的純文字（引用的介面字串不加粗、沒有連結）", () => {
+    const transcript = html.match(/<ol class="guide-video-transcript">(.*)<\/ol>/)![1];
+    const items = [...transcript.matchAll(/<li>([^<]*)<\/li>/g)].map(match => decode(match[1]));
+    expect(transcript.match(/<li>/g)).toHaveLength(video.cues.length);
+    expect(items).toEqual(video.cues.map(cue => text(copy.cues[cue.key])));
+    expect(transcript).not.toMatch(/<(strong|a)\b/);
+  });
+
+  it("GuideVideos：清單沒有這支影片時什麼都不輸出；有時輸出同一個 figure", () => {
+    for (const page of video.pages) {
+      expect(renderToStaticMarkup(createElement(GuideVideos, { page, entries: [] })), page).toBe("");
+      expect(renderToStaticMarkup(createElement(GuideVideos, { page, entries: [entry] })), page).toBe(html);
+    }
+  });
+});
+
+describe("V41-3 影片在說明頁的位置（vi.doMock 換成有 3 支影片的假媒體清單）", () => {
+  const fakeManifest = { ...manifest, videos: GUIDE_VIDEOS.map(fakeVideoEntry) };
+  let hubWithVideos = "";
+  const areaWithVideos = new Map<GuideAreaCode, string>();
+
+  beforeAll(async () => {
+    vi.resetModules();
+    vi.doMock("@/application/guide-media.json", () => ({ default: fakeManifest }));
+    const [{ default: Layout }, { default: Hub }, { default: Area }] = await Promise.all([import("@/app/guide/layout"), import("@/app/guide/page"), import("@/app/guide/[area]/page")]);
+    hubWithVideos = renderToStaticMarkup(createElement(Layout, null, createElement(Hub)));
+    for (const { area } of GUIDE_AREAS) areaWithVideos.set(area, renderToStaticMarkup(createElement(Layout, null, await Area(areaProps(area)))));
+  });
+  afterAll(() => {
+    vi.doUnmock("@/application/guide-media.json");
+    vi.resetModules();
+  });
+
+  it("說明首頁：start-30s 恰好一支，在 #quickstart 段落內、4 步之後（段落最後）", () => {
+    expect(videoIdsIn(hubWithVideos)).toEqual(["start-30s"]);
+    const quickstart = hubWithVideos.match(/<section id="quickstart"[^>]*>(.*?)<\/section>/)![1];
+    expect(quickstart).toMatch(/<ol class="guide-steps">(?:(?!<\/ol>).)*<\/ol><figure class="guide-video" data-testid="guide-video-start-30s">.*<\/figure>$/);
+    expect(quickstart.match(/<ol class="guide-steps">(.*?)<\/ol>/)![1].match(/<li>/g)).toHaveLength(4);
+  });
+
+  it("功能區頁：start、import、meeting 各一支，在本頁目錄之後、步驟清單之前；其他 8 區沒有影片", () => {
+    for (const { area } of GUIDE_AREAS) {
+      const html = areaWithVideos.get(area)!;
+      const expected = GUIDE_VIDEOS.filter(video => (video.pages as readonly string[]).includes(area)).map(video => video.id);
+      expect(videoIdsIn(html), area).toEqual(expected);
+      for (const id of expected) expect(html, `${area}：${id}`).toMatch(new RegExp(`data-testid="guide-toc"><ol>.*?</ol></nav><figure class="guide-video" data-testid="guide-video-${id}">.*?</figure><ol class="guide-area-steps">`));
+    }
+    expect([...areaWithVideos].filter(([, html]) => html.includes("guide-video")).map(([area]) => area)).toEqual(["start", "import", "meeting"]);
+  });
+
+  it("加了影片的頁：標題層級不跳級、id 不重複、沒有表單或按鈕（影片用原生 controls）、沒有 target=_blank；影片標題不是 heading（不改目錄與標題結構）", () => {
+    for (const [path, html] of [["/guide", hubWithVideos], ...["start", "import", "meeting"].map(area => [`/guide/${area}`, areaWithVideos.get(area as GuideAreaCode)!])]) {
+      const levels = [...html.matchAll(/<h([1-6])[\s>]/g)].map(match => Number(match[1]));
+      levels.forEach((level, index) => { if (index > 0) expect(level - levels[index - 1], `${path} 第 ${index + 1} 個標題 h${level}`).toBeLessThanOrEqual(1); });
+      const ids = [...html.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
+      expect(new Set(ids).size, path).toBe(ids.length);
+      expect(html, path).not.toMatch(/<(form|input|textarea|select|button)[\s>]/);
+      expect(html, path).not.toMatch(/target="_blank"/);
+      expect(html.match(/<figure class="guide-video"[^>]*>(.*?)<\/figure>/)![1], path).not.toMatch(/<h[1-6][\s>]/);
+    }
+  });
+});
+
+describe("V41-3 影片與媒體清單（src/application/guide-media.json 目前的內容）", () => {
+  it("清單有的影片才渲染（說明首頁與功能區頁），沒有的不渲染；渲染出來的 figure 與 GuideVideo 對同一筆清單項目的輸出相同", async () => {
+    const entries = manifestVideos(guideMedia);
+    for (const video of GUIDE_VIDEOS) {
+      const entry = entries.find(item => item.id === video.id);
+      for (const page of video.pages) {
+        const html = page === "hub" ? hub() : await areaHtml(page);
+        if (!entry) { expect(videoIdsIn(html), `${page}：清單沒有 ${video.id}`).toEqual([]); continue; }
+        expect(html, `${page}：${video.id}`).toContain(renderToStaticMarkup(createElement(GuideVideo, { video, entry })));
+      }
+    }
+  });
+});
+
 // ---------------------------------------------------------------- import 邊界
 
 const SRC = resolve("src");
@@ -442,7 +605,7 @@ describe("V41-1 import 邊界（PRD §3.1、§3.10）", () => {
   const guideFiles = [...listTs("src/app/guide"), ...listTs("src/components/guide")];
 
   it("說明頁的檔案：src/app/guide 的 layout、page、metadata、[area]/page（V41-2a）與 src/components/guide 的元件", () => {
-    expect(guideFiles).toEqual(expect.arrayContaining(["src/app/guide/layout.tsx", "src/app/guide/page.tsx", "src/app/guide/metadata.ts", "src/app/guide/[area]/page.tsx", "src/components/guide/guide-text.tsx", "src/components/guide/guide-card-list.tsx", "src/components/guide/guide-area-ref.tsx", "src/components/guide/guide-step.tsx", "src/components/guide/guide-toc.tsx"]));
+    expect(guideFiles).toEqual(expect.arrayContaining(["src/app/guide/layout.tsx", "src/app/guide/page.tsx", "src/app/guide/metadata.ts", "src/app/guide/[area]/page.tsx", "src/components/guide/guide-text.tsx", "src/components/guide/guide-card-list.tsx", "src/components/guide/guide-area-ref.tsx", "src/components/guide/guide-step.tsx", "src/components/guide/guide-toc.tsx", "src/components/guide/guide-video.tsx"]));
   });
 
   it("說明頁的模組圖不含 dashboard、圖表元件、recharts、pptxgenjs、xlsx，也沒有任何 \"use client\" 模組", () => {

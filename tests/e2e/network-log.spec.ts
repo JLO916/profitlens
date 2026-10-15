@@ -17,7 +17,8 @@ import { copy, evidenceDrawer, goldenProbes, hideDevOverlay, kpiLink, loadDemo, 
  *      非 PUBLIC_DEMO（例如 playwright.config.ts 的 LOCAL＋ENABLE_LIVE_AI=false）回 fallback、不呼叫 provider，並在紀錄標明 mode；
  *   4. 沒有任何請求的本文或網址含 golden CSV 的任何一行或通路名 MARKETPLACE；
  *   5. 沒有 4xx／5xx（dev 專用的 /_next/webpack-hmr、/__nextjs_* 另列，不算在內）；
- *   6. V41-2a（docs/revamp-v4.1/06_BATCHES.md 護欄表 network-log）：工作台頁面不請求說明頁與它的媒體（路徑 /guide 或 /guide/*；工作台的「使用說明」入口另開分頁，流程裡不點）。
+ *   6. V41-2a（docs/revamp-v4.1/06_BATCHES.md 護欄表 network-log）：工作台頁面不請求說明頁與它的媒體（路徑 /guide 或 /guide/*；工作台的「使用說明」入口另開分頁，流程裡不點）；
+ *      V41-3（06_BATCHES V41-3「驗收重點」）另列示範影片（/guide/video/ 下的影片、字幕檔與 poster），必須為 0。
  * 紀錄寫到 NETWORK_LOG_OUT（例如 verification/revamp-v3/V3-10/network-log.json，desktop 與 mobile 合併在同一份）；沒給就寫到 test-results。
  */
 const DEV_ONLY = /\/_next\/webpack-hmr|\/__nextjs_/;
@@ -116,13 +117,14 @@ test("V3-10 網路紀錄：示範 → 抽屜 → 匯入 golden → 六種匯出 
   const insights = network.filter(row => new URL(row.url).pathname === "/api/insights");
   const failed = network.filter(row => (row.status !== null && row.status >= 400) || (row.failure !== null && row.failure !== "net::ERR_ABORTED"));
   const guide = network.filter(row => /^\/guide(\/|$)/.test(new URL(row.url).pathname));
+  const guideVideo = rows.filter(row => new URL(row.url).pathname.startsWith("/guide/video/"));
   const summary = {
     checked_at: new Date().toISOString(), base_url: origin, mode, viewport: testInfo.project.use.viewport,
     totals: { requests: rows.length, network: network.length, dev_only: rows.length - network.length, non_network_urls: nonNetwork.length, by_step: Object.fromEntries([...new Set(rows.map(row => row.step))].map(name => [name, rows.filter(row => row.step === name).length])) },
     checks: {
       foreign_origins: foreign.map(row => row.url), non_get: writes.map(row => `${row.method} ${row.url} (${row.postData.bytes} bytes)`),
       insights_requests: insights.map(row => `${row.method} ${row.status}`), insights_get: { status: get.status(), body: getBody }, insights_direct_post: { status: post.status(), body: postBody },
-      csv_content_leaks: leaks, failed_resources: failed.map(row => `${row.status ?? row.failure} ${row.url}`), console_or_page_errors: errors, guide_requests: guide.map(row => `${row.step} ${row.method} ${row.url}`),
+      csv_content_leaks: leaks, failed_resources: failed.map(row => `${row.status ?? row.failure} ${row.url}`), console_or_page_errors: errors, guide_requests: guide.map(row => `${row.step} ${row.method} ${row.url}`), guide_video_requests: guideVideo.map(row => `${row.step} ${row.method} ${row.url}`),
     },
     downloads, non_network: nonNetwork, requests: rows,
   };
@@ -145,5 +147,6 @@ test("V3-10 網路紀錄：示範 → 抽屜 → 匯入 golden → 六種匯出 
   }
   expect(failed.map(row => `${row.status ?? row.failure} ${row.url}`), "不得有 4xx／5xx 或失敗的資源").toEqual([]);
   expect(guide.map(row => `${row.step} ${row.method} ${row.url}`), "工作台頁面不得請求 /guide 或 /guide/* 的說明頁與媒體").toEqual([]);
+  expect(guideVideo.map(row => `${row.step} ${row.method} ${row.url}`), "V41-3：首頁與工作台不得請求 /guide/video/ 的示範影片、字幕檔或 poster").toEqual([]);
   expect(errors).toEqual([]);
 });

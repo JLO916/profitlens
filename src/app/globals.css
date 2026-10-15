@@ -3141,3 +3141,13 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 .guide-note-link { display: inline-flex; flex-wrap: wrap; gap: var(--space-1); margin-left: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
 .guide-next { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); margin: 0; padding: 0; list-style: none; }
 /* ── V41-2a 功能區頁錨點結束 ── */
+
+/* ── V41-3 示範影片（.guide-video；docs/revamp-v4.1/01_PRD.md §3.3 第 7 項、§3.6、§3.7）：說明首頁「30 秒上手」與 start、import、meeting 功能區頁的影片、字幕說明與逐字稿 ── */
+/* 影片寬度跟閱讀欄（最寬 760px，390 寬時是視窗寬減兩側 --gutter），高度由 <video> 的 width／height 與同一組 aspect-ratio 算出，poster 與影片載入前後外框不變（沒有版面位移）；
+   原生 controls（不自動播放、不循環），焦點框沿用全站的 :focus-visible。逐字稿是一般的編號清單；只用既有 token 與字級。 */
+.guide-video { margin: var(--space-5) 0 0; }
+.guide-video figcaption { margin-bottom: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-secondary); }
+.guide-video video { display: block; width: 100%; max-width: 100%; height: auto; background: var(--bg-surface); border: var(--border-w) solid var(--border-subtle); border-radius: var(--radius-md); }
+.guide-video-note { margin-top: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
+.guide-video-transcript { display: grid; gap: var(--space-1); margin: var(--space-2) 0 0; padding-left: var(--space-5); list-style: decimal; font-size: var(--text-14); line-height: var(--leading-14); }
+/* ── V41-3 示範影片錨點結束 ── */

@@ -5,6 +5,7 @@ import { GuideAreaRef } from "@/components/guide/guide-area-ref";
 import { GuideCardList, type GuideCardGroup } from "@/components/guide/guide-card-list";
 import { guideText } from "@/components/guide/guide-text";
 import { GuideToc } from "@/components/guide/guide-toc";
+import { GuideVideos } from "@/components/guide/guide-video";
 import { guideMetadata, guidePageTitle } from "./metadata";
 
 // V41-1（docs/revamp-v4.1/01_PRD.md §3.3、GUIDE_CONTENT.md §1）：說明首頁 /guide——開頭、為什麼做這套服務、幫哪些人解決哪些問題、獨特性與代價、30 秒上手、功能區目錄。
@@ -92,6 +93,8 @@ export default function GuideHubPage() {
           return <li key={step.key}>{href ? <a className="guide-link" href={href}>{text}</a> : text}</li>;
         })}
       </ol>
+      {/* V41-3（PRD §3.3 第 5 項）：4 步之後放 30 秒上手的示範影片（GUIDE_VIDEOS 的 hub；媒體清單沒有時不渲染）。 */}
+      <GuideVideos page="hub" />
     </section>
 
     {hasAreas && <section id="areas" className="guide-section" aria-labelledby="guide-areas-title">

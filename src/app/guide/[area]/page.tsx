@@ -8,6 +8,7 @@ import { GuideAreaRef } from "@/components/guide/guide-area-ref";
 import { GuideStep, type GuideStepCopy } from "@/components/guide/guide-step";
 import { GuideText, guideText } from "@/components/guide/guide-text";
 import { GuideToc } from "@/components/guide/guide-toc";
+import { GuideVideos } from "@/components/guide/guide-video";
 import { guideMetadata, guidePageTitle } from "../metadata";
 
 // V41-2a（D-V41-4＝A；docs/revamp-v4.1/01_PRD.md §3.3「/guide/{area}」、§3.5–3.8；GUIDE_CONTENT.md §2）：功能區頁——麵包屑、h1、這頁回答什麼與開始前、本頁目錄、步驟（截圖）、要注意、下一步。
@@ -87,6 +88,9 @@ export default async function GuideAreaPage({ params }: Params) {
       <dd>{guideText(copy.before)}{beforeLink && copy.beforeLink && <> <a className="guide-link" href={beforeLink}>{guideText(copy.beforeLink)}</a></>}<GuideSeeAlso links={GUIDE_AREA_BEFORE_AREAS[area] ?? []} /></dd>
     </dl>
     <GuideToc label={guideText(g.hub.tocAria)} items={steps.map(step => ({ id: step.key, title: guideText(copy.steps[step.key].title) }))} />
+
+    {/* V41-3（PRD §3.3「/guide/{area}」第 7 項）：示範影片放在步驟之前（start、import、meeting；GUIDE_VIDEOS 的 pages，媒體清單沒有時不渲染）。 */}
+    <GuideVideos page={area} />
 
     <ol className="guide-area-steps">
       {steps.map(step => <GuideStep key={step.key} area={area} step={step} copy={copy.steps[step.key]} media={mediaOf(step.mediaId)} eager={step.mediaId === firstShot} />)}
