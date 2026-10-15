@@ -2,7 +2,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { guideLabels } from "../../src/i18n/guide.zh-TW";
-import { GUIDE_AREA_STEPS, resolveUiRefs } from "../../src/application/guide";
+import { GUIDE_AREA_STEPS, GUIDE_VIDEOS, resolveUiRefs, type GuideVideoPage } from "../../src/application/guide";
 import { closeTopbarMore, openTopbarMore } from "./replacement-helpers";
 import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, pageName, writeLaunchJson, type FocusStop, type LaunchPage } from "./launch-helpers-v310";
 
@@ -24,6 +24,7 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V4-8b：總覽、健檢、試算、會議補「第一張圖的資料表 summary」里程碑（見 V4_8B_FIRST_TABLE_TABS）；總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a，總覽 KPI 前可聚焦 ≤ 10。
  * V41-1：另加說明首頁 /guide 的走查（檔尾的獨立測試；七頁的斷言不變），結果寫在「{專案}-guide」鍵。
  * V41-2a：另加功能區頁 /guide/start 的走查（檔尾的獨立測試，與 /guide 共用 guideWalk、expectGuideWalk），結果寫在「{專案}-guide-start」鍵。
+ * V41-3：兩條說明頁走查加「影片控制」里程碑；guideWalk 把同一支影片的原生控制記成各自的停留點（nativeMediaStops），不當成回到停過的元素。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -396,17 +397,20 @@ test("V4-1 鍵盤走查（768）：總覽沒有 aria-hidden 內的 Tab 停留點
   expect(errors).toEqual([]);
 });
 
-/** V41-1、V41-2a：說明頁鍵盤走查的結果（整份寫進 KEYBOARD_WALK_OUT 的「{專案}-guide…」鍵）。 */
+/** V41-1、V41-2a：說明頁鍵盤走查的結果（整份寫進 KEYBOARD_WALK_OUT 的「{專案}-guide…」鍵）。V41-3 加 nativeMediaStops（影片原生控制的停留點）。 */
 interface GuideWalk {
   skipLink: { firstStop: string; name: string; isSkipLink: boolean; focusVisible: boolean; focusAfterEnter: { id: string | null; inMain: boolean } };
   milestones: { name: string; tabs: number | null; reachedBy: Position | null }[];
-  stopsInMain: number; endedAt: number | null; endedBy: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; ariaHiddenStops: string[]; lostFocus: number;
+  stopsInMain: number; endedAt: number | null; endedBy: string | null; stops: string[]; invisibleStops: string[]; repeatedStops: string[]; ariaHiddenStops: string[]; lostFocus: number; nativeMediaStops: string[];
 }
 /**
  * V41-1、V41-2a：說明頁（/guide、/guide/{area}）的鍵盤走查，頁面要先開好。
  * 1. 第一個 Tab 停留點是跳至主要內容；按 Enter 後焦點進到 main。
  * 2. 從 main 一路按 Tab 到文件結尾（說明頁的頁尾沒有連結）：記錄每個停留點、焦點看不到的、回到停過的、在 [aria-hidden=true] 內的停留點，以及各里程碑第一次到達的步數。
  * Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算。
+ * V41-3（PRD §3.6）：<video controls> 先停在 <video> 本身（:focus、全站 :focus-visible 外框），再停在瀏覽器原生控制（播放、時間軸、選單等，在封閉的 UA shadow 內）。
+ * 停在原生控制時 document.activeElement 仍是 <video>（:focus-within，不是 :focus），所以這幾步各記成同一支影片的第 n 個原生控制（不算回到停過的元素），
+ * 焦點框由瀏覽器原生控制自己畫（同日期欄位的子欄位，記成可見）；離開影片後再回到同一支影片才算焦點陷阱。這幾步另列在 nativeMediaStops。
  */
 async function guideWalk(page: Page, targets: { name: string; selector: string }[]): Promise<GuideWalk> {
   const milestones = targets.map(item => ({ ...item, tabs: null as number | null, reachedBy: null as Position | null }));
@@ -420,13 +424,23 @@ async function guideWalk(page: Page, targets: { name: string; selector: string }
   const afterSkip = await page.evaluate(() => ({ id: document.activeElement?.id ?? null, inMain: !!document.activeElement?.closest("main") }));
 
   // 2. 從 main 一路按 Tab 到文件結尾（說明頁的頁尾沒有連結）。
-  const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [], ariaHiddenStops: string[] = [];
+  const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [], ariaHiddenStops: string[] = [], nativeMediaStops: string[] = [];
   if (skipHiddenBy) ariaHiddenStops.push(`0. ${describe(skip)}（${skipHiddenBy}）`);
   const seen = new Set<string>();
   let lostFocus = 0, endedAt: number | null = null, endedBy: string | null = null;
+  // V41-3：上一個停留點的元素（key）與連續停在同一支影片原生控制的次數。
+  let previousKey: string | null = null, nativeIndex = 0;
   for (let tab = 1; tab <= MAX_TABS; tab++) {
     await page.keyboard.press("Tab");
-    const stop = await activeStop(page);
+    const activeKey = await activeStop(page);
+    const nativeMedia = await page.evaluate(() => { const active = document.activeElement; return active instanceof HTMLMediaElement && active.controls && !active.matches(":focus") && active.matches(":focus-within"); });
+    let stop = activeKey;
+    if (nativeMedia) {
+      nativeIndex = previousKey === activeKey.key ? nativeIndex + 1 : 1;
+      stop = { ...activeKey, name: `${activeKey.name}（原生控制 ${nativeIndex}）`, focusVisible: true, focusRing: "native", key: `${activeKey.key}::native-${nativeIndex}` };
+      nativeMediaStops.push(`${tab}. ${describe(stop)}`);
+    } else nativeIndex = 0;
+    previousKey = activeKey.key;
     if (stop.isBody) {
       const remaining = await page.evaluate(() => {
         const last = document.querySelector("[data-v310-last]");
@@ -454,7 +468,7 @@ async function guideWalk(page: Page, targets: { name: string; selector: string }
   }
   return {
     skipLink: { firstStop: describe(skip), name: skip.name, isSkipLink: skipIsLink, focusVisible: skip.focusVisible, focusAfterEnter: afterSkip },
-    milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, endedAt, endedBy, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus,
+    milestones: milestones.map(({ name, tabs, reachedBy }) => ({ name, tabs, reachedBy })), stopsInMain: stops.length, endedAt, endedBy, stops, invisibleStops, repeatedStops, ariaHiddenStops, lostFocus, nativeMediaStops,
   };
 }
 /** V41-1、V41-2a：說明頁走查的共同規則——跳至主要內容、焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點、走得到文件結尾、每個里程碑都到得了。 */
@@ -476,8 +490,15 @@ function expectGuideWalk(walked: GuideWalk) {
  * 里程碑：跳至主要內容是第一個 Tab 停留點、按 Enter 後焦點進到 main；說明首頁的「開啟工作台」（guide.hub.openApp）；本頁目錄第一項。
  * 從 main 一路按 Tab 到文件結尾：每個停留點焦點可見、不在 [aria-hidden=true] 內、不回到停過的元素、焦點不中途掉回 body（guideWalk、expectGuideWalk）。
  * 結果寫進 KEYBOARD_WALK_OUT 的「{專案}-guide」鍵（不蓋掉同一專案七頁走查的紀錄）。
+ * V41-3（PRD §3.6「有影片時加影片控制」）：加「影片控制」里程碑（30 秒上手的 <video>，在目錄第一項之後），並且 Tab 走得到它的原生控制（nativeMediaStops 至少 1 個）。
  */
-test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、目錄第一項；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
+/** V41-3：放在某一頁的第一支影片（GUIDE_VIDEOS 的 pages）；鍵盤走查的「影片控制」里程碑是它的 <video>。 */
+const videoControls = (page: GuideVideoPage) => {
+  const video = GUIDE_VIDEOS.find(item => item.pages.includes(page));
+  if (!video) throw new Error(`GUIDE_VIDEOS 沒有放在 ${page} 的影片`);
+  return { name: "影片控制", selector: `[data-testid='guide-video-${video.id}'] video[controls]` };
+};
+test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、目錄第一項、影片控制；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
   test.skip(!["desktop", "mobile"].includes(testInfo.project.name), "鍵盤走查只跑 1440（desktop）與 390（mobile）");
   test.setTimeout(120_000);
   const errors: string[] = [];
@@ -487,13 +508,17 @@ test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、�
   await expect(page.getByTestId("guide-hub")).toBeVisible();
   // 「開啟工作台」以可及名稱（guideLabels）找到後標成屬性給選擇器用（只加在測試的瀏覽器內）。
   await page.getByTestId("guide-hub").getByRole("link", { name: resolveUiRefs(guideLabels.guide.hub.openApp, labels), exact: true }).evaluate(el => el.setAttribute("data-v41-open-app", ""));
-  const walked = await guideWalk(page, [{ name: "開啟工作台", selector: "[data-v41-open-app]" }, { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" }]);
-  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide", ...walked, pageErrors: errors, note: "V41-1：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算" };
+  const walked = await guideWalk(page, [{ name: "開啟工作台", selector: "[data-v41-open-app]" }, { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" }, videoControls("hub")]);
+  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide", ...walked, pageErrors: errors, note: "V41-1：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算；V41-3：影片原生控制的停留點另列在 nativeMediaStops" };
   const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, result, `${testInfo.project.name}-guide`);
   testInfo.annotations.push({ type: "keyboard-walk", description: written });
 
   expectGuideWalk(walked);
   expect(walked.milestones[0].tabs!, "「開啟工作台」在目錄第一項之前").toBeLessThan(walked.milestones[1].tabs!);
+  const video = walked.milestones[2];
+  expect(video.reachedBy, "影片的 <video> 本身是 Tab 停留點").toBe("inside");
+  expect(video.tabs!, "影片控制在目錄第一項之後").toBeGreaterThan(walked.milestones[1].tabs!);
+  expect(walked.nativeMediaStops.length, "Tab 走得到影片的原生控制").toBeGreaterThanOrEqual(1);
   expect(errors).toEqual([]);
 });
 
@@ -502,8 +527,9 @@ test("V41-1 鍵盤走查（/guide）：跳至主要內容、開啟工作台、�
  * 里程碑（PRD §3.6）：跳至主要內容（第一個停留點，按 Enter 後焦點進到 main）、本頁目錄第一項、第一個步驟（第一個落在 guide-step-start-{第一步} 內的停留點）、
  * 第一張圖的原尺寸連結（guide-shot-{第一張} 內的 <a>）。目錄第一項與原尺寸連結本身都是停留點（reachedBy＝inside），順序：目錄第一項 < 第一個步驟 ≤ 原尺寸連結。
  * 其餘規則同 /guide（guideWalk、expectGuideWalk）。第一步取 GUIDE_AREA_STEPS.start[0]，不寫死。結果寫進 KEYBOARD_WALK_OUT 的「{專案}-guide-start」鍵。
+ * V41-3（PRD §3.6）：影片放在步驟之前，加「影片控制」里程碑（<video> 本身是停留點），順序：目錄第一項 < 影片控制 < 第一個步驟；Tab 走得到它的原生控制。
  */
-test("V41-2a 鍵盤走查（/guide/start）：跳至主要內容、目錄第一項、第一個步驟、第一張圖的原尺寸連結；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
+test("V41-2a 鍵盤走查（/guide/start）：跳至主要內容、目錄第一項、影片控制、第一個步驟、第一張圖的原尺寸連結；焦點可見、沒有焦點陷阱、沒有 aria-hidden 內的停留點", async ({ page }, testInfo) => {
   test.skip(!["desktop", "mobile"].includes(testInfo.project.name), "鍵盤走查只跑 1440（desktop）與 390（mobile）");
   test.setTimeout(120_000);
   const first = GUIDE_AREA_STEPS.start?.[0];
@@ -515,18 +541,22 @@ test("V41-2a 鍵盤走查（/guide/start）：跳至主要內容、目錄第一�
   await expect(page.getByTestId("guide-area-start")).toBeVisible();
   const walked = await guideWalk(page, [
     { name: "本頁目錄第一項", selector: "[data-testid='guide-toc'] a[href]" },
+    videoControls("start"),
     { name: "第一個步驟", selector: `[data-testid='guide-step-start-${first.key}']` },
     { name: "第一張圖的原尺寸連結", selector: `[data-testid='guide-shot-${first.mediaId}'] a[href]` },
   ]);
-  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide/start", ...walked, pageErrors: errors, note: "V41-2a：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算" };
+  const result = { checked_at: new Date().toISOString(), viewport: testInfo.project.use.viewport, path: "/guide/start", ...walked, pageErrors: errors, note: "V41-2a：Tab 數從按 Enter 啟動跳至主要內容（焦點在 main）之後起算；V41-3：影片原生控制的停留點另列在 nativeMediaStops" };
   const written = await writeLaunchJson("KEYBOARD_WALK_OUT", "keyboard-walk.json", testInfo, result, `${testInfo.project.name}-guide-start`);
   testInfo.annotations.push({ type: "keyboard-walk", description: written });
 
   expectGuideWalk(walked);
-  const [toc, step, shot] = walked.milestones;
+  const [toc, video, step, shot] = walked.milestones;
   expect(toc.reachedBy, "本頁目錄第一項本身是 Tab 停留點").toBe("inside");
+  expect(video.reachedBy, "影片的 <video> 本身是 Tab 停留點").toBe("inside");
   expect(shot.reachedBy, "第一張圖的原尺寸連結本身是 Tab 停留點").toBe("inside");
-  expect(toc.tabs!, "本頁目錄第一項在第一個步驟之前").toBeLessThan(step.tabs!);
+  expect(toc.tabs!, "本頁目錄第一項在影片控制之前").toBeLessThan(video.tabs!);
+  expect(video.tabs!, "影片控制在第一個步驟之前").toBeLessThan(step.tabs!);
   expect(step.tabs!, "第一個步驟不晚於它的原尺寸連結").toBeLessThanOrEqual(shot.tabs!);
+  expect(walked.nativeMediaStops.length, "Tab 走得到影片的原生控制").toBeGreaterThanOrEqual(1);
   expect(errors).toEqual([]);
 });

@@ -2,7 +2,7 @@
 import { expect, test, type BrowserContext, type Locator, type Page } from "@playwright/test";
 import { labels } from "../../src/i18n";
 import { guideLabels } from "../../src/i18n/guide.zh-TW";
-import { GUIDE_AREAS, GUIDE_HUB_SECTIONS, guideAreaPath, resolveUiRefs, type GuideAreaCode } from "../../src/application/guide";
+import { GUIDE_AREAS, GUIDE_HUB_SECTIONS, GUIDE_VIDEOS, guideAreaPath, resolveUiRefs, type GuideAreaCode } from "../../src/application/guide";
 import guideMedia from "../../src/application/guide-media.json";
 import { formatAmountL1 } from "../../src/application/presentation";
 import { DEMO_RESULT, hideDevOverlay, loadDemo, writeLaunchJson } from "./launch-helpers-v310";
@@ -19,6 +19,12 @@ import { isMobile, openMobileMore } from "./replacement-helpers";
  *    外包的連結 href＝img src（原尺寸檔），可及名稱＝alt＋guide.common.fullSize；390 另把每張圖的顯示寬度、naturalWidth 與比值寫到 GUIDE_SHOTS_OUT
  *    （以功能區為鍵；只記錄、不斷言，低於 0.45 的列進驗收文件）；axe serious、critical 為 0。
  *    說明首頁的功能區目錄（#areas）每個已上線的功能區恰好一張卡、依序連到 /guide/{area}；/guide/overview#bridge（直接開、從說明首頁點）落在 bridge 步驟。
+ * D. V41-3 示範影片（docs/revamp-v4.1/06_BATCHES.md V41-3 第 4 項；01_PRD.md §3.3 第 7 項、§3.6、§3.7）：GUIDE_VIDEOS 的每支影片在它的每一頁（/guide、/guide/start、
+ *    /guide/import、/guide/meeting），四尺寸：媒體清單 src/application/guide-media.json 的 videos 一定要有這支影片（不略過）；guide-video-{id} 看得到、不造成橫向捲動；
+ *    <video> 的可及名稱＝guide.videos.{id}.title、preload=none、poster、沒有自動播放與循環、首載後 readyState＝0；載入頁面（含捲到影片、用 Tab 走過影片）
+ *    都沒有請求 /guide/video/*.mp4（只允許 poster 與字幕檔）；外框高度＝寬度 × 清單的高／寬（沒有版面位移）；影片前一個停留點按 Tab 到達 <video>，
+ *    再按 Tab 走過原生控制後離開影片（沒有焦點陷阱）；字幕軌 kind=captions、srclang=zh-Hant-TW、預設顯示，字幕檔載入後 cue 數＝逐字稿 <ol> 的項數＝GUIDE_VIDEOS 的 cue 數，
+ *    每段字幕＝逐字稿同一項的文字；影片說明一行＝guide.common.videoNote；axe serious、critical 為 0，video-caption 規則通過（passes）；MP4 本身 200、video/mp4、大小＝清單的 bytes。
  * 字串一律取 labels 與 guideLabels（{ui:…} 以 resolveUiRefs 換成 labels 原字串），定位以 testid 為主；非 testid 的定位器登記在 verification/revamp-v41/e2e-text-assertions.csv。
  */
 const g = guideLabels.guide;
@@ -288,4 +294,121 @@ test.describe("V41-2a 功能區頁", () => {
     await expect(bridge).toBeInViewport();
     expect(errors, `${errors.length} console／page errors`).toEqual([]);
   });
+});
+
+/** V41-3：媒體清單 videos 的一支影片（file、vtt、poster 是 public/ 之下的路徑，例如 guide/video/start-30s.mp4）。 */
+interface GuideVideoEntry { id: string; file: string; vtt: string; poster: string; width: number; height: number; bytes: number; cues: { key: string }[] }
+const VIDEO_ENTRIES = (guideMedia as unknown as { videos?: GuideVideoEntry[] }).videos ?? [];
+/** 一支影片的文字（guideLabels.guide.videos.{id}；V41-3 起加）。 */
+const videoCopy = (id: string) => {
+  const copy = (g as unknown as { videos?: Record<string, { title: string; cues: Record<string, string> }> }).videos?.[id];
+  if (!copy) throw new Error(`guideLabels 缺 guide.videos.${id}`);
+  return copy;
+};
+/** 字幕與逐字稿比對時拿掉空白與換行（字幕檔可以把一句拆成兩行）。 */
+const squash = (value: string) => value.replace(/\s+/g, "");
+
+/** axe 的 video-caption 規則（WCAG 1.2.2；有 <track kind="captions"> 才通過，沒有時是 incomplete）：回傳通過的節點數與違規、待確認的數量。axe 要先注入（axeBlocking）。 */
+const axeVideoCaption = (page: Page) => page.evaluate(async () => {
+  const axe = (window as unknown as { axe: { run: (context: unknown, options: unknown) => Promise<Record<"passes" | "violations" | "incomplete", { nodes: unknown[] }[]>> } }).axe;
+  const result = await axe.run(document, { runOnly: { type: "rule", values: ["video-caption"] } });
+  return { passes: result.passes.reduce((sum, rule) => sum + rule.nodes.length, 0), violations: result.violations.length, incomplete: result.incomplete.length };
+});
+
+test.describe("V41-3 示範影片", () => {
+  for (const video of GUIDE_VIDEOS) for (const where of video.pages) {
+    const path = where === "hub" ? "/guide" : guideAreaPath(where);
+    test(`${path}：${video.id} 看得到、首載不下載影片、Tab 到得了原生控制、字幕與逐字稿一致、axe video-caption 通過`, async ({ page }) => {
+      test.setTimeout(90_000);
+      // 影片是 V41-3 的交付物：清單沒有這支影片就失敗（不略過）。
+      const entry = VIDEO_ENTRIES.find(item => item.id === video.id);
+      expect(entry, `媒體清單 src/application/guide-media.json 的 videos 要有 ${video.id}`).toBeDefined();
+      const copy = videoCopy(video.id);
+      const cueTexts = video.cues.map(cue => text(copy.cues[cue.key]));
+      const errors = collectErrors(page);
+      const requested: string[] = [];
+      page.on("request", request => requested.push(new URL(request.url()).pathname));
+      await hideDevOverlay(page);
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      await page.waitForLoadState("networkidle");
+
+      const figure = page.getByTestId(`guide-video-${video.id}`);
+      await expect(figure).toHaveCount(1);
+      await figure.scrollIntoViewIfNeeded();
+      await expect(figure).toBeVisible();
+      if (where === "hub") await expect(page.locator("#quickstart").getByTestId(`guide-video-${video.id}`)).toHaveCount(1);
+      else await expect(page.getByTestId(`guide-area-${where}`).getByTestId(`guide-video-${video.id}`)).toHaveCount(1);
+
+      // <video>：可及名稱＝影片標題；preload=none、poster、原生 controls；不自動播放、不循環；首載後沒有載入任何影片資料（readyState 0）。
+      const player = figure.locator("video");
+      await expect(player).toHaveCount(1);
+      await expect(player).toBeVisible();
+      await expect(player).toHaveAccessibleName(text(copy.title));
+      await expect(player).toHaveAttribute("preload", "none");
+      await expect(player).toHaveAttribute("poster", `/${entry!.poster}`);
+      await expect(figure.locator("figcaption")).toHaveText(text(copy.title));
+      const state = await player.evaluate((el: HTMLVideoElement) => ({ controls: el.controls, autoplay: el.autoplay, loop: el.loop, muted: el.muted, paused: el.paused, readyState: el.readyState, sources: [...el.querySelectorAll("source")].map(source => [source.getAttribute("src"), source.getAttribute("type")]) }));
+      expect(state).toEqual({ controls: true, autoplay: false, loop: false, muted: false, paused: true, readyState: 0, sources: [[`/${entry!.file}`, "video/mp4"]] });
+
+      // 外框高度＝寬度 × 清單的高／寬（poster 載入前後不變，沒有版面位移）；不造成橫向捲動。
+      const box = await player.boundingBox();
+      expect(Math.abs(box!.height - box!.width * entry!.height / entry!.width), `影片外框 ${box!.width}×${box!.height}`).toBeLessThanOrEqual(1);
+      const scroll = await page.evaluate(() => ({ scrollWidth: document.scrollingElement!.scrollWidth, width: window.innerWidth }));
+      expect(scroll.scrollWidth, `scrollWidth ${scroll.scrollWidth} ≤ 視窗寬 ${scroll.width}`).toBeLessThanOrEqual(scroll.width);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(scroll.width);
+
+      // 字幕軌：kind=captions、srclang=zh-Hant-TW、預設顯示；字幕檔載入後 cue 數＝GUIDE_VIDEOS 的 cue 數，每段＝逐字稿同一項。
+      const track = player.locator("track");
+      await expect(track).toHaveCount(1);
+      await expect(track).toHaveAttribute("kind", "captions");
+      await expect(track).toHaveAttribute("srclang", "zh-Hant-TW");
+      await expect(track).toHaveAttribute("src", `/${entry!.vtt}`);
+      await expect.poll(() => track.evaluate((el: HTMLTrackElement) => el.readyState), { message: `${entry!.vtt} 載入完成` }).toBe(2);
+      const cues = await player.evaluate((el: HTMLVideoElement) => ({ mode: el.textTracks[0]?.mode, kind: el.textTracks[0]?.kind, texts: [...(el.textTracks[0]?.cues ?? [])].map(cue => (cue as VTTCue).text) }));
+      expect(cues.kind).toBe("captions");
+      expect(cues.mode).toBe("showing");
+      expect(cues.texts.map(squash)).toEqual(cueTexts.map(squash));
+
+      // 影片說明一行與逐字稿 <ol>：項數＝cue 數，文字＝guide.videos.{id}.cues（純文字）。
+      await expect(figure.locator("p.guide-video-note")).toHaveText(text(g.common.videoNote));
+      const transcript = figure.locator("ol.guide-video-transcript > li");
+      await expect(transcript).toHaveCount(video.cues.length);
+      await expect(transcript).toHaveText(cueTexts);
+
+      // 鍵盤：影片前一個停留點按 Tab 到達 <video>（焦點看得到），再按 Tab 走過原生控制（焦點在影片的 UA shadow 內），最後離開影片到它之後的元素。
+      const hasBefore = await player.evaluate((el: HTMLVideoElement) => {
+        const stops = [...document.querySelectorAll<HTMLElement>("a[href],button,input,select,textarea,summary,video[controls],[tabindex]")].filter(item => item.tabIndex >= 0 && item.checkVisibility());
+        const before = stops.filter(item => item.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).pop();
+        before?.setAttribute("data-v41-before-video", "");
+        return !!before;
+      });
+      expect(hasBefore, "影片前面要有一個 Tab 停留點").toBe(true);
+      await page.locator("[data-v41-before-video]").focus();
+      await page.keyboard.press("Tab");
+      expect(await player.evaluate((el: HTMLVideoElement) => document.activeElement === el && el.matches(":focus-visible")), "Tab 到達 <video>，焦點看得到").toBe(true);
+      let presses = 0;
+      while (presses < 10 && await player.evaluate((el: HTMLVideoElement) => el.matches(":focus-within"))) { await page.keyboard.press("Tab"); presses++; }
+      expect(presses, "影片本身之後還有原生控制可以 Tab 到").toBeGreaterThan(1);
+      expect(presses, "Tab 會離開影片（沒有焦點陷阱）").toBeLessThan(10);
+      expect(await player.evaluate((el: HTMLVideoElement) => { const active = document.activeElement; return !!active && active !== document.body && !!(el.compareDocumentPosition(active) & Node.DOCUMENT_POSITION_FOLLOWING); }), "離開影片後焦點在影片之後的元素").toBe(true);
+      expect(await player.evaluate((el: HTMLVideoElement) => ({ paused: el.paused, readyState: el.readyState })), "只用 Tab 走過不會開始播放或載入").toEqual({ paused: true, readyState: 0 });
+
+      // 首載、捲到影片與 Tab 走過影片：/guide/video/ 只請求 poster 與字幕檔，沒有任何 .mp4。
+      await page.waitForLoadState("networkidle");
+      const videoRequests = requested.filter(pathname => pathname.startsWith("/guide/video/"));
+      expect(requested.filter(pathname => pathname.endsWith(".mp4")), "preload=none：首載不下載影片").toEqual([]);
+      expect(videoRequests.filter(pathname => pathname !== `/${entry!.poster}` && pathname !== `/${entry!.vtt}`), "/guide/video/ 只允許 poster 與字幕檔").toEqual([]);
+
+      expect(await axeBlocking(page), `${path}：axe serious／critical 必須為 0`).toEqual([]);
+      expect(await axeVideoCaption(page), `${path}：axe video-caption 通過（有 <track kind="captions">）`).toEqual({ passes: 1, violations: 0, incomplete: 0 });
+
+      // 影片檔本身（使用者按播放時才會請求）：200、video/mp4、大小＝清單的 bytes。
+      const mp4 = await page.request.get(`/${entry!.file}`);
+      expect(mp4.status()).toBe(200);
+      expect(mp4.headers()["content-type"]).toContain("video/mp4");
+      expect((await mp4.body()).length).toBe(entry!.bytes);
+      expect(errors, `${errors.length} console／page errors`).toEqual([]);
+    });
+  }
 });
