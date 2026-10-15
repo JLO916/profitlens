@@ -397,5 +397,139 @@
       "sha256": "cdee25716021048fa2f21b04457e3e8b92c79803b47010872195628c63374082",
       "labels_hash": "26dab3f088a832c06e94816ec7c2dc24037c5156cb01d6b14ab6216092e99e3c"
     }
+  ],
+  "videos": [
+    {
+      "id": "start-30s",
+      "file": "guide/video/start-30s.mp4",
+      "vtt": "guide/video/start-30s.vtt",
+      "poster": "guide/video/start-30s-poster.webp",
+      "width": 1280,
+      "height": 800,
+      "bytes": 706627,
+      "posterBytes": 96996,
+      "durationMs": 25640,
+      "cues": [
+        {
+          "key": "load",
+          "startMs": 0,
+          "endMs": 5027,
+          "sha256": "73df8e24def11d517b43bd4d56145e6d1e4917f9a029382898982da9495dff80"
+        },
+        {
+          "key": "snapshot",
+          "startMs": 5027,
+          "endMs": 10531,
+          "sha256": "73df8e24def11d517b43bd4d56145e6d1e4917f9a029382898982da9495dff80"
+        },
+        {
+          "key": "bridge",
+          "startMs": 10531,
+          "endMs": 15552,
+          "sha256": "dd81b52876bfce0fbf07b37d9418d139ef7aede4a5bf46562407eba9c13397b3"
+        },
+        {
+          "key": "evidence",
+          "startMs": 15552,
+          "endMs": 20576,
+          "sha256": "c3187e57beae463215cd41572441d9d2a3dd5d43071b95c4eb79b25c6b853c74"
+        },
+        {
+          "key": "close",
+          "startMs": 20576,
+          "endMs": 25640,
+          "sha256": "61ae5cc1d951a17cdd0f62c88d870ca0a36bd529abc79503f91ace2f57f12657"
+        }
+      ],
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "import-wizard",
+      "file": "guide/video/import-wizard.mp4",
+      "vtt": "guide/video/import-wizard.vtt",
+      "poster": "guide/video/import-wizard-poster.webp",
+      "width": 1280,
+      "height": 800,
+      "bytes": 549898,
+      "posterBytes": 57848,
+      "durationMs": 27640,
+      "cues": [
+        {
+          "key": "files",
+          "startMs": 0,
+          "endMs": 5503,
+          "sha256": "20794682fceb951f515eb58b5461a7f085379d1a48d18836d8c090203243d880"
+        },
+        {
+          "key": "mapping",
+          "startMs": 5503,
+          "endMs": 10807,
+          "sha256": "e75cdb1c6f66a59d14f2558c9294e41eb4f2c39770c094c1fd2ced8b3e73a3c9"
+        },
+        {
+          "key": "basis",
+          "startMs": 10807,
+          "endMs": 16702,
+          "sha256": "157f2efda250b9306489776768ebc4b7102f85b72ffce901dbe649e4cfb3a2ed"
+        },
+        {
+          "key": "review",
+          "startMs": 16702,
+          "endMs": 21710,
+          "sha256": "2d6430aa61971771110a4aed5ec3fd8105a6d10e4dd9ebe956f069c44b7ae206"
+        },
+        {
+          "key": "apply",
+          "startMs": 21710,
+          "endMs": 27640,
+          "sha256": "b591524211ae131f1a96d8ee491d3381b2eec58e537e8ca47372fb5cb1a630d3"
+        }
+      ],
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "meeting-weekly",
+      "file": "guide/video/meeting-weekly.mp4",
+      "vtt": "guide/video/meeting-weekly.vtt",
+      "poster": "guide/video/meeting-weekly-poster.webp",
+      "width": 1280,
+      "height": 800,
+      "bytes": 1133113,
+      "posterBytes": 40966,
+      "durationMs": 33680,
+      "cues": [
+        {
+          "key": "action",
+          "startMs": 0,
+          "endMs": 6233,
+          "sha256": "9263fc30efb25f0466c7f7bb494837083f2a1b470bc339cb202f30789cbe9607"
+        },
+        {
+          "key": "scenario",
+          "startMs": 6233,
+          "endMs": 15402,
+          "sha256": "33360964e6d9633c5002a2774d17a2e660cb9262c438d0312468ec5d8ac95e26"
+        },
+        {
+          "key": "decision",
+          "startMs": 15402,
+          "endMs": 20479,
+          "sha256": "d1cfa5805011ad7d0ec90e254b023d6e84ef76f47ae293df92e40647d4907d12"
+        },
+        {
+          "key": "finalize",
+          "startMs": 20479,
+          "endMs": 27467,
+          "sha256": "bd126c05c4a598b4276126e0c55e08aec40d6f2f6632779fde877d2d5a6693d1"
+        },
+        {
+          "key": "export",
+          "startMs": 27467,
+          "endMs": 33680,
+          "sha256": "bd282cc17c46dc704160b75d47c82f40c61552687df730660a52bc3065f0200a"
+        }
+      ],
+      "labels_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
   ]
 }

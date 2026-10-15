@@ -1,0 +1,21 @@
+WEBVTT
+
+action
+00:00:00.000 --> 00:00:06.233
+(guide.videos.meeting-weekly.cues.action)
+
+scenario
+00:00:06.233 --> 00:00:15.402
+(guide.videos.meeting-weekly.cues.scenario)
+
+decision
+00:00:15.402 --> 00:00:20.479
+(guide.videos.meeting-weekly.cues.decision)
+
+finalize
+00:00:20.479 --> 00:00:27.467
+(guide.videos.meeting-weekly.cues.finalize)
+
+export
+00:00:27.467 --> 00:00:33.680
+(guide.videos.meeting-weekly.cues.export)

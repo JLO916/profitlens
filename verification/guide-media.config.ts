@@ -16,6 +16,8 @@ import { resolve } from "node:path";
 //     基準相同但被引用的介面字串變了（labels_hash 不符）時只更新 labels_hash，不重轉 WebP；比對通過的媒體一律不動。
 // 有差異或新增時才跑 write，驗收文件逐張寫理由；版本號改變不需要重拍（D-V41-22）。
 //
+// V41-3：同一個目錄的 video.spec.ts 是 3 支示範影片（GUIDE_VIDEOS）。check 照流程重跑、每個 cue 一張視窗截圖與 baseline/video/{id}-{cue}.png 比對（不錄影、不寫檔）；
+// write 才開 Playwright recordVideo，cue 有差異或新增時用本機 ffmpeg 轉 public/guide/video/{id}.mp4 並寫 poster、字幕與清單的 videos；cue 全部 0 差異就不重錄，只更新字幕與 labels_hash。
 // 截圖門檻同 verification/revamp-v4.capture.config.ts：maxDiffPixels＝0；單一像素的色差容許 threshold＝0.02（只吸收 Chromium 反鋸齒的 ±1 色階雜訊）。
 // 視窗由每個測試依 mediaId 設定（-m 結尾 390×844，其餘 1440×1000），deviceScaleFactor 1。
 const port = Number(process.env.CAPTURE_PORT ?? 3100);
