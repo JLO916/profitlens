@@ -1,5 +1,17 @@
 # Decision log
 
+## 2026-10-16｜V41-6：範例檔修正、「操作導覽」入口、v4.1.2
+
+使用者 2026-10-15 在 v4.1.1 上線後回報：「匯入範本＞範例檔，三個需要的檔案都無法正確下載」「側邊選單的『使用說明』改為『操作導覽』並增加 ? 的 icon」。同一則訊息的另外兩項（通路客製化與單一通路分析、by 通路／品類／SKU 與綜合、交叉分析）是新功能，另立 `docs/revamp-v4.2/` 規劃套件，待拍板。
+
+- **範例檔的根因**（D-V41-26＝A）：`.vercelignore` 的 `docs/`、`templates/` 沒有前導斜線，照 gitignore 語意也排除 `public/docs/` 與 `public/templates/`，所以 `public/templates/examples/` 的 4 個檔與 `public/docs/ORDER_AGGREGATION.md` 從 v2.0.0 起每一次部署（CLI 與 Git 整合都一樣，建置紀錄有「Removed … ignored files」）都沒上傳，正式站回 404；本機 `next start` 直接讀工作目錄，所以單元測試、E2E 與本機 launch-check 都測不到。修法只動這兩行（`/docs/`、`/templates/`）；沙盒比對排除集合，只多上傳這 5 個檔。護欄兩道：`tests/vercelignore.test.ts` 用 `git check-ignore --no-index` 對 `.vercelignore` 檢查建置需要的檔一個都不被排除；launch-check 補充加 5 項，對部署比對位元組（D-V41-30＝A，補充 14 → 19 項）。這 5 項只有對 Vercel 部署跑才有意義。
+- **改名範圍**（D-V41-27＝A）：`shell.guideV41.entry` 與 `homeHint` 一起改（四處入口是同一個連結，首頁空狀態那一行就是入口名）；說明首頁 h1「服務介紹與使用說明」是使用者 2026-10-14 給功能區的名字，沒有指示不改。
+- **圖示**（D-V41-28＝A）：只在側欄入口加 `ShellIcon name="help"`（問號圓圈，20px，與手機「更多」那一列同款）；頁尾與首頁空狀態不加，避免 390 的頁尾再折行。`shell.guideV41.*` 不能含「？」字元（`tests/guide-content.test.ts`），所以問號只能是圖示。側欄入口那一列因為 inline-flex 的基線對齊高了 5px（`start-nav` 截圖 429 → 434），只記錄不調。
+- **版本號**（D-V41-29＝A）：4.1.2，修正批；4.2.0 留給通路客製化與分析視角。
+- **媒體重拍**：`labels_hash` 不涵蓋 `shell.guideV41.*`（沒有步驟或字幕引用它），所以單元測試不會要求重拍，只有 `GUIDE_MEDIA=check` 的像素比對會抓到。本批重拍 3 張截圖（`start-nav`、`start-mobile-m`、`start-load`）與 3 支影片（12 個 cue 有側欄或頁尾的「使用說明」）；其餘 41 張沒動。
+- **發布日期**：審查指出 v4.1.2 的日期要是發布 commit 當天，由 2026-10-15 改成 2026-10-16；上線日期若再延後，RELEASES、README、ENGINEERING 與 release-notes 測試的日期要一起改。
+- **一併公開的文件**：`/docs/ORDER_AGGREGATION.md` 現在會上傳；它引用的 `scripts/aggregate_orders.py` 在公開的 GitHub repo 裡（repo 是 public），使用者可以取得。
+
 ## 2026-10-15｜v4.1.1：示範影片、source-map-js、版本號
 
 - **source-map-js**：使用者同意 `source-map-js` 1.2.1 → 1.2.2。只改 lockfile 的這一個項目，它是 postcss 與 `@tailwindcss/node` 的傳遞依賴；`npm audit` high 9 → 8。

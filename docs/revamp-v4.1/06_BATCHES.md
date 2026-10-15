@@ -63,7 +63,7 @@
 | V41-4 | 優化補充（O1 分享圖與 README 首圖、O2 CLS） | S | V41-2b；D-V41-14 | 完成（2026-10-15；四個切頁 CLS → 0；og.png、README 首圖更新；390 TBT 低負載重跑五項通過；驗收見 `verification/revamp-v41-V41-4-acceptance.md`） |
 | V41-5 | 收尾與上線 | M | V41-0–V41-2b、V41-4；D-V41-1、17、18、24；**H7**（擋正式上線） | 完成（2026-10-15；H7 通過；v4.1.0 正式上線：`main`＝`5b40d7f`、tag `v4.1.0`、`dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`，正式站 13＋14 通過；驗收見 `verification/revamp-v41-V41-5-acceptance.md`） |
 | V41-3 | 示範影片 3 支（v4.1.0 上線後，使用者明確要影片時才做） | S | V41-5；D-V41-6＝A、D-V41-7 | 完成（2026-10-15；3 支影片＋字幕＋逐字稿；v4.1.1 正式上線：`main`＝`36659ff`、tag `v4.1.1`、`dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`；驗收見 `verification/revamp-v41-V41-3-acceptance.md`） |
-| V41-6 | 修正批（v4.1.2）：範例檔在正式站無法下載、入口改名「操作導覽」加問號圖示 | S | V41-3；D-V41-26–30 | 進行中（2026-10-15 開工） |
+| V41-6 | 修正批（v4.1.2）：範例檔在正式站無法下載、入口改名「操作導覽」加問號圖示 | S | V41-3；D-V41-26–30 | 完成（2026-10-16；E2E 1,143／0／29；64 張 0 差異（42 張允許變動已更新）；`GUIDE_MEDIA=check` 47／47；390 TBT 五項通過；launch-check 本機 13＋19；驗收見 `verification/revamp-v41-V41-6-acceptance.md`；部署待使用者同意） |
 
 上線前 6 批、至少 6 個工作階段；人工時間約半天（H7）＋H6（後補）。依賴鏈：V41-0、V41-1、V41-2a、V41-2b、（preview、H7）、V41-4、V41-5。V41-3 依 D-V41-6 的建議值排在 V41-5 之後；D-V41-6＝A 時改排在 V41-2b 之後、V41-4 之前，V41-5 照常。
 

@@ -2,9 +2,9 @@
 
 > 新的在上。正式站：<https://profitlens-tau.vercel.app>。工程驗收命令與各批驗收紀錄見 [ENGINEERING](ENGINEERING.md)；每批真實執行結果見 [STATUS](STATUS.md)；取捨見 [DECISIONS](DECISIONS.md)。
 
-## v4.1.2（2026-10-15，範例檔修正與操作導覽入口）
+## v4.1.2（2026-10-16，範例檔修正與操作導覽入口）
 
-發布日期：2026-10-15。
+發布日期：2026-10-16。
 
 **發布方式**：v4.1.1 上線後，使用者 2026-10-15 回報兩項要修正：「匯入範本＞範例檔，三個需要的檔案都無法正確下載」與「側邊選單的『使用說明』改為『操作導覽』並增加 ? 的 icon」，開工修正批 V41-6（D-V41-26 到 D-V41-30 依建議值；版本號 4.1.2 依 D-V41-29）。上線步驟：經使用者當次同意後推送 `revamp/v4.1` 與 `main`（`main` 從 `66c241a` fast-forward 到發布 commit），由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.2` 指向發布 commit 並推送；對正式站跑 13 項 HTTP 與補充 19 項。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.2。
 

@@ -1,5 +1,30 @@
 # Status
 
+## V41-6 修正批（v4.1.2，2026-10-16；發布 commit 已備好，待使用者同意部署）
+
+使用者 2026-10-15 在 v4.1.1 上線後回報兩項要修正：範例檔無法下載、側欄入口改名「操作導覽」並加問號圖示（同一則訊息的另外兩項是新功能，規劃在 `docs/revamp-v4.2/`，待拍板）。
+
+**內容**：
+
+- **範例檔**：`.vercelignore` 的 `docs/`、`templates/` 沒有前導斜線，連 `public/docs/`、`public/templates/` 一起排除，4 個範例檔與 `ORDER_AGGREGATION.md` 從 v2.0.0 起每次部署都沒上傳（正式站 404，本機測不到）。改成 `/docs/`、`/templates/`；加 `tests/vercelignore.test.ts` 與 launch-check 補充 5 項 `public-file`（14 → 19 項）。
+- **入口**：`shell.guideV41.entry`「使用說明」→「操作導覽」（側欄、「更多」、頁尾、麵包屑）、`homeHint` →「操作導覽：每一頁怎麼用」；側欄入口加問號圖示；說明首頁 h1 不改。
+- **媒體**：重拍 3 張截圖與 3 支影片（12 個 cue 有舊字），其餘 41 張不動；`GUIDE_MEDIA=check` 三次 47／47。
+- 版本 4.1.2；RELEASES v4.1.2 段（上線前寫法）。
+
+**驗收**（程式 `835301c`＋日期修正與媒體重拍）：
+
+- unit 167 檔、3,570 個全過；lint 0；typecheck 通過；contrast 85／85；audit:ui 各項與 V41-3 相同。
+- E2E 1,143 passed、0 failed、29 skipped。
+- 畫面基準：允許變動的 42 張（側欄入口、頁尾、麵包屑、首頁空狀態那一行）更新後，64 張 0 差異。
+- `/` First Load JS 519,705（+3；門檻 520,451）；`GUIDE_SENTINELS` 0；說明頁 131,465（不變）。
+- 390 TBT 五項通過（中位數 991.0／781.2／81.4／964.5／9.6）；首頁 390 Performance 95；說明頁 a11y、SEO 100。
+- axe 28／28／28／26 全部 0；本機 launch-check 13＋19。
+- 禁區與邊界五條為空。
+
+**沒有做**：推送、部署、tag（每一次都要當次同意）；H6 與匯出開檔檢查待人工；Skew Protection 沒開。
+
+驗收見 `verification/revamp-v41-V41-6-acceptance.md`。
+
 ## EC ProfitLens v4.1.1 正式上線（2026-10-15）
 
 v4.1.0 上線後，使用者 2026-10-15 先後回覆：

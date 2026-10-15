@@ -1,22 +1,22 @@
 {
-  "updated": "2026-10-15",
+  "updated": "2026-10-16",
   "media": [
     {
       "id": "start-load",
       "file": "guide/start/start-load.webp",
       "width": 622,
       "height": 358,
-      "bytes": 19668,
-      "sha256": "8233ff54ce05e62d3e81fa8ac7e42f0238c1d817ac1303f0de15cd7f8334a07f",
+      "bytes": 19596,
+      "sha256": "5ddb98d5e7b30f4e2e09c06b7d4ea4b118966299f5cdc31723ee5f18f982c383",
       "labels_hash": "88d995a79209522a277598ca7d29494ba7a5da021e17d7488b0961af1e7b0ca7"
     },
     {
       "id": "start-nav",
       "file": "guide/start/start-nav.webp",
       "width": 219,
-      "height": 429,
-      "bytes": 9218,
-      "sha256": "d49db13ffc8ac36b05ef093357365627bd4450d73472b1e0f55989e5ebf01de6",
+      "height": 434,
+      "bytes": 9384,
+      "sha256": "a3e3232dbdb44616d2e5c9cd70990af7af1fcb51067b6b69b64b87f50cccd2dd",
       "labels_hash": "34ee4001a7267bf6152d41372a222e00ddcaf1b1598fc460c334029c017c3681"
     },
     {
@@ -33,8 +33,8 @@
       "file": "guide/start/start-mobile-m.webp",
       "width": 390,
       "height": 844,
-      "bytes": 37796,
-      "sha256": "fc119981d518f3fb0d15f06ad95a586f9b1bc2ef2ffeb9e135690d10d2cd51c8",
+      "bytes": 37736,
+      "sha256": "3039b6c660bcb5977a2f6fcead7d6507e7d6d936bca62a9bd29d00079a073180",
       "labels_hash": "f6762525b7554bb07b730081c878076b9176dce3a7ea95dbf0a10159b97953d6"
     },
     {
@@ -406,38 +406,38 @@
       "poster": "guide/video/start-30s-poster.webp",
       "width": 1280,
       "height": 800,
-      "bytes": 706627,
-      "posterBytes": 47408,
-      "durationMs": 25640,
+      "bytes": 609358,
+      "posterBytes": 47520,
+      "durationMs": 25800,
       "cues": [
         {
           "key": "load",
           "startMs": 0,
-          "endMs": 5027,
-          "sha256": "73df8e24def11d517b43bd4d56145e6d1e4917f9a029382898982da9495dff80"
+          "endMs": 5024,
+          "sha256": "f09694d7ec2363a2dcb06a5dd6144249022b04c94faf7cec368ca1faf95e0e00"
         },
         {
           "key": "snapshot",
-          "startMs": 5027,
-          "endMs": 10531,
-          "sha256": "73df8e24def11d517b43bd4d56145e6d1e4917f9a029382898982da9495dff80"
+          "startMs": 5024,
+          "endMs": 10690,
+          "sha256": "f09694d7ec2363a2dcb06a5dd6144249022b04c94faf7cec368ca1faf95e0e00"
         },
         {
           "key": "bridge",
-          "startMs": 10531,
-          "endMs": 15552,
+          "startMs": 10690,
+          "endMs": 15718,
           "sha256": "dd81b52876bfce0fbf07b37d9418d139ef7aede4a5bf46562407eba9c13397b3"
         },
         {
           "key": "evidence",
-          "startMs": 15552,
-          "endMs": 20576,
+          "startMs": 15718,
+          "endMs": 20740,
           "sha256": "c3187e57beae463215cd41572441d9d2a3dd5d43071b95c4eb79b25c6b853c74"
         },
         {
           "key": "close",
-          "startMs": 20576,
-          "endMs": 25640,
+          "startMs": 20740,
+          "endMs": 25800,
           "sha256": "61ae5cc1d951a17cdd0f62c88d870ca0a36bd529abc79503f91ace2f57f12657"
         }
       ],
@@ -450,39 +450,39 @@
       "poster": "guide/video/import-wizard-poster.webp",
       "width": 1280,
       "height": 800,
-      "bytes": 549898,
-      "posterBytes": 28220,
-      "durationMs": 27640,
+      "bytes": 562845,
+      "posterBytes": 28292,
+      "durationMs": 28400,
       "cues": [
         {
           "key": "files",
           "startMs": 0,
-          "endMs": 5503,
-          "sha256": "20794682fceb951f515eb58b5461a7f085379d1a48d18836d8c090203243d880"
+          "endMs": 5681,
+          "sha256": "d9acaa49d038211a386c5709bf4499fe48aeb7c00a4064a0e6028c2cc30f4b73"
         },
         {
           "key": "mapping",
-          "startMs": 5503,
-          "endMs": 10807,
-          "sha256": "e75cdb1c6f66a59d14f2558c9294e41eb4f2c39770c094c1fd2ced8b3e73a3c9"
+          "startMs": 5681,
+          "endMs": 11167,
+          "sha256": "9000f8a3807c261b6eec287a15873644889ef4bf74d52682ffbbfa74ab74a21a"
         },
         {
           "key": "basis",
-          "startMs": 10807,
-          "endMs": 16702,
-          "sha256": "157f2efda250b9306489776768ebc4b7102f85b72ffce901dbe649e4cfb3a2ed"
+          "startMs": 11167,
+          "endMs": 17255,
+          "sha256": "f325d773c9819a8e6562b8122d51d2145283f24883bf25204c8c6ce85b3c6964"
         },
         {
           "key": "review",
-          "startMs": 16702,
-          "endMs": 21710,
-          "sha256": "2d6430aa61971771110a4aed5ec3fd8105a6d10e4dd9ebe956f069c44b7ae206"
+          "startMs": 17255,
+          "endMs": 22262,
+          "sha256": "5a5b1884e047bb5e5ef05edcc0da2ab7150cb7f97fffbcef03d4bbc4134fa67f"
         },
         {
           "key": "apply",
-          "startMs": 21710,
-          "endMs": 27640,
-          "sha256": "b591524211ae131f1a96d8ee491d3381b2eec58e537e8ca47372fb5cb1a630d3"
+          "startMs": 22262,
+          "endMs": 28400,
+          "sha256": "e19ee54cea26fc1f3c0aa0c9387aeb206ce2752c3867bef4e2bdeeb10a0cc4ca"
         }
       ],
       "labels_hash": "1ad2e46c340e0d9940b44c2b4aa2cafd17739e001ea7df52855e2e78ba036594"
@@ -494,39 +494,39 @@
       "poster": "guide/video/meeting-weekly-poster.webp",
       "width": 1280,
       "height": 800,
-      "bytes": 1133113,
-      "posterBytes": 20490,
-      "durationMs": 33680,
+      "bytes": 1018741,
+      "posterBytes": 20576,
+      "durationMs": 35080,
       "cues": [
         {
           "key": "action",
           "startMs": 0,
-          "endMs": 6233,
-          "sha256": "9263fc30efb25f0466c7f7bb494837083f2a1b470bc339cb202f30789cbe9607"
+          "endMs": 6461,
+          "sha256": "68a7a69404c36b89902bf763f305aed72573d1213a34b13ec4d3427a7244ed95"
         },
         {
           "key": "scenario",
-          "startMs": 6233,
-          "endMs": 15402,
-          "sha256": "33360964e6d9633c5002a2774d17a2e660cb9262c438d0312468ec5d8ac95e26"
+          "startMs": 6461,
+          "endMs": 15888,
+          "sha256": "fac2918104d06b2a5c05821ef8888a8520849e2bc821cdb7c5191e8eebe12cd3"
         },
         {
           "key": "decision",
-          "startMs": 15402,
-          "endMs": 20479,
-          "sha256": "d1cfa5805011ad7d0ec90e254b023d6e84ef76f47ae293df92e40647d4907d12"
+          "startMs": 15888,
+          "endMs": 21270,
+          "sha256": "de4f6c32fd60e3c0fd5f0eb7b96aab3ce627a1e78a1f53f5c37fea2c87a9c630"
         },
         {
           "key": "finalize",
-          "startMs": 20479,
-          "endMs": 27467,
-          "sha256": "bd126c05c4a598b4276126e0c55e08aec40d6f2f6632779fde877d2d5a6693d1"
+          "startMs": 21270,
+          "endMs": 28520,
+          "sha256": "0c84665121f5c205b2d645296d9711fbbe7bc0f34f93b052bfc328aec355a77d"
         },
         {
           "key": "export",
-          "startMs": 27467,
-          "endMs": 33680,
-          "sha256": "bd282cc17c46dc704160b75d47c82f40c61552687df730660a52bc3065f0200a"
+          "startMs": 28520,
+          "endMs": 35080,
+          "sha256": "da766f7110fcc8be0b93d42f4155f2e8ac374c2fc8ae4b19b33677545ed06304"
         }
       ],
       "labels_hash": "f24842cc1ae348721f9b78c60da755a11b44ef88b767840e795ff8fb8e450b08"
