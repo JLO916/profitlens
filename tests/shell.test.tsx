@@ -263,10 +263,10 @@ describe("V3-3 匯出選單分組（§6.5）與儲存選單三段（§6.3 #14）
   });
 });
 
-// ── V41-1：工作台的「使用說明」入口（docs/revamp-v4.1/06_BATCHES.md V41-1 第 5 項、PRD §3.2、D-V41-5）──
+// ── V41-1：工作台的「操作導覽」入口（docs/revamp-v4.1/06_BATCHES.md V41-1 第 5 項、PRD §3.2、D-V41-5；V41-6 改名 D-V41-27、側欄加問號圖示 D-V41-28）──
 // 側欄（aside 內、nav 之後）、手機「更多」最後一列、首頁空狀態按鈕列下方一行、頁尾「指標定義」旁；一律 <a href="/guide" target="_blank" rel="noopener">，
-// 可及名稱＝可見文字＋sr-only 的 shell.guideV41.newTab（接在可見文字之後）。字串只取 labels.shell.guideV41.*。
-describe("V41-1 工作台的「使用說明」入口（D-V41-5）", () => {
+// 可及名稱＝可見文字＋sr-only 的 shell.guideV41.newTab（接在可見文字之後；aria-hidden 的圖示不進文字）。字串只取 labels.shell.guideV41.*。
+describe("V41-1 工作台的「操作導覽」入口（D-V41-5；V41-6 改名）", () => {
   const guide = labels.shell.guideV41;
   /** 去掉標籤後的文字（sr-only 的文字也算，等於可及名稱的來源）。 */
   const text = (markup: string) => markup.replace(/<[^>]+>/g, "");
