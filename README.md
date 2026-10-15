@@ -4,7 +4,7 @@
 
 **正式站：[profitlens-tau.vercel.app](https://profitlens-tau.vercel.app)**
 
-<img src="docs/images/overview-1440-v3.png" width="1200" alt="EC ProfitLens 經營總覽（示範資料）：本期一句話、KPI 帶、本期三件事與貢獻變化拆解瀑布圖">
+<img src="docs/images/overview-1440-v4.png" width="1200" alt="EC ProfitLens 經營總覽（示範資料）：本期一句話、KPI 帶、本期三件事與貢獻變化拆解瀑布圖">
 
 ## 它回答三個問題（給營運／行銷主管）
 

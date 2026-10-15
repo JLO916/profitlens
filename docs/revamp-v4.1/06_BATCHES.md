@@ -4,7 +4,7 @@
 >
 > 每批格式：大小／範圍／依賴（含拍板與人工關卡）／允許變動畫面／驗收重點（共通驗收以外）／同批 labels 與測試。
 >
-> **目前進度：V41-0、V41-1、V41-2a、V41-2b 完成（2026-10-14／15），下一批 V41-4；H7 可以開始。D-V41-1–25 已拍板（D-V41-25＝A）。** 基準：tag `v4.0.0`＝`872662d`；`main`＝`59e6f41`；正式站 https://profitlens-tau.vercel.app 是 v4.0.0。
+> **目前進度：V41-0、V41-1、V41-2a、V41-2b、V41-4 完成（2026-10-14／15），下一批 V41-5（要等 H7）；H7 可以用 preview 開始。D-V41-1–25 已拍板（D-V41-25＝A）。** 基準：tag `v4.0.0`＝`872662d`；`main`＝`59e6f41`；正式站 https://profitlens-tau.vercel.app 是 v4.0.0。
 
 ---
 
@@ -60,7 +60,7 @@
 | V41-2a | 媒體管線與前 5 個功能區（start、import、overview、diagnosis、products） | M | V41-1；D-V41-20、21、22 | 完成（2026-10-14；21 張截圖、`GUIDE_MEDIA=check` 0 差異；E2E 1,103／0／29；390 TBT 五項通過；驗收見 `verification/revamp-v41-V41-2a-acceptance.md`） |
 | V41-2b | 後 6 個功能區（scenarios、actions、meeting、data、evidence、export） | M | V41-2a | 完成（2026-10-15；44 張截圖、`GUIDE_MEDIA=check` 0 差異；E2E 1,127／0／29；390 TBT 五項通過；驗收見 `verification/revamp-v41-V41-2b-acceptance.md`） |
 | （preview） | 經使用者當次同意部署 Vercel preview（push 分支也算），給 H7 用（D-V41-24） | — | V41-2b | — |
-| V41-4 | 優化補充（O1 分享圖與 README 首圖、O2 CLS） | S | V41-2b；D-V41-14 | 未開工 |
+| V41-4 | 優化補充（O1 分享圖與 README 首圖、O2 CLS） | S | V41-2b；D-V41-14 | 完成（2026-10-15；四個切頁 CLS → 0；og.png、README 首圖更新；390 TBT 低負載重跑五項通過；驗收見 `verification/revamp-v41-V41-4-acceptance.md`） |
 | V41-5 | 收尾與上線 | M | V41-0–V41-2b、V41-4；D-V41-1、17、18、24；**H7**（擋正式上線） | 未開工 |
 | V41-3 | 示範影片 3 支（v4.1.0 上線後，使用者明確要影片時才做） | S | V41-5；D-V41-6＝A、D-V41-7 | 未開工 |
 

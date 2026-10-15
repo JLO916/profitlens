@@ -1,6 +1,8 @@
 // R7-3：產生分享卡片 public/og.png（1200×630）。用法：node scripts/make-og.mjs（需已安裝 Playwright 的 Chromium）。
 // 文字一律取自 src/i18n/labels.zh-TW.ts 與 src/app/site.ts（Node 24+ 直接載入 .ts，只做型別剝除）；
 // 截圖取自 V3-1 畫面基準的總覽首屏（示範資料，verification/revamp-v3-capture/baseline.spec.ts 產生），裁掉側欄後縮放放在右側。產物是靜態檔，改字或換截圖後重跑本腳本並提交 PNG。
+// V41-4（O1，docs/revamp-v4.1/06_BATCHES.md V41-4 第 2 項）：截圖改取 V41-4 畫面基準的總覽首屏（verification/revamp-v4-capture/baseline.spec.ts 的 01，desktop 1440×1000）；
+// 裁掉的側欄寬改讀 src/app/globals.css 的 --sidebar-w（原本寫死 212px，側欄已是 220px，左緣會殘留側欄）。
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { chromium } from "@playwright/test";
@@ -9,15 +11,19 @@ const { labels } = await import(new URL("../src/i18n/labels.zh-TW.ts", import.me
 const { SITE_URL } = await import(new URL("../src/app/site.ts", import.meta.url).href);
 
 const WIDTH = 1200, HEIGHT = 630;
-const SCREENSHOT = resolve("verification/revamp-v3/V3-1/snapshots/desktop/01-overview-top.png");
+const SCREENSHOT = resolve("verification/revamp-v41/V41-4/snapshots/desktop/01-overview-top.png");
 const OUTPUT = resolve("public/og.png");
-// 來源截圖 1440×1000：x 212 起是主內容（裁掉側欄）；縮放到 640px 寬。
-const SOURCE = { width: 1440, sidebar: 212 }, FRAME = { left: 584, top: 104, width: 640, height: 420 };
+// 來源截圖 1440×1000：側欄（--sidebar-w）右邊起是主內容（裁掉側欄）；縮放到 640px 寬。
+const sidebarToken = /--sidebar-w:\s*(\d+)px/.exec(await readFile(resolve("src/app/globals.css"), "utf8"));
+if (!sidebarToken) throw new Error("src/app/globals.css 找不到 --sidebar-w");
+const SOURCE = { width: 1440, sidebar: Number(sidebarToken[1]) }, FRAME = { left: 584, top: 104, width: 640, height: 420 };
 const scale = FRAME.width / (SOURCE.width - SOURCE.sidebar);
 
 const escape = value => String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 const shot = (await readFile(SCREENSHOT)).toString("base64");
-const [, product] = labels.brand.title.split("｜");
+// brand.title 是「品牌 · 產品說明」（v3 起分隔符號由「｜」改成「 · 」，舊寫法會取到 undefined）；兩種都接受，取不到就停。
+const [, product] = labels.brand.title.split(/\s*[｜·]\s*/);
+if (!product) throw new Error(`labels.brand.title 沒有「 · 」或「｜」分隔的產品說明：${labels.brand.title}`);
 const lens = "M4 18V6h5v12 M13 18V3h6v15 M3 21h18";
 const html = `<!doctype html><html lang="zh-Hant-TW"><head><meta charset="utf-8"><style>
   * { box-sizing: border-box; margin: 0; }

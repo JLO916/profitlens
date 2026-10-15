@@ -1,5 +1,27 @@
 # Status
 
+## v4.1｜V41-4 優化補充（完成；分支 revamp/v4.1，本批未推送）
+
+- **O2 切頁 CLS**：390 切到商品毛利、資料來源、待辦，1440 切到待辦，原本 0.054／0.054／0.071／0.054，現在都是 0。
+  - 來源：切頁時內容區與頁尾沿用同一個節點，被算成位移。改成以頁為 key，畫面不變。
+  - 待辦頁在 V41-1 由 0.053 升到 0.071，是頁尾加「使用說明」後多折一行放大了同一個位移。
+- **O1 分享圖**：`public/og.png` 改用目前的總覽畫面，不再有 v3 舊名與左緣側欄；重產時順便修了產品說明顯示 undefined 的問題。
+- **O1 README 首圖**：改成 `docs/images/overview-1440-v4.png`。
+
+驗收（程式 V41_4_CODE）：
+
+- unit 166 檔、3,509 個全過。
+- E2E 1,127 passed、0 failed、29 skipped。
+- 畫面基準 64 張 0 差異；`GUIDE_MEDIA=check` 44／44。
+- `/` First Load JS 519,702（多 15 bytes）；說明頁 131,465。
+- launch-check 13 項與補充 14 項全部通過。
+- 390 TBT：第一組在高負載下有三項未過；與 V41-2b 同場成對比較 10 對，trace 的工作量相同。低負載重跑三次，五項都通過：載入示範資料 1,011.5、健檢 795.8、商品 90.2、會議 994.7、資料來源 14.8。
+- axe 全部 0；禁區與邊界五條都是空的。
+
+**待決**：source-map-js 1.2.2 的 lockfile 修正（V41-0 提出）。
+
+**人工關卡**：H7 未執行／待人工，可以用 V41-2b 的 preview 看說明頁。驗收見 `verification/revamp-v41-V41-4-acceptance.md`。下一批是 V41-5，收尾與上線，要等 H7。
+
 ## v4.1｜V41-2b 後 6 個功能區（完成；分支 revamp/v4.1，未推送）
 
 說明頁 11 個功能區全部上線：假設試算、待辦、會議紀錄與投影、資料來源、計算與來源與指標定義、匯出儲存與備份是這批加的，新增 23 張截圖（全站 44 張）。說明首頁目錄 11 張卡，sitemap 13 個網址，首頁與各頁提到的功能區都是連結。
@@ -25,7 +47,7 @@
 
 **preview**（2026-10-15，使用者同意）：只推送 `revamp/v4.1`（`9e6d645`）→ `dpl_D6NNP4Lo9pRAAXMYz5tjUWfW4S7V`，https://profitlens-git-revamp-v41-jlo916s-projects.vercel.app/guide ；13 項與補充 14 項全部通過；正式站仍是 v4.0.0。
 
-**人工關卡**：H7 未執行／待人工，可以用上面的 preview 看。驗收見 `verification/revamp-v41-V41-2b-acceptance.md`。下一批是 V41-4，分享圖、README 首圖與 CLS。
+**人工關卡**：H7 未執行／待人工，可以用上面的 preview 看。驗收見 `verification/revamp-v41-V41-2b-acceptance.md`。
 
 ## v4.1｜V41-2a 媒體管線與前 5 個功能區（完成；分支 revamp/v4.1，未推送）
 

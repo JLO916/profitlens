@@ -144,9 +144,10 @@ describe("README（v3.0.0 尚未發布；步驟對齊 V3-8 的空狀態與匯入
     expect(readmeSection("發布紀錄")).toContain("正式站已是 v3.0.0（2026-10-08）");
   });
 
-  it("首圖是 v3 示範資料截圖，README 引用的本機圖片都存在", () => {
+  it("首圖是 v4.1 示範資料截圖（V41-4 O1：取 V41-4 畫面基準的總覽首屏；v3 的舊圖保留），README 引用的本機圖片都存在", () => {
     const images = [...readme.matchAll(/<img src="([^"]+)"/g)].map(match => match[1]);
-    expect(images).toContain("docs/images/overview-1440-v3.png");
+    expect(images).toContain("docs/images/overview-1440-v4.png");
+    expect(existsSync(resolve("docs/images/overview-1440-v3.png"))).toBe(true);
     for (const image of images) expect(existsSync(resolve(image)), image).toBe(true);
   });
 

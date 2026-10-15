@@ -1,0 +1,874 @@
+{
+  "desktop": {
+    "checked_at": "2026-10-15T03:44:13.574Z",
+    "base_url": "http://127.0.0.1:3100",
+    "mode": "non-public (DISABLED)",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "totals": {
+      "requests": 24,
+      "network": 24,
+      "dev_only": 0,
+      "non_network_urls": 0,
+      "by_step": {
+        "home": 9,
+        "load-demo": 2,
+        "import-golden": 4,
+        "export-analysis-csv": 4,
+        "export-pptx": 3,
+        "export-decision-json": 1,
+        "meeting": 1
+      }
+    },
+    "checks": {
+      "foreign_origins": [],
+      "non_get": [],
+      "insights_requests": [
+        "GET 200"
+      ],
+      "insights_get": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "DISABLED",
+          "provider": "openai"
+        }
+      },
+      "insights_direct_post": {
+        "status": 200,
+        "body": {
+          "status": "fallback",
+          "snapshot_id": null,
+          "reason": "DISABLED"
+        }
+      },
+      "csv_content_leaks": [],
+      "failed_resources": [],
+      "console_or_page_errors": [],
+      "guide_requests": []
+    },
+    "downloads": {
+      "analysis_csv": {
+        "filename": "profitlens-analysis.csv",
+        "bytes": 356738
+      },
+      "excel": {
+        "filename": "profitlens.xlsx",
+        "bytes": 30580
+      },
+      "pptx": {
+        "filename": "profitlens-onepager.pptx",
+        "bytes": 133318
+      },
+      "decision_json": {
+        "filename": "profitlens-decision.json",
+        "bytes": 204397
+      },
+      "backup": {
+        "filename": "profitlens-workspace.json",
+        "bytes": 266816
+      }
+    },
+    "non_network": [],
+    "requests": [
+      {
+        "seq": 1,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "document",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 2,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/css/8040665cf87145f4.css",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 3,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/css/ed86b042269229ae.css",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 4,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-ffd8f02df12b4ef8.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 5,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/4bd1b696-c9cc1fe3b38e59bb.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 6,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/794-9fe765eb012f0e09.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 7,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-cd717720e6e1afbf.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 8,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/194-ab182664d94ba742.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 9,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-040072d126ef91dd.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 10,
+        "step": "load-demo",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/api/insights",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 11,
+        "step": "load-demo",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/api/datasets/demo",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 12,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/366.c37f666a57c8ff55.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 13,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/718.b5e17e7c6402a1db.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 14,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/472.6a753f0927b2570a.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 15,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/676.a7212d56c75a4811.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 16,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/239.b89e53c6736a3cbd.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 17,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/480.91bdd29c6eac06f1.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 18,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/2170a4aa.73c3da89693d4c1a.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 19,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/436.423bff32fd4fbec0.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 20,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/521.b0dc2d4f107f58a4.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 21,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/e2c5e4d9.36c59ebd61363ad2.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 22,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/453.62cbe29b9101f7f1.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 23,
+        "step": "export-decision-json",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/271.6ee77db9c39cd126.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 24,
+        "step": "meeting",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/132.aeb618252405f2b5.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      }
+    ]
+  },
+  "mobile": {
+    "checked_at": "2026-10-15T04:09:33.049Z",
+    "base_url": "http://127.0.0.1:3100",
+    "mode": "non-public (DISABLED)",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "totals": {
+      "requests": 24,
+      "network": 24,
+      "dev_only": 0,
+      "non_network_urls": 0,
+      "by_step": {
+        "home": 10,
+        "load-demo": 1,
+        "import-golden": 4,
+        "export-analysis-csv": 4,
+        "export-pptx": 3,
+        "export-decision-json": 1,
+        "meeting": 1
+      }
+    },
+    "checks": {
+      "foreign_origins": [],
+      "non_get": [],
+      "insights_requests": [
+        "GET 200"
+      ],
+      "insights_get": {
+        "status": 200,
+        "body": {
+          "available": false,
+          "reason": "DISABLED",
+          "provider": "openai"
+        }
+      },
+      "insights_direct_post": {
+        "status": 200,
+        "body": {
+          "status": "fallback",
+          "snapshot_id": null,
+          "reason": "DISABLED"
+        }
+      },
+      "csv_content_leaks": [],
+      "failed_resources": [],
+      "console_or_page_errors": [],
+      "guide_requests": []
+    },
+    "downloads": {
+      "analysis_csv": {
+        "filename": "profitlens-analysis.csv",
+        "bytes": 356738
+      },
+      "excel": {
+        "filename": "profitlens.xlsx",
+        "bytes": 30580
+      },
+      "pptx": {
+        "filename": "profitlens-onepager.pptx",
+        "bytes": 133318
+      },
+      "decision_json": {
+        "filename": "profitlens-decision.json",
+        "bytes": 204397
+      },
+      "backup": {
+        "filename": "profitlens-workspace.json",
+        "bytes": 266816
+      }
+    },
+    "non_network": [],
+    "requests": [
+      {
+        "seq": 1,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "document",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 2,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/css/8040665cf87145f4.css",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 3,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/css/ed86b042269229ae.css",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "stylesheet",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 4,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/webpack-ffd8f02df12b4ef8.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 5,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/4bd1b696-c9cc1fe3b38e59bb.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 6,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/794-9fe765eb012f0e09.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 7,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/main-app-cd717720e6e1afbf.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 8,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/194-ab182664d94ba742.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 9,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/app/page-040072d126ef91dd.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 10,
+        "step": "home",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/api/insights",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 11,
+        "step": "load-demo",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/api/datasets/demo",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "fetch",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 12,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/366.c37f666a57c8ff55.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 13,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/718.b5e17e7c6402a1db.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 14,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/472.6a753f0927b2570a.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 15,
+        "step": "import-golden",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/676.a7212d56c75a4811.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 16,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/239.b89e53c6736a3cbd.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 17,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/480.91bdd29c6eac06f1.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 18,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/2170a4aa.73c3da89693d4c1a.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 19,
+        "step": "export-analysis-csv",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/436.423bff32fd4fbec0.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 20,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/521.b0dc2d4f107f58a4.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 21,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/e2c5e4d9.36c59ebd61363ad2.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 22,
+        "step": "export-pptx",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/453.62cbe29b9101f7f1.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 23,
+        "step": "export-decision-json",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/271.6ee77db9c39cd126.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      },
+      {
+        "seq": 24,
+        "step": "meeting",
+        "method": "GET",
+        "url": "http://127.0.0.1:3100/_next/static/chunks/132.aeb618252405f2b5.js",
+        "origin": "http://127.0.0.1:3100",
+        "resourceType": "script",
+        "postData": {
+          "bytes": 0,
+          "head80_sha256": null
+        },
+        "status": 200,
+        "failure": null,
+        "devOnly": false
+      }
+    ]
+  }
+}
