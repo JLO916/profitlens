@@ -63,6 +63,7 @@
 | V41-4 | 優化補充（O1 分享圖與 README 首圖、O2 CLS） | S | V41-2b；D-V41-14 | 完成（2026-10-15；四個切頁 CLS → 0；og.png、README 首圖更新；390 TBT 低負載重跑五項通過；驗收見 `verification/revamp-v41-V41-4-acceptance.md`） |
 | V41-5 | 收尾與上線 | M | V41-0–V41-2b、V41-4；D-V41-1、17、18、24；**H7**（擋正式上線） | 完成（2026-10-15；H7 通過；v4.1.0 正式上線：`main`＝`5b40d7f`、tag `v4.1.0`、`dpl_8gTMCdU9BKTeCJfhTbCvsuGUgan2`，正式站 13＋14 通過；驗收見 `verification/revamp-v41-V41-5-acceptance.md`） |
 | V41-3 | 示範影片 3 支（v4.1.0 上線後，使用者明確要影片時才做） | S | V41-5；D-V41-6＝A、D-V41-7 | 完成（2026-10-15；3 支影片＋字幕＋逐字稿；v4.1.1 正式上線：`main`＝`36659ff`、tag `v4.1.1`、`dpl_9Fy3evkGfJUcStEci3YaKnr6Z8X2`；驗收見 `verification/revamp-v41-V41-3-acceptance.md`） |
+| V41-6 | 修正批（v4.1.2）：範例檔在正式站無法下載、入口改名「操作導覽」加問號圖示 | S | V41-3；D-V41-26–30 | 進行中（2026-10-15 開工） |
 
 上線前 6 批、至少 6 個工作階段；人工時間約半天（H7）＋H6（後補）。依賴鏈：V41-0、V41-1、V41-2a、V41-2b、（preview、H7）、V41-4、V41-5。V41-3 依 D-V41-6 的建議值排在 V41-5 之後；D-V41-6＝A 時改排在 V41-2b 之後、V41-4 之前，V41-5 照常。
 
@@ -203,6 +204,25 @@
 **允許變動畫面**：15（30 秒上手多一個影片框）。其餘 0 差異。
 
 **驗收重點**：B3 影片門檻；axe 0；說明頁 Lighthouse 不退；network-log：首頁與工作台的請求不含任何 `/guide/video/`；`GUIDE_MEDIA=write` 後再跑 `check`，cue 比對 0 差異、不重錄。
+
+---
+
+## V41-6 修正批：範例檔下載與「操作導覽」入口（S；v4.1.2）
+
+使用者 2026-10-15 在 v4.1.1 上線後回報兩項要修正：「匯入範本＞範例檔，三個需要的檔案都無法正確下載」與「側邊選單的『使用說明』改為『操作導覽』並增加 ? 的 icon」。同一則訊息的另外兩項（通路客製化與單一通路分析、by 通路／品類／SKU 與綜合、交叉分析）是新功能，另立 v4.2 規劃套件（`docs/revamp-v4.2/`），不在本批。
+
+**範圍**
+1. **範例檔修正（D-V41-26）**。根因：`.vercelignore` 的 `docs/` 與 `templates/` 沒有前導斜線，照 gitignore 語意也會排除 `public/docs/` 與 `public/templates/`，所以 `public/templates/examples/` 的 4 個檔與 `public/docs/ORDER_AGGREGATION.md` 從 v2.0.0 起每一次部署都沒上傳（正式站 404；本機 `next start` 讀工作目錄所以測不到）。修法：這兩行改成 `/docs/`、`/templates/`（只動這兩行；其餘樣式不動）。護欄：`tests/vercelignore.test.ts` 用 `git check-ignore --no-index` 對 `.vercelignore` 檢查——`public/`、`src/`、`fixtures/`、建置設定檔一個都不被排除，根目錄的 `docs/`、`templates/`、`tests/`、`scripts/`、`verification/` 仍被排除；`scripts/launch-check.mjs` 補充加 5 項（4 個範例檔與 `ORDER_AGGREGATION.md`：200、content-type、位元組與 repo 的 `public/` 相同），補充由 14 項變 19 項（D-V41-30）。
+2. **入口改名與圖示（D-V41-27、28）**。`shell.guideV41.entry`「使用說明」→「操作導覽」（側欄、手機「更多」、頁尾、說明頁麵包屑四處同一個 key）；`shell.guideV41.homeHint`「使用說明：每一頁怎麼用」→「操作導覽：每一頁怎麼用」（同一個入口）；側欄入口在文字前加 `ShellIcon name="help"`（問號圓圈，與「更多」那一列同款、20px；`.sidebar-guide-link` 加 `gap` 與 svg 顏色，只用既有 token）；頁尾與首頁空狀態不加圖示（避免 390 頁尾再折行）；說明首頁 h1「服務介紹與使用說明」不改（待使用者回覆，拍板前沿用）。`README.md` 的「操作導覽：匯入資料」連結文字與第 77 行、`docs/revamp-v4/usability-test.md` T5 的答案欄同步；相關註解更新；既有 key 名 `guideV41` 不改。
+3. **媒體重拍**。`GUIDE_MEDIA=write` 只更新有差異的：截圖 `start-nav`、`start-mobile-m`、`start-load` 與 3 支影片（重錄、poster、VTT 時間、清單 `updated`）；其餘 41 張 0 差異；之後 `GUIDE_MEDIA=check` 47／47。
+4. **版本與文件**。版本 4.1.2（D-V41-29；`package.json` 與 lockfile 三行）；`docs/RELEASES.md` 加 v4.1.2 段（上線前寫成步驟、正式站檢查一行 PROD_PLACEHOLDER，比照 v4.1.1）；README 發布紀錄；ENGINEERING；`tests/release-notes.test.ts` 加 v4.1.2 段的上線前後一致性檢查，v4.1.1 段改為一律照上線後的寫法斷言；STATUS、DECISIONS。
+5. **上線**。經使用者當次同意才推送與部署；正式站檢查 13＋19 全過後才補上線紀錄。
+
+**依賴**：V41-3；D-V41-26–30。
+
+**允許變動畫面**（42 張）：desktop／laptop／tablet 的 01–09、14（側欄入口文字與圖示）與 16（麵包屑）；mobile 的 02、04–09（頁尾文字）、14（首頁空狀態那一行）、16（麵包屑）。其餘 22 張 0 差異。文字同長（4 個字），不預期頁高改變。
+
+**驗收重點**：禁區與邊界五條為空；`tests/vercelignore.test.ts` 通過；launch-check 本機 13＋19；`/` First Load ≤ 520,451；`GUIDE_SENTINELS` 0；`GUIDE_MEDIA=check` 47／47；E2E 四尺寸；axe 0；390 TBT 五項（嚴格閘門）；說明頁 Lighthouse a11y、SEO 100。
 
 ---
 
