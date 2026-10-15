@@ -1,0 +1,77 @@
+# 09 v4.2 需拍板事項
+
+> 來源：`docs/revamp-v4.2/01_PRD.md`。「建議」欄是 PRD 推薦的值；「決定」欄只記錄使用者的明確回覆。可以一次回覆「全部依建議值」，或逐項回覆。沒有明確回覆的事項不視為核准，受影響的批次不開工（或只做不受影響的部分），拍板前一律沿用 v4.1.2 的行為與用詞。拍板不取代人工關卡（H8、H9、H6）。任何部署（含 Vercel preview）都要使用者當次明確同意，D-V42-26 只定策略；`git push` 任何分支到 origin 都會由 Vercel Git 整合建立 preview，視同部署。
+>
+> 拍板表分三張：**需要回覆的 23 件**分成 A「範圍與產品」16 件（D-V42-1 到 13、15、18、23；有實際取捨）與 B「技術做法」7 件（D-V42-14、16、17、19、20、21、22；事項欄是一句白話，技術細節在「建議」欄的第二句之後，可以直接回覆「依建議值」），加上**預設沿用的 8 件**（D-V42-24 到 31；沿用既有做法或已成事實，不需回覆；想改時再提出）。D-V42-1 到 D-V42-5 是範圍定義，對應調查報告的 U1 到 U5（`understand-critic.md:116-120`）；這五件沒有回覆，整輪不開工。
+>
+> **擋批清單**
+> - 擋 V42-0：D-V42-1、2、3、4、5（範圍）、6（版本）、20（首頁首載的上限；技術）、22（新字串放哪些鍵；技術）；使用者同意 `00_README.md` 末節的 CLAUDE.md 草案；V41-6 上線（D-V42-29 預設沿用）。
+> - 擋 V42-1：另有 D-V42-8、9、13（示範資料的預設設定）、14（技術）、15（Excel 對照列）。
+> - 擋 V42-2a：另有 D-V42-10、12；V42-2a 完成後的 preview 另需當次同意（H8）。
+> - 擋 V42-2b：另有 D-V42-7（含本批）、11。
+> - 擋 V42-3：另有 D-V42-16、18、19、21（16、19、21 是技術）。
+> - 擋 V42-4：另有 D-V42-7（含本批）、17（技術）；第六步門檻依 D-V42-21。
+> - 擋 V42-5：另有 D-V42-13（截圖資料）、15（`categories` 工作表）。
+> - 擋 V42-6（上線）：另有 D-V42-23；人工關卡 H8、H9。
+> - 預設沿用的 D-V42-24 到 D-V42-31 不擋任何批次（D-V42-29 的「V41-6 上線」是 V42-0 的前提，不是拍板）。
+>
+> 回覆後把「決定」欄填上，並在 `docs/DECISIONS.md` 記一筆。
+
+## 需要回覆 A：範圍與產品（16 件）
+
+| 代號 | 事項 | 選項 | 建議 | 影響批次 | 決定 |
+|---|---|---|---|---|---|
+| D-V42-1 | 第 3 項「客製化設定為自己擁有的通路」的讀法（U1） | A 只是用自己的通路名稱（CSV 的 `channel` 欄寫什麼就是什麼，已經可以；V41-6 修好範例檔後在首頁空狀態與說明頁補一句「通路名稱來自你的 CSV」）／B 通路之上多一層由使用者編的群組（例如 自有通路＝官網＋LINE；電商平台＝蝦皮＋momo）／C 使用者自訂顯示名稱與順序／D 系統提供固定的通路類型（自營、平台）讓使用者勾／E B＋C | **E**。通路本來就是 CSV 裡的任意字串，產品沒有 DTC／Marketplace 的概念（`understand-item3-channel-model.md:11-14`）；「只有 DTC、Marketplace」來自示範資料的顯示別名與正式站範例檔 404（`:15-22`；`understand-critic.md:102`）。A 已經是事實但使用者看不到；B 與 C 共用同一個設定模組與保存方式；D 等於由產品再造一個二分法，與「自己擁有的通路」相反。請同時回答：是否已用自己的 CSV 匯入過多通路資料（`understand-critic.md:103`） | 整個第 3 項的批次數：A 約 0 批、E 3 批（V42-1、2a、2b） | |
+| D-V42-2 | 「再多一層的單一通路分析」的做法（U2） | A 沿用既有的單一通路篩選（期間列選一個通路，七頁重算），加上「從群組往下看成員通路」的「只看這個通路」動作與「{群組名} · {通路名}」的範圍標示／B 另做一個單一通路專頁／C A 再加通路寬表每列的九項橋接（`buildBridge` 逐通路） | **A**。單一通路篩選已經存在並重算整個工作台（`understand-item3-channel-model.md:23-26`）；「全部通路」畫面裡本來就有逐通路的區塊（`:133-151`）。B 要付新頁面的全部代價：導覽、手機「更多」、約 12 個寫死七頁的清單、每尺寸新畫面基準、B9 與第 6 個 390 TBT 門檻、說明功能區（`understand-workbench-budgets.md:67、101-102`）。C 的 DOM 與 TBT 代價落在只剩 16.7 ms 的通路健檢（`understand-governance.md:112`），第一輪不做 | V42-2a；C 另開批次 | |
+| D-V42-3 | 品類與 SKU 的深度，以及使用者看得到的邊界句（U3） | A 到商品毛利為止；通路費用與廣告費以「未分攤」整筆呈現在通路列；邊界句「品類與 SKU 的分析到商品毛利為止，通路費用與廣告費以「未分攤」整筆呈現。」放在五處（PRD §6.2）／B 把通路費用與廣告費依營收或件數分攤到品類或 SKU（C 級；要使用者親自修改 `AGENTS.md:13-14`、新 `metric_version`、公式文件放 `docs/METRICS.md` 之外、重寫禁區五條命令） | **A**。費用檔與廣告檔只有「日 × 通路」粒度（`understand-item4-perspectives.md:10-12`），分攤在 repo 裡有五處明文禁止（`:63-69`），`AGENTS.md:13-14` 優先級高於本套件；市場比較文件已把「SKU 層不扣平台費與廣告」記為已接受的弱點（`understand-governance.md:11`）。B 不是實作上的捷徑，是產品核心規則的改變 | 全部；邊界句在 V42-3、H9 | |
+| D-V42-4 | 綜合分析與交叉分析的範圍（U4） | A v4.2 做：X1 通路 × 品類交叉表、X3 品類列展開 SKU、X5 兩期 × 品類差額、C2 綜合區塊（各層並列）、C3 通路獲利結構表（Σ 品類商品毛利 − 未分攤的通路費用 − 廣告費 ＝ 通路扣廣告後貢獻）；X2 通路 × SKU 重排、X4 週 × 品類、佔比延後／B 只做 X1 與 X3／C 全部含 X2、X4 | **A**。每一項都能用 `analyzeProducts` 對帳到分（`understand-item4-perspectives.md:118-124`、`:307-327`）；C3 用恆等式把「為什麼只到商品毛利」在畫面上說清楚（`:235`）。X2、X4 各要再加一張主層圖與一個 B 級函式，等 H9 回饋 | V42-3、V42-4 | |
+| D-V42-5 | 分析視角放哪裡（U5） | A 「商品毛利」頁加視角切換（通路 × 商品、品類、SKU 跨通路合計、交叉表、綜合），只渲染目前的視角、每個視角各有 SSR 狀態；by 通路維持在通路健檢；範圍（群組、單一通路）只在期間列／B 新增第 8 頁「分析視角」／C 只在期間列加視角 | **A**。頁名本身就把「到商品毛利為止」說出來，與 `docs/DATA_CONTRACT.md:47` 一致；不碰側欄、影片、手機「更多」與約 12 個七頁清單（`understand-workbench-budgets.md:26-28、65-72`）。B 讓 30 張基準與 3 支影片重拍、手機「更多」永久 3 列。C 違反 D-7（期間列只設期間與範圍），且 B1、B2 首屏餘裕 0 px（`:50-51`）。五個視角都掛載再隱藏會讓 B9、TBT 與 CL-9 同時失守（`:72`），所以只渲染目前的視角 | V42-3、V42-4 | |
+| D-V42-6 | 本輪範圍與版本號 | A **v4.2.0**：通路設定、群組與單一通路層、品類／SKU 視角、交叉與綜合、匯出、說明更新一輪做完／B v5.0.0：把備份格式變動視為破壞性變更／C 拆兩輪：v4.2.0 只做通路（V42-0 到 2b），v4.3.0 做視角 | **A**。新增使用者看得到的功能屬次版號（D-V41-1 的理由）；備份加選填鍵有 V4-7c 的先例（`understand-critic.md:23`），不需要主版號；D-V41-29 已把 4.2.0 留給這一輪。拆兩輪會讓說明頁與媒體重拍兩次。時間不夠時用 D-V42-7 的切線，不改版本號 | V42-0、V42-6 | |
+| D-V42-7 | MVP 切線 | A 全部 8 批／B 底線＝V42-0、1、2a、3、5（只做說明頁部分）、6（依序砍 V42-5 的匯出部分、V42-2b 群組合計列、V42-4 交叉與綜合；砍掉的批次對應的說明步驟一起延後，底線保留的功能（通路設定、群組範圍、品類與 SKU 視角）的說明步驟與截圖仍在 V42-5 做，被改到的既有截圖仍每批重拍）／C 只做通路（V42-0 到 2b、V42-5 的說明頁部分、6） | **A 為目標，B 為底線**。B 已滿足原話的「客製化通路」「再多一層的單一通路分析」「by 通路／品類／SKU」，而且上線時說明頁與工作台同步（新功能的說明步驟全部在 V42-5，砍掉整批會讓底線功能上線時沒有說明）；交叉與綜合在後面才砍。請回覆接受這個砍的順序，或指定別的 | V42-2b、4、5 | |
+| D-V42-8 | 通路設定放哪裡 | A 資料來源頁 `DataWorkspace` 加「通路設定」區（`<details>` 收合，每個通路一列：顯示名稱、群組、順序）／B 匯入精靈第 3 步／C 兩者 | **A**。示範資料與還原備份都不經過精靈；資料來源頁已是隨頁載入的 chunk（`understand-workbench-budgets.md:19`），DOM 餘裕 1,410 個節點（`:49`）；精靈第 3 步固定可見控制 11 個、預算 12 個，新欄位只能放收合區（`understand-item3-channel-model.md:59-61`） | V42-1；畫面基準 09；說明頁 `data` 功能區 | |
+| D-V42-9 | 通路設定的保存方式（U6） | A v5 信封加選填 `payload.channel_settings`（V4-7c `active.imported_at` 的先例；沒有設定時不寫這個鍵）／B 升 `profitlens-workspace-v6`／C 只在本次工作階段（React state）／D C 加 opt-in 的 IndexedDB 記憶 | **A**。兩條路舊版本都拒收帶設定的備份（`understand-critic.md:23`），但 A 只有帶設定的備份才受影響，示範與 golden 的匯出位元組與 v4.1.2 相同、沒設定的備份舊版本照常讀得懂（`understand-item3-channel-model.md:185-190`）；B 讓所有新備份都被舊版本拒收，另要改 `whats-new.ts` 與 v1 到 v6 的還原矩陣。C、D 讓設定帶不走。`docs/RELEASES.md` 寫一句相容提示。**「沒有設定」的定義**：示範別名是由 `dataset_id` 推出的隱含預設，永遠不寫進 `channel_settings`；`channel_settings` 只在使用者的設定與預設有差（任一 `label`、`group`、`order` 非預設）時才寫，寫出前先與預設比對、去掉等於預設的欄位（V4-7c「正規化不出值就不寫鍵」的做法，`src/application/workspace-backup.ts:328-337`）；V42-1 的 `tests/backup-schema-v5.test.ts` 加「示範資料未改設定時備份文字逐位元組等於 v4.1.2」 | V42-1、V42-6 | |
+| D-V42-10 | 群組在期間列怎麼選；範圍是子集但沒有對應群組時怎麼顯示 | A 同一個原生 `<select>`：「全部通路」在前，每個群組一個 `<optgroup>`（群組本身是組內第一個選項，之後是成員通路），沒有群組的通路放最後一組「未分組」；沒有任何群組時與現在完全一樣。範圍集合不等於任何群組、全部或單一通路時（還原備份、改了設定），選單顯示只讀選項「{n} 個通路」，期間摘要列出成員／B 兩個 `<select>`（群組、通路）；子集自動改回全部通路 | **A**。行高不變，B1、B2 首屏 0 px 餘裕不受影響（`understand-workbench-budgets.md:95`）；既有 E2E 用通路代碼驅動這個選單，不用改（`understand-item3-channel-model.md:127-128`）。B 在 390 的底部面板多一列；自動改回全部通路會在還原備份時悄悄改掉使用者存的範圍，待辦與會議的引用會對不上（`understand-critic.md:105`） | V42-2a | |
+| D-V42-11 | 群組合計列出現在哪些地方 | A G4 精簡表、通路健檢與會議的通路寬表各加群組合計列；週會摘要另加選填 `groups` 欄位（群組 id、成員代碼、兩期 domain 合計）只給畫面與人讀匯出用，`channels` 陣列與 CSV 位元組不變；長條圖不混層／B 也把 G4 長條圖改成群組層／C 不加群組合計列，只有群組篩選 | **A**。群組合計列是 domain 子集的輸出（A 級，`understand-item3-channel-model.md:34-40`），在元件內懶算、不進 `createSnapshot`（`:262-264`）。週會摘要的 `channels` 陣列（`src/application/manager-summary.ts:174`）直接寫進 CSV（`:285-290`），群組名進了那個陣列就會進 CSV 的 `channel` 欄，違反 D-V42-15，所以用另一個欄位。B 讓 X38 相關斷言要改（`:175-177`）並動示範資料的 G4 基準；C 讓「全部通路」畫面看不到群組 | V42-2b | |
+| D-V42-12 | 群組與品類都不開 domain；群組層的明說限制 | A 接受並明說：群組沒有「扣廣告後為負」規則卡（`NEGATIVE_CHANNEL_CM` 只對 `kind "channel"`）、試算仍單一通路、目標只對全部通路或單一通路配對；品類與 SKU 的數字只看、可追溯，不進規則、待辦、會議、AI；限制句放「要注意」與說明頁／B 開禁區：`Scope.kind "group"`、`Scope.kind "category"`、群組規則碼、`targets.csv` 群組鍵、`docs/SCENARIOS.md` | **A**。B 要動 `src/domain`、`docs/METRICS.md` 或 `docs/SCENARIOS.md`，白名單從空變非空，禁區五條命令要重寫（`understand-governance.md:187-189`）；B 是另一輪。限制的事實：`understand-item3-channel-model.md:266-274`、`understand-item4-perspectives.md:198-200` | A 影響文案；B 影響整個禁區規則 | |
+| D-V42-13 | 公開示範是否展示自訂通路（U10） | A 示範資料不預設群組，顯示名稱維持「官網 · DTC」「平台 · MARKETPLACE」（由 `dataset_id` 推出的隱含預設，不寫進 `channel_settings`）；「通路設定」區在示範資料上照常可用；說明頁與測試用 `tests/fixtures/synthetic-4-channel`（D-V41-21 已允許）／B 示範資料預設兩個群組（自有通路 ⊃ DTC、電商平台 ⊃ MARKETPLACE，只是標籤）／C F15 `fixtures/demo_tw`（官網／蝦皮／momo） | **A**。B 的 1 對 1 分組示範不出什麼，又讓 01 到 09 四尺寸全部重拍（`understand-item3-channel-model.md:325-327`）。C 要使用者提供商品與檔期設定、開 `fixtures/*` 白名單，而且示範資料由 `src/app/api/datasets/[id]/route.ts` 的寫死對照表提供，第五條邊界命令會不為空（`understand-critic.md:97-101`）；C 等材料到齊另開決定，做成第二份示範資料 | V42-1（示範資料的預設設定）、V42-5（截圖） | |
+| D-V42-15 | 匯出 | A 第一批只做畫面；人讀的匯出（Excel 範圍文字、PPT、一頁摘要、週會摘要、會議紀錄）用顯示名稱與群組名，CSV 的 `channel` 欄、JSON、AI 快照、備份的 `active.filters` 維持通路代碼；Excel「版本與來源」加「通路設定」對照列（只加列）；Excel 新工作表 `categories`（品類桶、交叉格、C3）是 V42-5 的選配；不加品類 CSV／B 同時加品類 CSV（下載集合 5 種會變）／C 匯出全部維持代碼 | **A**。讀匯出的人看到的和畫面一樣，對照列讓代碼對得回來；下載集合恰好 5 種是 `network-log.spec` 的硬斷言（`understand-workbench-budgets.md:61`）；D-V4-13 前例：CSV、JSON 不加欄（`understand-governance.md:159`） | V42-1（對照列）、V42-5 | |
+| D-V42-18 | 空白品類 | A 成「未填」桶：固定排最後、計入合計、來源是它的銷售列；篩選選單維持不列空白（`docs/DECISIONS.md:70-76`）／B 排除，並寫「未填品類另列」 | **A**。空白品類是合法資料（`understand-item4-perspectives.md:329-330`），排除會讓 Σ 桶不等於通路合計 | V42-3 | |
+| D-V42-23 | 人工關卡 H8、H9 | A 兩個關卡各一次 preview：H8 通路設定、兩層選單、範圍文字與「要注意」的限制句（V42-2a 後）；H9 分析視角、邊界句與群組合計列（V42-4 後；群組合計列在 V42-2b 才做，V42-2a 的 preview 看不到，所以併入 H9）；各約 30 分鐘；擋 v4.2.0 正式上線、不擋批次；H6 加 T7「把工作台切到一個群組」、T8「在商品毛利找到品類視角並說出它到哪一層」／B 合成一次 preview（V42-5 後）一起看／C 不設，用本機看 | **A**。通路設定的做法會決定後面三批的範圍文字與群組合計列，早一點看省得重做；邊界句代表對外的說法，只有使用者能確認（期望落差是第 4 項的首要風險）。兩次 preview 各需要當次同意 push。H6 仍待人工，加題不擋上線 | V42-2a、V42-4、V42-6 | |
+
+## 需要回覆 B：技術做法（7 件；可以直接回覆「依建議值」）
+
+| 代號 | 事項 | 選項 | 建議 | 影響批次 | 決定 |
+|---|---|---|---|---|---|
+| D-V42-14 | 通路的顯示名稱怎麼傳到畫面與匯出的每一處 | A `createSnapshot` 加第 4 個選填參數 `settings`，解析結果放進 `WorkspaceSnapshot.channel_names`，10 個呼叫點都傳入 `Active.channel_settings`／B 名稱不進快照，解析器由 `Active` 經 props 或 context 傳到元件與匯出函式，`createSnapshot` 不改 | **A**。畫面與匯出讀到的名稱都來自同一份快照，既有字串逐字不變。細節：`createSnapshot(dataset, filters, hash, settings?)`；repo 有 10 個呼叫點（`src/components/dashboard.tsx:277、341、362`、`src/components/meeting-page.tsx:95`、`src/components/multi-scenario-workbench.tsx:56`、`src/application/action-workspace.ts:143`、`src/application/workspace-backup.ts:245、446、508`、`src/application/review-session.ts:113`），其中 7 個不在 dashboard（試算頁的單一通路快照、會議重算、備份還原、待辦與會議的來源重算），PRD §3.4 逐一規定每處傳入 `Active.channel_settings`，備份還原在 `restoreV4` 讀出 `payload.channel_settings` 之後才建快照；`copy.ts` 的 `channelLabel`／`channelsLabel`／`scopeLabel`／`categoryLabel` 改收解析器，示範別名變成 `synthetic-demo*` 的預設解析器；`filter_hash` 只雜湊 `report.scope`、`dataset_hash` 不受影響（`understand-item3-channel-model.md:197-200、286-290`）。V42-1 的單元測試加「試算頁單一通路快照與還原後快照的範圍文字等於設定的顯示名稱」。B 不碰快照，但約 170 處呼叫都要多傳一個參數，匯出函式的簽章全部要改 | V42-1 | |
+| D-V42-16 | 新數字只在應用層分組，不碰財務核心 | A 允許 B 級分組模組（`product-groups.ts`、`channel-groups.ts`），每個函式一個版本常數、手算 golden、與 domain 對帳；C 級禁止；禁區白名單維持空／A′ 只用 A 級（每格呼叫 `analyzeProducts`） | **A**。既有做法，不開禁區。細節：`product-groups.ts`＝`product-groups-v1`（一趟分桶、domain `aggregateSales` 加 `calculateMetrics`、立刻投影到 `PRODUCT_METRICS`）、`channel-groups.ts`（群組合計，A 級呼叫 `aggregatePeriod`）；前例 `channel-weeks-v1`（`understand-item4-perspectives.md:126-129`）；A′ 做不出空白品類的「未填」桶（`analyzeProducts` 對 `category: ""` 丟錯，`:135`），而且每格一次呼叫在 8 通路 × 12 品類 × 2 期是 192 次，390 節流後會吃掉「切到商品毛利」的餘裕（`understand-critic.md:85`）。`aggregateSales` 的費用欄是 `0n`，不投影會漏出假貢獻（`understand-item4-perspectives.md:34-36`），所以投影在同一個函式內完成、回傳型別只有 `ProductMetrics` | V42-2b、V42-3 | |
+| D-V42-17 | 交叉表用一般的資料表呈現，不用熱表配色 | A `ChartDataTable` 表模式：格是 number-link、負值格用既有 `unfavorable` 樣式、真正的 0 畫 0／B C28 `HeatTable` matrix（兩階只標不利、1 個 Tab 停留點；要把熱表 token 開放給 X1） | **A**。和既有資料表一致，不新增 token 用途。細節：熱表 token 維持「只用在 G11、G21」、類別色不用；`HeatMatrix` 的空格「不畫按鈕」對真正的 0.00 金額不對（`understand-item4-perspectives.md:162-163`）；要強調不利格時 B 是備案 | V42-4 | |
+| D-V42-19 | 品類格的「計算與來源」不畫通路的四層階梯 | A `EvidenceSelection`、`LadderEvidence` 加選填 `category?: string`，`ladderMetrics` 在有值時回 null；SKU 桶沿用既有 `sku` 欄位／B 加 `productLevel?: true` 一個旗標 | **A**。品類數字下面不會出現通路的費用與廣告。細節：`ladderMetrics` 在單一通路、同期間、沒有 `sku` 時會畫出整個通路的四層階梯（`understand-item4-perspectives.md:186-191`）；`category` 同時給 `scopeLabel` 用；`tests/evidence-ladder.test.ts` 既有輸出不變（新欄位選填） | V42-3 | |
+| D-V42-20 | 首頁首載大小的上限多給 8 KB（現在只剩 749 bytes） | A 程式全部隨頁載入、字串留在 `labels.zh-TW.ts`，V42-0 重量後門檻＝實測＋8,192 bytes／B 新字串放第三個檔只給隨頁載入的面板 import，門檻＝實測＋2,048／C 門檻直接改成 545,397 | **A**。首頁最多多約 1.6%，每批仍看得出成長。細節：B5 的 545,397 照舊；`SPLIT_SENTINELS` 加新面板的根 testid、`GUIDE_SENTINELS` 仍 0；每批在驗收文件列首載差額的組成；現在只剩 749 bytes（`understand-workbench-budgets.md:45`），V41-1 的 3 條字串加 4 個連結實測 260 到 275 bytes（`:65`；`understand-critic.md:86`），v4.2 估 150 到 250 條新字串，+1,024 做不到。B 破壞 D-V41-12「中文只在兩個檔」，`lookupUiRef` 只對 `labels` 解析 `{ui:}`（`understand-workbench-budgets.md:65`），五個掃描工具都要改。C 失去逐批預算。8,192 是估計，V42-3 量到超過七成就提前回報並改走 B | V42-0 起 | |
+| D-V42-21 | 手機效能量測加第六步「商品毛利切到品類視角」 | A 既有五步門檻不變，加第六步，在引入它的那一批量三次取中位數當基準、照 D-V4-36 定門檻／B 不加第六步，只記錄 | **A**。不加閘門就看不到新視角的成本。細節：「切到商品毛利」量的是預設視角；第六步「商品毛利切到品類視角」（或交叉表）門檻＝max(中位數 × 1.1, 中位數＋50 ms)（D-V4-36），判定照 D-V4-47；非預設視角的 B9 以首批實測為基準、之後斷言基準＋1,500；報告裡的時間都是未節流的 Node（16 次 `analyzeProducts` 約 20 ms，`understand-item4-perspectives.md:334-335`；`understand-critic.md:85`），390 節流的數字要在首批實測 | V42-3 或 V42-4 起 | |
+| D-V42-22 | 新字串放在哪些鍵；既有字串一字不改 | A 九個前綴 `V42_NEW_KEY_PREFIXES`（新字串跟著既有分組放），V42-0 從 v4.1.2 取第三份字串快照／B 單一前綴 `shell.channelsV42.`；快照從 v4.1.1 取並對 V41-6 改的 key 開例外 | **A**。既有字串一字不改，三份快照逐鍵逐字比對。細節：前綴＝`data.channelSettingsV42.`、`shell.periodBarV42.`、`shell.scopeV42.`、`overview.channelsV42.`、`diagnosis.channelsV42.`、`meeting.channelsV42.`、`products.perspectivesV42.`、`exports.v42.`、`storage.v42.`（說明頁新文字仍在 `guide.`）；V42-0 從 **v4.1.2**（V41-6 上線後）取 `verification/revamp-v42/labels-v41.flat.json`（含 `guide.zh-TW.ts`）；`LABEL_GROUPS` 維持 24 組；字串跟著分組放，labels-structure 的分組檢查與 copy-density 的分頁計數才對得上；V41-6 改了 `shell.guideV41.entry`、`homeHint` 與部分說明頁字串，從 v4.1.1 取會立刻失敗，例外清單又會跟著 V41-6 的實際改動變（`understand-governance.md:270`） | V42-0 | |
+
+## 預設沿用（8 件，不需回覆）
+
+沿用既有做法或已成事實，不擋任何批次；你想改時再提出，改了就在 `docs/DECISIONS.md` 記一筆。
+
+| 代號 | 事項 | 預設 | 理由 | 影響批次 |
+|---|---|---|---|---|
+| D-V42-24 | 工作分支 | `revamp/v4.2` 自 `origin/main`（v4.1.2 發布 commit）開出；不 push（push 會建 preview，視同部署） | 與 D-V41-2 同理；本機 `main` 停在 `59e6f41`，不可用來開分支或比對（`understand-governance.md:395`） | V42-0 |
+| D-V42-25 | 禁區與邊界的 diff 基準 | 五條原樣沿用（`625bfa5` 兩條、`82b70df` 一條、`git status --porcelain` 一條、`872662d` 一條）與 commit 後兩條；白名單為空；另加一條只給驗收文件對帳用的新增檔清單 `git diff --stat --diff-filter=A <前一批 commit> HEAD -- src/application tests`（不是閘門） | 新數字全部走 `src/application` 的 A 級呼叫與 B 級模組，不需要放寬（`understand-governance.md:10、152`） | 每批 |
+| D-V42-26 | 部署策略 | V42-2a 後、V42-4 後各一次 preview 給 H8、H9；V42-6 才上正式站；每一次實際 push 與部署仍當次同意 | 同 D-V41-24；策略不取代當次同意（`understand-governance.md:326-336`） | V42-2a 之後、V42-4 之後、V42-6 |
+| D-V42-27 | 分析事件與公開站邊界 | 不新增事件；`src/app/api/*`、`vercel.json`、`src/application/analytics.ts` 對 `872662d` 不改；使用者輸入的名稱與群組只留本機，AI 快照與 `/api/*` 的負載維持通路代碼 | 同 D-V41-23；通路設定與視角切換是本機狀態；名稱是新的使用者輸入，`docs/AI_CONTRACT.md` 不改（`understand-critic.md:104`） | 每批 |
+| D-V42-28 | 通路數與群組數的畫面上限 | 群組合計列與交叉表沿用 ≤ 8 個通路的規則（G7b、G10、G11 的同一上限），超過只留清單式表、不懶算群組合計列；交叉表品類欄 ≤ 12（含「未填」），格數 ≤ 736 | 與既有圖表一致（`understand-item3-channel-model.md:163-173`）；1,000 個通路是工作量上限，不是畫面上限 | V42-2b、V42-4 |
+| D-V42-29 | 與 V41-6 的先後 | v4.2 基準＝v4.1.2：V41-6 完成、上線、tag 後才開 V42-0（labels 快照、64 張畫面基準、launch-check 13＋19 項都以它為準） | V41-6 改到側欄與說明頁，基準沒定就開工會讓 64 張與三份快照都要重做（`understand-governance.md:270`）；V41-6 的部署同意另案 | V42-0 |
+| D-V42-30 | 範例檔與入口改名 | 由 V41-6（v4.1.2，D-V41-26 到 30）處理，不在 v4.2 | 使用者 2026-10-15 同一則訊息的第 1、2 項已開修正批（`docs/revamp-v4.1/06_BATCHES.md` V41-6） | — |
+| D-V42-31 | 公開的 `docs/ORDER_AGGREGATION.md` 指向公開使用者拿不到的 `scripts/aggregate_orders.py`（U11） | v4.2 不處理（C）；要處理時另開決定：A 在文件加一句來源說明（腳本在 repo 內、公開站不提供）、B 把腳本放進 `public/` 供下載 | 與 v4.2 的兩項功能無關；V41-6 剛把這個檔列入正式站的 public-file 檢查（GET 200、位元組與 repo 的 `public/` 全等，`scripts/launch-check.mjs:170-178`），A 要同批改公開檔並重跑 launch-check，B 讓公開站多一個下載項、要改 launch-check 的清單；調查報告把它列為範例檔修正暴露的產品缺口（`understand-critic.md:84、126`） | — |
+
+## 需要使用者提供的材料
+
+- **D-V42-1 的補充回答**：是否已用自己的 CSV 匯入過多通路資料。沒有的話，建議先用 V41-6 修好的範例檔（通路「官網」）試一次，再決定群組層的優先順序；設定模組仍可做，但批次順序可能改。
+- **D-V42-13＝C 時**：台灣化示範資料的商品名稱與檔期設定（F15，D-V3-20）；沒有就是 A。
+- **D-V42-31（U11）**：`ORDER_AGGREGATION.md` 指向公開使用者拿不到的腳本，v4.2 不處理；要處理時請回覆 A（文件加來源說明句）或 B（腳本放 `public/`），另開決定（與 V41-6 的範例檔修正相關）。
+- **H8、H9**：各約 30 分鐘看 preview 並回覆確認或修改；H9 時請特別看邊界句的用字（D-V42-3）與群組合計列的用字（D-V42-11）。
+- **H6（沿用 v4）**：受試者與盲評者；本輪可加 T7、T8（D-V42-23）。
+- **每一次部署**（含 preview，含 push 任何分支）的當次明確同意；Skew Protection 沒開（D-V41-16），每次部署後仍開著舊版的分頁切到沒載過的頁會顯示「再試一次」。
+- **`ffmpeg`**：D-V41-7＝A 已允許在重錄影片時使用本機工具；v4.2 只在側欄或影片經過的畫面改變時才重錄，不另問。
+- **仍待提供、不在本輪範圍**：F16 去識別化實檔；D6 訂單檔與訂單指標（Phase 2）。
