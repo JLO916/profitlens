@@ -83,12 +83,13 @@ const JARGON_EXEMPT = { JSON: path => path.startsWith("exports.downloads.") };
 /**
  * 只在特定路徑下計入的黑名單詞（與 JARGON_EXEMPT 相反：那是在範圍內不計，這裡是只在範圍內計），格式同 BLACKLIST 的 [顯示名, 正規式]，再加範圍。
  * V4-0a（docs/revamp-v4/GLOSSARY.md、PRD §8.6）：商品頁只寫「商品毛利為負」，「賠錢」「虧損」在 products.chartsV4.* 計入同義詞（blacklistSynonym）。
+ * V42-0（docs/revamp-v4.2/06_BATCHES.md V42-0 第 3 項、D-V42-22）：商品頁品類／SKU 視角的字串放在 products.perspectivesV42.*，同一條規則一併涵蓋（V42-0 本身沒有這個前綴的鍵，違規 0）。
  * 不放進 BLACKLIST：BLACKLIST 的詞全站都算（tests/data-workspace-v3.test.tsx 直接拿它掃新鍵），而「虧損」在 format.turnedLoss 等既有字串是正確用詞。
  */
 const SCOPED_BLACKLIST = {
   synonym: [
-    ["賠錢（商品頁）", /賠錢/g, path => path.startsWith("products.chartsV4.")],
-    ["虧損（商品頁）", /虧損/g, path => path.startsWith("products.chartsV4.")],
+    ["賠錢（商品頁）", /賠錢/g, path => path.startsWith("products.chartsV4.") || path.startsWith("products.perspectivesV42.")],
+    ["虧損（商品頁）", /虧損/g, path => path.startsWith("products.chartsV4.") || path.startsWith("products.perspectivesV42.")],
   ],
   /**
    * V41-0（docs/revamp-v4.1/01_PRD.md §3.4、D-V41-11）：說明頁 guide.* 不用最高級，計入 blacklistTone。
@@ -112,8 +113,9 @@ export const PLACEHOLDER_VARIANT_SUFFIXES = ["Aria", "Short", "Long", "Approx", 
  * V4-0a（PRD §4.0、§8.6）：加上圖表標題 <分組>.chartsV4.<圖>.title（含 title.<情境> 的子鍵），每個子句 ≤ 14 字；副標、欄名、資料表不算標題。
  * V41-0（docs/revamp-v4.1/06_BATCHES.md V41-0 第 4 項）：加上說明頁的功能區標題 guide.areas.<區>.title 與步驟標題 guide.areas.<區>.steps.<步>.title；
  * 說明頁的段落標題 guide.sections.* 已由既有的 ^[^.]+\.sections\.[^.]+$ 涵蓋。
+ * V42-0（docs/revamp-v4.2/06_BATCHES.md V42-0 第 3 項、D-V42-22）：加上商品頁視角標題 products.perspectivesV42.<視角>.title（含 title.<情境> 的子鍵），寫法同 chartsV4；V42-0 本身沒有這個前綴的鍵。
  */
-export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/, /^[^.]+\.chartsV4\.[^.]+\.title(\.|$)/, /^guide\.areas\.[^.]+\.title$/, /^guide\.areas\.[^.]+\.steps\.[^.]+\.title$/];
+export const L1_KEY_PATTERNS = [/^rules\.[^.]+\.headline$/, /^[^.]+\.sections\.[^.]+$/, /^shell\.nav\.[^.]+\.headline$/, /^[^.]+\.buttons\.[^.]+$/, /^[^.]+\.chartsV4\.[^.]+\.title(\.|$)/, /^guide\.areas\.[^.]+\.title$/, /^guide\.areas\.[^.]+\.steps\.[^.]+\.title$/, /^products\.perspectivesV42\.[^.]+\.title(\.|$)/];
 export const L1_MAX_CJK = 14;
 
 const ARROW_RE = /[→↗▸▾]/g;

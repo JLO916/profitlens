@@ -42,12 +42,13 @@ import { pageStates } from "./helpers/page-states";
 import { yoyInput } from "./helpers/yoy-dataset";
 
 /*
- * testid 基準（V3-0 建立，PRD v3 §11.7、§6.4 M1；V4-0a 擴成三份，PRD v4 §8.6；V41-0 擴成四份，docs/revamp-v4.1/06_BATCHES.md V41-0 第 5 項）：比對「實際渲染」出來的 data-testid，不是只 grep 原始碼。
- * 四份清單的刪除數都必須為 0：
+ * testid 基準（V3-0 建立，PRD v3 §11.7、§6.4 M1；V4-0a 擴成三份，PRD v4 §8.6；V41-0 擴成四份，docs/revamp-v4.1/06_BATCHES.md V41-0 第 5 項；V42-0 擴成五份，docs/revamp-v4.2/06_BATCHES.md V42-0 第 4 項）：比對「實際渲染」出來的 data-testid，不是只 grep 原始碼。
+ * 五份清單的刪除數都必須為 0：
  *   verification/revamp-v3/testids-v2.txt（v2 基準，228 列）、verification/revamp-v4/testids-v3.txt（v3.0.0 基準，V4-0a 三步產生）、
  *   verification/revamp-v4/testids-v4-added.txt（V4-1 到 V4-11 追加的 v4 新 testid，多一個「批次」欄）、
- *   verification/revamp-v41/testids-v41-added.txt（V41-1 起每批追加本批新增的 testid，格式同 v4 新增清單；V41-0 建立時只有表頭，空清單也要通過格式檢查）。
- * - 前兩份每列「testid<TAB>來源<TAB>說明」；v4、v41 新增清單每列「testid<TAB>來源<TAB>批次<TAB>說明」。
+ *   verification/revamp-v41/testids-v41-added.txt（V41-1 到 V41-5 追加的 v4.1 新 testid，格式同 v4 新增清單）、
+ *   verification/revamp-v42/testids-v42-added.txt（V42-1 起每批追加本批新增的 testid，格式同 v4、v41 新增清單；V42-0 建立時只有表頭，空清單也要通過格式檢查）。
+ * - 前兩份每列「testid<TAB>來源<TAB>說明」；v4、v41、v42 新增清單每列「testid<TAB>來源<TAB>批次<TAB>說明」。
  *   來源 ssr：本檔以 renderToStaticMarkup 渲染 golden／示範資料的各頁狀態後必須出現（嚴格比對；少一個就失敗）。
  *   來源 e2e：只在瀏覽器互動後才出現（例如 #validation、開啟確認框），由 verification/revamp-v3/collect-testids.spec.ts（v2 清單）與
  *            verification/revamp-v4/collect-testids.spec.ts（v3 清單，設定檔 verification/revamp-v4.config.ts）在真實瀏覽器收集；
@@ -207,12 +208,13 @@ async function scenarios(): Promise<Record<string, string>> {
 }
 
 type Row = { id: string; source: "ssr" | "e2e" | "cond"; note: string; batch?: string };
-/** 四份清單：v2 與 v3 是三欄；v4、v41 新增清單多一個批次欄（第三欄，batchPattern 是允許的批次）。minRows 是格式檢查的列數下限（新增清單可以是空的）。 */
+/** 五份清單：v2 與 v3 是三欄；v4、v41、v42 新增清單多一個批次欄（第三欄，batchPattern 是允許的批次）。minRows 是格式檢查的列數下限（新增清單可以是空的）。 */
 const BASELINES = [
   { label: "v2", file: BASELINE, minRows: 130, batchColumn: false, batchPattern: null },
   { label: "v3", file: resolve("verification/revamp-v4/testids-v3.txt"), minRows: 300, batchColumn: false, batchPattern: null },
   { label: "v4 新增", file: resolve("verification/revamp-v4/testids-v4-added.txt"), minRows: 0, batchColumn: true, batchPattern: /^V4-(?:[1-9]|1[01])[ab]?$/ },
   { label: "v41 新增", file: resolve("verification/revamp-v41/testids-v41-added.txt"), minRows: 0, batchColumn: true, batchPattern: /^V41-[1-5][ab]?$/ },
+  { label: "v42 新增", file: resolve("verification/revamp-v42/testids-v42-added.txt"), minRows: 0, batchColumn: true, batchPattern: /^V42-[1-6][ab]?$/ },
 ] as const;
 type Baseline = typeof BASELINES[number];
 function baseline(list: Baseline = BASELINES[0]): Row[] {
@@ -240,7 +242,7 @@ function sourceProducers(): { literals: Set<string>; prefixes: string[] } {
   return { literals, prefixes };
 }
 
-describe("testid 基準（v2、v3、v4 新增、v41 新增四份）：實際渲染的 testid 一個都不能少", () => {
+describe("testid 基準（v2、v3、v4 新增、v41 新增、v42 新增五份）：實際渲染的 testid 一個都不能少", () => {
   let rendered: Map<string, string[]>;
   beforeAll(async () => {
     rendered = new Map();
@@ -249,13 +251,13 @@ describe("testid 基準（v2、v3、v4 新增、v41 新增四份）：實際渲�
     if (dump) writeFileSync(dump, JSON.stringify(Object.fromEntries([...rendered].sort(([a], [b]) => a.localeCompare(b))), null, 2));
   }, 60_000);
 
-  it.each(BASELINES)("$label 清單格式正確：每列 testid＋來源（ssr／e2e／cond）（v4、v41 新增清單另有批次欄），沒有重複", list => {
+  it.each(BASELINES)("$label 清單格式正確：每列 testid＋來源（ssr／e2e／cond）（v4、v41、v42 新增清單另有批次欄），沒有重複", list => {
     const rows = baseline(list);
     expect(rows.length).toBeGreaterThanOrEqual(list.minRows);
     for (const row of rows) {
       expect(["ssr", "e2e", "cond"], `${list.label} ${row.id}`).toContain(row.source);
       expect(row.id, `${list.label} testid 不得含空白`).toMatch(/^\S+$/);
-      if (list.batchPattern) expect(row.batch, `${list.label} ${row.id} 的批次欄（v4 新增：V4-1 到 V4-11；v41 新增：V41-1 到 V41-5；可帶 a／b）`).toMatch(list.batchPattern);
+      if (list.batchPattern) expect(row.batch, `${list.label} ${row.id} 的批次欄（v4 新增：V4-1 到 V4-11；v41 新增：V41-1 到 V41-5；v42 新增：V42-1 到 V42-6；可帶 a／b）`).toMatch(list.batchPattern);
     }
     expect(new Set(rows.map(row => row.id)).size).toBe(rows.length);
     // 表頭註解寫明格式與來源定義（空清單也一樣）。
@@ -273,13 +275,15 @@ describe("testid 基準（v2、v3、v4 新增、v41 新增四份）：實際渲�
     expect(missing, `${list.label} 原始碼已不產生：${missing.join(", ")}`).toEqual([]);
   });
 
-  it("四份清單互相一致：v2 的每個 testid 都在 v3 清單上（v3 對 v2 刪除 0）；v4 新增清單不重複 v3 清單已有的 testid；v41 新增清單不重複 v3 與 v4 新增清單", () => {
-    const [v2, v3, added, addedV41] = BASELINES.map(list => baseline(list));
+  it("五份清單互相一致：v2 的每個 testid 都在 v3 清單上（v3 對 v2 刪除 0）；v4 新增清單不重複 v3 清單已有的 testid；v41 新增清單不重複 v3 與 v4 新增清單；v42 新增清單不重複 v3、v4 與 v41 新增清單", () => {
+    const [v2, v3, added, addedV41, addedV42] = BASELINES.map(list => baseline(list));
     const v3Ids = new Set(v3.map(row => row.id));
     const v4AddedIds = new Set(added.map(row => row.id));
+    const v41AddedIds = new Set(addedV41.map(row => row.id));
     expect(v2.filter(row => !v3Ids.has(row.id)).map(row => row.id), "v2 有、v3 清單沒有").toEqual([]);
     expect(added.filter(row => v3Ids.has(row.id)).map(row => row.id), "v4 新增清單裡已在 v3 清單的 testid").toEqual([]);
     expect(addedV41.filter(row => v3Ids.has(row.id) || v4AddedIds.has(row.id)).map(row => row.id), "v41 新增清單裡已在 v3 或 v4 新增清單的 testid").toEqual([]);
+    expect(addedV42.filter(row => v3Ids.has(row.id) || v4AddedIds.has(row.id) || v41AddedIds.has(row.id)).map(row => row.id), "v42 新增清單裡已在 v3、v4 或 v41 新增清單的 testid").toEqual([]);
   });
 
   it("PRD §11.7 點名的運算式與 testId 屬性來源都在清單上", () => {
