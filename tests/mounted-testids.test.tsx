@@ -657,8 +657,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const copy = labels.assist.breakevenV3;
       const overviews = loaded().filter(({ state }) => state!.panel === "overview");
       // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，V4-2 加了 overview-synthetic（4 通路合成資料），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder（示範資料）、
-      // overview-evidence-ladder-social（4 通路合成資料只選 SOCIAL），同樣檢查。
-      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic", "overview-evidence-ladder", "overview-evidence-ladder-social"]);
+      // overview-evidence-ladder-social（4 通路合成資料只選 SOCIAL），V42-0 加了 overview-many-channels（9 通路記憶體合成資料），同樣檢查。
+      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         for (const id of ["assist-breakeven-mer", "assist-breakeven-current", "assist-breakeven-previous", "assist-breakeven-note", "assist-breakeven-help", "assist-breakeven-help-trigger"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
@@ -765,8 +765,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     // ── V3-9b A（三線趨勢與下鑽）的 M1 掛載測試在此之後新增（第三線圖例、不可用原因、抽屜篩選片語各一份）──
     it("V3-9b A 總覽：趨勢圖的去年同期圖例項每個狀態一份；不可用時原因句一份（在趨勢區塊內），可用時沒有原因句、資料表多兩欄", () => {
       const overviews = states.filter(entry => entry.state?.panel === "overview");
-      // V4-2 加了 overview-synthetic（4 通路合成資料，去年同期不可用），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder、overview-evidence-ladder-social（去年同期都不可用），同樣檢查。
-      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
+      // V4-2 加了 overview-synthetic（4 通路合成資料，去年同期不可用），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder、overview-evidence-ladder-social（去年同期都不可用），
+      // V42-0 加了 overview-many-channels（9 通路記憶體合成資料，去年同期不可用），同樣檢查。
+      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         expect(ids.get("trend-legend-yoy"), name).toBe(1);
@@ -1018,7 +1019,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(element(section, 'data-testid="chart-overview-bullet-bar-mer"'), name).not.toMatch(/tabindex|<button/);
       }
       // V4-7b：overview-evidence-ladder（示範資料）與 overview-evidence-ladder-social（合成資料只選 SOCIAL，本期廣告費齊全）也畫。
-      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy", "overview-evidence-ladder", "overview-evidence-ladder-social"]);
+      // V42-0：overview-many-channels（9 通路記憶體合成資料，每天每通路廣告費 100、淨營收為正）也畫。
+      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels"]);
     });
 
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
@@ -2022,6 +2024,40 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           expect(tag, `${name} ${id}`).not.toContain("aria-current");
         }
       }
+    });
+
+    // ── V42-0 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V42-0 新增頁面狀態」錨點後；docs/revamp-v4.2/06_BATCHES.md V42-0 第 7 項、01_PRD.md §15）──
+    it("V42-0 總覽＋9 通路（overview-many-channels；PRD §15 G4 擁擠度目視）：與 diagnosis-many-channels 同一份資料；總覽頁掛載（kpi-band、channel-mix 各一份）、主層仍是 4 個圖區塊；G4 固定高 .chart-frame.sm（180 px）不隨通路數變、框內 9 根本期長條；緊湊表與資料表各 9 列、差額條 chart-overview-channels-bar-CH01…CH09 各一份", async () => {
+      const { chartHeights } = await import("@/application/chart-theme");
+      const { checkChartMarkup } = await import("../scripts/lib/chart-scan.mjs");
+      const { name, html, state } = states.find(entry => entry.name === "overview-many-channels")!;
+      const diagnosis = states.find(entry => entry.name === "diagnosis-many-channels")!;
+      expect(state!.panel, name).toBe("overview");
+      const channels = state!.active.snapshot.report.scope.channels;
+      expect(channels, name).toEqual(Array.from({ length: 9 }, (_, index) => `CH${String(index + 1).padStart(2, "0")}`));
+      // 同一個 helper（manyChannelsActive）組的資料：三個來源檔逐字相同、dataset_hash 相同。
+      expect(state!.active.input, `${name}：與 diagnosis-many-channels 的 input 相同`).toEqual(diagnosis.state!.active.input);
+      expect(state!.active.snapshot.dataset_hash, name).toBe(diagnosis.state!.active.snapshot.dataset_hash);
+      const ids = testIdCounts(html);
+      for (const id of ["kpi-band", "snapshot-sentence", "top-three", "channel-mix", "assist-kpis", "overview-advanced"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
+      expect(checkChartMarkup(html, { page: "overview" }).mainSections, `${name}：總覽主層仍是 4 個`).toEqual(["bridge-section", "profit-waterfall", "trend", "channel-mix"]);
+      // G4：固定高框 .chart-frame.sm（chartHeights.sm＝180）不隨通路數變，state ready；SSR 只到 ResponsiveContainer 的 initialDimension 外框（520×180，Recharts 不在 SSR 畫長條），
+      // 所以 9 根長條的實際高度要在瀏覽器量（幾何估算：(180 − 4 − 4 − 30) ÷ 9 ≈ 15.8 px 一列，容不下 8＋18＋4 的雙長條，見 verification/revamp-v42/V42-0-baseline.md）。
+      const section = element(html, 'data-testid="channel-mix"')!;
+      const frame = openTag(section, 'class="chart-frame')!;
+      expect(frame, name).toContain('class="chart-frame sm"');
+      expect(frame, name).toContain(`height:${chartHeights.sm}px`);
+      expect(frame, name).toContain('data-state="ready"');
+      expect(openTag(section, 'class="recharts-wrapper"'), `${name}：Recharts 外框是 initialDimension 的 520×${chartHeights.sm}`).toContain(`height="${chartHeights.sm}"`);
+      expect(occurrences(section, 'class="recharts-wrapper"'), name).toBe(1);
+      // 緊湊表 9 列、每列一條差額條（兩期都有值）、資料表 9 列；差額條各一份、順序＝通路順序。
+      const kv = element(section, 'class="kv channel-kv"')!;
+      expect(element(kv, "<tbody>")!.match(/<tr>/g), `${name}：緊湊表列數`).toHaveLength(channels.length);
+      expect([...kv.matchAll(/data-testid="chart-overview-channels-bar-([^"]+)"/g)].map(match => match[1]), name).toEqual(channels);
+      for (const channel of channels) expect(ids.get(`chart-overview-channels-bar-${channel}`), `${name} ${channel}`).toBe(1);
+      const details = element(section, '<details class="data-alternative"')!;
+      expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
+      expect(element(details, "<tbody>")!.match(/<tr>/g), `${name}：資料表列數`).toHaveLength(channels.length);
     });
 
   });

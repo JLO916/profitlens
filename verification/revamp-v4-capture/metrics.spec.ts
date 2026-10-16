@@ -33,6 +33,12 @@ import { FIXED_NOW, SEVEN_PAGES, calculateKeepPreset, loadDemo, navigateTo, type
 //   `/` 的 First Load JS ≤ V41_HOME_FIRST_LOAD_BASELINE＋1,024；`/` 首載 chunk 中 GUIDE_SENTINELS（只出現在 guideLabels 的字串）出現 0 次（說明文字不進工作台首載，D-V41-12＝A'）；
 //   /guide 的 First Load JS（量法同 404 框架基準）≤ V41_FRAMEWORK_BASELINE＋5,120，而且不含圖表、匯出程式與工作台的字串（GUIDE_FORBIDDEN）。
 // V41-2a 起（06_BATCHES V41-2a 第 5 項、護欄表「說明頁 First Load JS」）：GUIDE_AREAS 的每個功能區頁 /guide/{area} 同樣量法、同樣門檻與 GUIDE_FORBIDDEN，記在 v41.guideAreaFirstLoad（以路徑為鍵）。
+// V42-0 起（docs/revamp-v4.2/06_BATCHES.md V42-0 第 5 項與「護欄與棘輪時程」表；設定檔 verification/revamp-v42.capture.config.ts，CAPTURE_BATCH=V42-{n}）：v4、v4.1 的斷言與輸出鍵全部照舊，另記：
+//   v42.homeFirstLoad——`/` 的 First Load JS 對 V42-0 實測的差（常數 V42_HOME_FIRST_LOAD_BASELINE；V42-0 量完由主流程填入實測值，0 表示尚未量）；常數 > 0 時（V42-1 起）斷言 ≤ 實測＋8,192（D-V42-20＝A），
+//   同時 v41 的「≤ V41-0 實測＋1,024」改為只記錄（被 v4.2 的門檻取代，v41.homeFirstLoad.asserted 寫 false）；B5 的 545,397 照舊斷言。
+//   SPLIT_SENTINELS 併入 V42_SPLIT_SENTINELS（v4.2 面板的 testid 字面值；V42-0 是空的，V42-1 起 "channel-settings"、V42-3 起 "products-perspective"、V42-4 起 "products-perspective-cross"，由引入它的批次打開），同樣在 `/` 首載 chunk 必須為 0。
+//   非預設視角的 B9 基準（B9_PERSPECTIVE_BASELINE，商品頁各視角的 DOM 節點數）V42-0 只預留欄位（{project}.b9Perspectives，asserted false），V42-3 首批實測後填入、之後斷言 ≤ 基準＋1,500。
+//   v4.2 執行時一定要設 METRICS_OUT、FIRST_LOAD_MODULES_OUT 指到 verification/revamp-v42/V42-{n}/。
 // 執行 desktop（1440×1000）、laptop（1280×900）、mobile（390×844）三個 project；tablet 略過。所有位置是文件座標（已捲回頂端），單位 CSS px，取到 0.1。
 const batch = process.env.CAPTURE_BATCH ?? "V4-0a";
 const OUT = resolve(process.env.METRICS_OUT ?? `verification/revamp-v4/${batch}/metrics.json`);
@@ -127,6 +133,25 @@ const WORKBENCH_SENTINELS = ['"mobile-tabbar"', '"kpi-band"'] as const;
 const GUIDE_FORBIDDEN = [...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS, ...WORKBENCH_SENTINELS] as const;
 /** V41-1：說明首頁的路徑。 */
 const GUIDE_PATH = "/guide";
+/**
+ * V42-0（docs/revamp-v4.2/06_BATCHES.md V42-0 第 5 項、護欄表「`/` First Load JS」；D-V42-20＝A）：v4.1.2 在 V42-0 量到的 `/` First Load JS gzip（口徑同 firstLoadJs.gzipBytes；
+ * verification/revamp-v42/V42-0/metrics.json 的 firstLoadJs.gzipBytes）。0 表示尚未量——V42-0 的主流程跑完 capture 後把實測值填進來；常數 > 0 時（V42-1 起）門檻＝這個值＋V42_HOME_FIRST_LOAD_ALLOWANCE，
+ * 同時取代 v41 的「≤ V41-0 實測＋1,024」（v41.homeFirstLoad 仍記錄、不再斷言）。B5 的 545,397 照舊斷言。
+ */
+const V42_HOME_FIRST_LOAD_BASELINE = 0;
+const V42_HOME_FIRST_LOAD_ALLOWANCE = 8_192;
+/**
+ * V42-0（護欄表「`/` First Load JS」；CLAUDE.md「棘輪與基準」）：v4.2 隨頁載入的面板才有的 testid 字面值（帶引號，寫法同 SPLIT_SENTINELS），併入 `/` 首載 chunk 的 0 次斷言（ALL_SPLIT_SENTINELS）。
+ * V42-0 是空的；由引入該面板的批次打開：V42-1 加 '"channel-settings"'（資料來源頁的通路設定區，在 workspace-panels chunk）、V42-3 加 '"products-perspective"'（商品頁的視角切換與視角模組）、
+ * V42-4 加 '"products-perspective-cross"'（交叉表）。出現就表示 v4.2 的面板被靜態匯入首載（tests/lazy-panels.test.tsx 另從原始碼的模組圖檢查）。
+ */
+const V42_SPLIT_SENTINELS = [] as const;
+const ALL_SPLIT_SENTINELS = [...SPLIT_SENTINELS, ...V42_SPLIT_SENTINELS] as const;
+/**
+ * V42-0（護欄表「B9 DOM 節點」；D-V42-5：商品頁只渲染目前的視角）：非預設視角（商品頁切到品類、SKU 跨通路合計、交叉表、綜合）的 DOM 節點基準，鍵＝`{project}.{view}`（例如 desktop.category）。
+ * V42-0 只預留（空物件；{project}.b9Perspectives 記 asserted false）；V42-3 首批實測後填入，之後各視角斷言 ≤ 基準＋B9_ALLOWANCE（1,500）。
+ */
+const B9_PERSPECTIVE_BASELINE: Record<string, number> = {};
 
 type ScriptFile = { src: string; nomodule: boolean; bytes: number; gzip: number; symbols: Record<string, number> };
 /** 頁面 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重），逐檔下載並量未壓縮與 gzip 大小、各符號的出現次數（B5、V41-0 框架基準與 V41-1 說明頁共用）。 */
@@ -139,7 +164,7 @@ async function firstLoadScripts(request: APIRequestContext, html: string): Promi
   for (const { src, nomodule } of sources) {
     const body = await (await request.get(src)).body();
     const text = body.toString("utf8");
-    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...SPLIT_SENTINELS, ...WORKBENCH_SENTINELS, ...GUIDE_SENTINELS, GUIDE_SENTINEL_CONTROL].map(symbol => [symbol, count(text, symbol)])) });
+    files.push({ src: src.replace(/^.*\/_next\//, "/_next/"), nomodule, bytes: body.length, gzip: gzipSync(body).length, symbols: Object.fromEntries([...FORBIDDEN_SYMBOLS, ...RECORDED_SYMBOLS, ...ALL_SPLIT_SENTINELS, ...WORKBENCH_SENTINELS, ...GUIDE_SENTINELS, GUIDE_SENTINEL_CONTROL].map(symbol => [symbol, count(text, symbol)])) });
   }
   return files;
 }
@@ -162,9 +187,11 @@ async function record(path: string[], value: unknown) {
   let node = json;
   for (const key of path.slice(0, -1)) node = (node[key] ??= {}) as Record<string, unknown>;
   node[path.at(-1)!] = value;
-  const note = batch.startsWith("V41-")
-    ? "v4.1 各批量測（EC ProfitLens，revamp/v4.1；v4 的 B2、B3、B5、B9 照舊，另記 v41 首載量測）。由 verification/revamp-v4-capture/metrics.spec.ts（設定檔 verification/revamp-v41.capture.config.ts）與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v41/V41-0-baseline.md。"
-    : "PRD §2.2 B 的 v3.0.0 基準與各批量測（EC ProfitLens，revamp/v4）。由 verification/revamp-v4-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v4/V4-0-baseline.md。";
+  const note = batch.startsWith("V42")
+    ? "v4.2 各批量測（EC ProfitLens，revamp/v4.2；v4 的 B2、B3、B5、B9 與 v41 的首載量測照舊，另記 v42 的首載門檻與視角 B9 預留欄位）。由 verification/revamp-v4-capture/metrics.spec.ts（設定檔 verification/revamp-v42.capture.config.ts）與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v42/V42-0-baseline.md。"
+    : batch.startsWith("V41-")
+      ? "v4.1 各批量測（EC ProfitLens，revamp/v4.1；v4 的 B2、B3、B5、B9 照舊，另記 v41 首載量測）。由 verification/revamp-v4-capture/metrics.spec.ts（設定檔 verification/revamp-v41.capture.config.ts）與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v41/V41-0-baseline.md。"
+      : "PRD §2.2 B 的 v3.0.0 基準與各批量測（EC ProfitLens，revamp/v4）。由 verification/revamp-v4-capture/metrics.spec.ts 與 scripts/lighthouse-pages.mjs 產生；說明見 verification/revamp-v4/V4-0-baseline.md。";
   json._meta = { batch, note, clock: FIXED_NOW.toISOString(), server: "本機 production（APP_MODE=PUBLIC_DEMO、PUBLIC_DEMO=true、ENABLE_LIVE_AI=false）" };
   await mkdir(dirname(OUT), { recursive: true });
   await writeFile(OUT, `${JSON.stringify(json, null, 2)}\n`);
@@ -351,6 +378,8 @@ test("七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM �
   await record([project, "b1"], { ...b1, asserted: b1Asserted });
   const b9 = SEVEN_PAGES.map(id => ({ page: id, domNodes: (pages[id] as { domNodes: number }).domNodes, baseline: B9_BASELINE[project][id], max: B9_BASELINE[project][id] + B9_ALLOWANCE }));
   await record([project, "b9"], { allowance: B9_ALLOWANCE, pages: b9, note: "V4-1 起硬斷言：各頁 DOM 節點數 ≤ V4-0a 基準＋1,500（baseline 取自 verification/revamp-v4/V4-0a/metrics.json）" });
+  // V42-0：非預設視角的 B9 基準欄位預留（docs/revamp-v4.2/06_BATCHES.md V42-0 第 5 項）；V42-3 起切到商品頁各視角量 DOM 節點數（measured 以 view 為鍵）並對 B9_PERSPECTIVE_BASELINE 斷言。
+  await record([project, "b9Perspectives"], { baseline: B9_PERSPECTIVE_BASELINE, allowance: B9_ALLOWANCE, measured: {}, asserted: false, note: "V42-0 只預留：非預設視角（商品頁品類、SKU 跨通路合計、交叉表、綜合）的 DOM 節點數，V42-3 首批實測後填入 B9_PERSPECTIVE_BASELINE（鍵 {project}.{view}），之後各視角斷言 ≤ 基準＋1,500（D-V42-5：只渲染目前的視角）" });
   if (project === "mobile") for (const id of SEVEN_PAGES) expect.soft(scrollWidths[id], `B3 ${id}：390 寬 scrollWidth ≤ ${B3_MAX_SCROLL_WIDTH}`).toBeLessThanOrEqual(B3_MAX_SCROLL_WIDTH);
   if (meetingWideTable) expect.soft(meetingWideTable.scrollWidth, `B3 meeting（展開完整通路寬表，D-V4-60）：390 寬 scrollWidth ≤ ${B3_MAX_SCROLL_WIDTH}`).toBeLessThanOrEqual(B3_MAX_SCROLL_WIDTH);
   for (const item of b9) expect.soft(item.domNodes, `B9 ${project} ${item.page}：DOM 節點數 ≤ V4-0a ${item.baseline}＋${B9_ALLOWANCE}`).toBeLessThanOrEqual(item.max);
@@ -369,17 +398,22 @@ test("B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首�
   const symbolTotals = (list: typeof files, symbols: readonly string[]) => Object.fromEntries(symbols.map(symbol => [symbol, list.reduce((total, file) => total + file.symbols[symbol], 0)]));
   const forbidden = symbolTotals(modern, FORBIDDEN_SYMBOLS);
   const recorded = symbolTotals(modern, RECORDED_SYMBOLS);
-  const split = symbolTotals(modern, SPLIT_SENTINELS);
+  const split = symbolTotals(modern, ALL_SPLIT_SENTINELS);
   const method = "GET / 的 HTML 中 <script src> 指向 /_next/static/ 的檔案（去重）；主數字排除 nomodule（polyfills，現代瀏覽器不下載），allScripts 為含 nomodule 的總和；bytes＝未壓縮大小，gzip＝Node zlib gzipSync 預設等級；符號＝檔案內容中該字串出現的次數（子字串計數，含 displayName 與型別名稱）";
   await record(["firstLoadJs"], { scripts: modern.length, bytes: sum("bytes", modern), kib: round(sum("bytes", modern) / 1024), gzipBytes: sum("gzip", modern), gzipKiB: round(sum("gzip", modern) / 1024), gzipMax: B5_GZIP_MAX, forbiddenSymbols: forbidden, recordedSymbols: recorded, splitSentinels: split, nomoduleExcluded: files.filter(file => file.nomodule).map(file => ({ src: file.src, bytes: file.bytes, gzip: file.gzip })), allScripts: { scripts: files.length, bytes: sum("bytes"), gzipBytes: sum("gzip") }, files: files.map(({ src, nomodule, bytes, gzip }) => ({ src, nomodule, bytes, gzip })), method });
   await mkdir(dirname(MODULES_OUT), { recursive: true });
   await writeFile(MODULES_OUT, `${JSON.stringify({ batch, generatedAt: new Date().toISOString(), note: "首頁 HTML 列出的每個 chunk 檔名與 gzip 大小（供人工比對；檔名帶雜湊，每次 build 都變，不逐一斷言）。B5 門檻只看 modern 的 gzip 總和。", method, totals: { modernScripts: modern.length, modernGzipBytes: sum("gzip", modern), gzipMax: B5_GZIP_MAX, allScripts: files.length, allGzipBytes: sum("gzip") }, forbiddenSymbols: forbidden, recordedSymbols: recorded, splitSentinels: split, chunks: files.map(file => ({ file: file.src.split("/").pop(), ...file })) }, null, 2)}\n`);
   expect.soft(sum("gzip", modern), `B5 First Load JS gzip ≤ ${B5_GZIP_MAX}`).toBeLessThanOrEqual(B5_GZIP_MAX);
   for (const symbol of FORBIDDEN_SYMBOLS) expect.soft(forbidden[symbol], `B5 首載 chunk 的 ${symbol} 必須為 0`).toBe(0);
-  for (const symbol of SPLIT_SENTINELS) expect.soft(split[symbol], `V4-3c 首載 chunk 不得含隨頁載入的面板或匯出程式（${symbol} 必須為 0）`).toBe(0);
+  // V42-0：ALL_SPLIT_SENTINELS＝v4 的 SPLIT_SENTINELS＋v4.2 的 V42_SPLIT_SENTINELS（V42-0 是空的），同一條斷言。
+  for (const symbol of ALL_SPLIT_SENTINELS) expect.soft(split[symbol], `V4-3c 首載 chunk 不得含隨頁載入的面板或匯出程式（${symbol} 必須為 0）`).toBe(0);
   // V41-0：`/` 的 First Load 對 V41-0 實測的差；V41-1 起斷言 ≤ V41_HOME_FIRST_LOAD_BASELINE＋V41_HOME_FIRST_LOAD_ALLOWANCE（06_BATCHES V41-1 驗收重點 B1）。
-  await record(["v41", "homeFirstLoad"], { gzipBytes: sum("gzip", modern), v41_0Baseline: V41_HOME_FIRST_LOAD_BASELINE, allowance: V41_HOME_FIRST_LOAD_ALLOWANCE, maxFromV41_1: V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE, deltaFromV41_0: sum("gzip", modern) - V41_HOME_FIRST_LOAD_BASELINE, asserted: true, note: "V41-0 只記錄；V41-1 起斷言 ≤ V41-0 實測＋1,024（docs/revamp-v4.1/06_BATCHES.md 護欄表）。口徑同 firstLoadJs.gzipBytes" });
-  expect.soft(sum("gzip", modern), `V41-1 B1：/ 的 First Load JS gzip ≤ V41-0 實測 ${V41_HOME_FIRST_LOAD_BASELINE}＋${V41_HOME_FIRST_LOAD_ALLOWANCE}`).toBeLessThanOrEqual(V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE);
+  // V42-0（D-V42-20＝A）：V42_HOME_FIRST_LOAD_BASELINE 填入實測值（> 0，V42-1 起）後改斷言 ≤ V42-0 實測＋8,192，v41 的門檻只記錄、不再斷言（被取代）。
+  const v42Asserted = V42_HOME_FIRST_LOAD_BASELINE > 0;
+  await record(["v41", "homeFirstLoad"], { gzipBytes: sum("gzip", modern), v41_0Baseline: V41_HOME_FIRST_LOAD_BASELINE, allowance: V41_HOME_FIRST_LOAD_ALLOWANCE, maxFromV41_1: V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE, deltaFromV41_0: sum("gzip", modern) - V41_HOME_FIRST_LOAD_BASELINE, asserted: !v42Asserted, note: "V41-0 只記錄；V41-1 起斷言 ≤ V41-0 實測＋1,024（docs/revamp-v4.1/06_BATCHES.md 護欄表）；V42_HOME_FIRST_LOAD_BASELINE > 0（V42-1 起）時改由 v42.homeFirstLoad 斷言，這裡只記錄（asserted false）。口徑同 firstLoadJs.gzipBytes" });
+  if (!v42Asserted) expect.soft(sum("gzip", modern), `V41-1 B1：/ 的 First Load JS gzip ≤ V41-0 實測 ${V41_HOME_FIRST_LOAD_BASELINE}＋${V41_HOME_FIRST_LOAD_ALLOWANCE}`).toBeLessThanOrEqual(V41_HOME_FIRST_LOAD_BASELINE + V41_HOME_FIRST_LOAD_ALLOWANCE);
+  await record(["v42", "homeFirstLoad"], { gzipBytes: sum("gzip", modern), v42_0Baseline: V42_HOME_FIRST_LOAD_BASELINE, allowance: V42_HOME_FIRST_LOAD_ALLOWANCE, max: v42Asserted ? V42_HOME_FIRST_LOAD_BASELINE + V42_HOME_FIRST_LOAD_ALLOWANCE : null, delta: v42Asserted ? sum("gzip", modern) - V42_HOME_FIRST_LOAD_BASELINE : null, asserted: v42Asserted, note: "V42-0 只記錄（v42_0Baseline 0＝尚未量；主流程量完把 firstLoadJs.gzipBytes 填進 V42_HOME_FIRST_LOAD_BASELINE）；常數 > 0 時（V42-1 起）斷言 ≤ V42-0 實測＋8,192（D-V42-20＝A，docs/revamp-v4.2/06_BATCHES.md 護欄表）並取代 v41 的 ＋1,024 門檻。口徑同 firstLoadJs.gzipBytes" });
+  if (v42Asserted) expect.soft(sum("gzip", modern), `V42-1 起 B1：/ 的 First Load JS gzip ≤ V42-0 實測 ${V42_HOME_FIRST_LOAD_BASELINE}＋${V42_HOME_FIRST_LOAD_ALLOWANCE}`).toBeLessThanOrEqual(V42_HOME_FIRST_LOAD_BASELINE + V42_HOME_FIRST_LOAD_ALLOWANCE);
   // V41-1：GUIDE_SENTINELS 在 `/` 首載 chunk 出現 0 次；對照組（labels 的入口字串）> 0；GUIDE_SENTINELS 不在 labels.zh-TW.ts（否則計數混進工作台自己的字串）。
   const labelsSource = await readFile(resolve("src/i18n/labels.zh-TW.ts"), "utf8");
   const guide = symbolTotals(modern, GUIDE_SENTINELS);

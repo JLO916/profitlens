@@ -20,6 +20,8 @@
 //   canonical：說明頁的 canonical 指向正式站網域（SITE_URL/guide），在 127.0.0.1 上量時 Lighthouse 的 canonical 稽核可能失敗；06_BATCHES V41-1 第 9 項規定記錄原因
 //   （canonicalAudit 的 score 與 explanation），SEO 分數只排除這一項——seoScoreExcludingCanonical 依報告內 SEO 類別的稽核權重，照 Lighthouse 的計分方式
 //   （core/scoring.js：不適用、資訊、手動的稽核權重為 0，其餘加權平均）去掉 canonical 重算；或改在 preview 上量（需使用者當次同意）。
+// V42-0（docs/revamp-v4.2/06_BATCHES.md V42-0 第 6 項；D-V42-21＝A）：為第六步 timespan「商品毛利切到品類視角」留位置（SIXTH_STEP、SIXTH_STEP_ENABLED＝false），V42-3 起啟用並實作；
+//   V42-0 到 V42-2b 的 user-flow、報告與 metrics.json 的 lighthouse 鍵都不變（390 仍是五個 timespan）。
 import { existsSync, readdirSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir, loadavg } from "node:os";
@@ -65,6 +67,12 @@ const pages = [
   { id: "data", anchor: "[data-testid='data-status-line']" },
   { id: "actions", anchor: "[data-testid='actions-workbench']" },
 ];
+// V42-0（D-V42-21＝A；docs/revamp-v4.2/06_BATCHES.md V42-0 第 6 項）：第六步 timespan「商品毛利切到品類視角」的位置——V42-3 起把 SIXTH_STEP_ENABLED 改成 true，並在下方 user-flow 迴圈
+// 「切到商品毛利」的 snapshot 之後、「切到假設試算」之前補實作：startTimespan（名 `${labels.shell.nav.products.headline}切到品類視角（timespan）`，perfOnly）→ 點商品頁視角切換
+// （products-perspective）的品類 → 等 chart-products-category 出現 → endTimespan → snapshot；windows 多一筆（lazyChunks.insideTimespans 一併看視角的子 chunk）、results 多兩項。
+// 390 的 TBT 門檻依 D-V4-36、D-V4-47 在 V42-3 另定。V42-0 到 V42-2b 只留位置、不量：流程與輸出都不變。
+const SIXTH_STEP_ENABLED = false;
+const SIXTH_STEP = { after: "products", name: "商品毛利切到品類視角" };
 // V41-1：說明頁另跑 navigation 的路徑；V41-2a 加功能區頁 "/guide/overview"（06_BATCHES V41-2a 第 5 項）。
 const GUIDE_NAV_PAGES = ["/guide", "/guide/overview"];
 const sizes = [
@@ -157,6 +165,8 @@ try {
       await flow.endTimespan();
       await page.evaluate(() => window.scrollTo(0, 0));
       await flow.snapshot({ name: `${label}（snapshot）` });
+      // V42-0：第六步「商品毛利切到品類視角」的插入點（見 SIXTH_STEP）；打開 SIXTH_STEP_ENABLED 前要先補實作，否則在這裡擋下。
+      if (SIXTH_STEP_ENABLED && target.id === SIXTH_STEP.after) throw new Error(`第六步「${SIXTH_STEP.name}」尚未實作（V42-3）`);
     }
     // 首頁載入之後（第一個 timespan 開始之後）才下載的程式 chunk，與落在 timespan 內的那些。
     const firstWindow = windows[0].from;
