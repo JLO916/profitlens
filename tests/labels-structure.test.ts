@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
 import * as labelModule from "@/i18n/labels.zh-TW";
 import { LABEL_GROUPS } from "@/i18n/labels.zh-TW";
+import { guideLabels } from "@/i18n/guide.zh-TW";
 import { labelEntries, labelScope, scanLabels } from "../scripts/lib/copy-scan.mjs";
 
 // V3-2c labels 結構重整（PRD §8.10）把 v2 的 41 個頂層區段搬到新分組；V3-10（06_BATCHES「移除 labels 舊 key alias」、PRD §11.5）移除只放參照的舊鍵 alias。
@@ -38,8 +39,14 @@ const isV4NewKey = (path: string) => V4_NEW_KEY_PREFIXES.some(prefix => path.sta
  */
 const V41_NEW_KEY_PREFIXES = ["guide.", "shell.guideV41."];
 const isV41NewKey = (path: string) => V41_NEW_KEY_PREFIXES.some(prefix => path.startsWith(prefix));
-/** 沒有 v2 舊路徑的鍵：V3、V4 或 V41 錨點任一符合（labels.zh-TW.ts 裡的 V41 鍵只會是 shell.guideV41.，因為 LABEL_GROUPS 沒有 guide）。 */
-const isNewKey = (path: string) => isV3NewKey(path) || isV4NewKey(path) || isV41NewKey(path);
+/**
+ * V42-0（D-V42-22＝A、docs/revamp-v4.2/06_BATCHES.md V42-0 第 2 項）：v4.2 新增的工作台鍵只在這九個前綴下（新字串跟著既有分組放，都在 LABEL_GROUPS 的 24 組內，不新增頂層分組）；
+ * 說明頁的新字串仍在 src/i18n/guide.zh-TW.ts 的 `guide.` 下（不另加前綴）。兩個檔每批加「── V42-n 錨點」註解。V42-0 本身不新增任何鍵。
+ */
+const V42_NEW_KEY_PREFIXES = ["data.channelSettingsV42.", "shell.periodBarV42.", "shell.scopeV42.", "overview.channelsV42.", "diagnosis.channelsV42.", "meeting.channelsV42.", "products.perspectivesV42.", "exports.v42.", "storage.v42."];
+const isV42NewKey = (path: string) => V42_NEW_KEY_PREFIXES.some(prefix => path.startsWith(prefix));
+/** 沒有 v2 舊路徑的鍵：V3、V4、V41 或 V42 錨點任一符合（labels.zh-TW.ts 裡的 V41 鍵只會是 shell.guideV41.，因為 LABEL_GROUPS 沒有 guide）。 */
+const isNewKey = (path: string) => isV3NewKey(path) || isV4NewKey(path) || isV41NewKey(path) || isV42NewKey(path);
 /**
  * V4-0a：v3.0.0（tag v3.0.0＝625bfa5）labels 全部字串葉節點的快照（鍵依碼位排序；產生方式見 verification/revamp-v4/V4-0-baseline.md）。
  * labels-v3-2b.flat.json 只涵蓋 v2 來的字串，V3 錨點下的字串被 isV3NewKey 略過、沒有凍結值，所以 v4 另以這份快照逐鍵逐字比對。
@@ -50,10 +57,18 @@ const V3_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v4/labels-v
  * v3 快照之後 v4 在 chartsV4 錨點下新增的字串沒有凍結值，所以 v4.1 另以這份快照逐鍵逐字比對。
  */
 const V4_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v41/labels-v4.flat.json"), "utf8")) as Record<string, string>;
+/**
+ * V42-0：v4.1.2（tag v4.1.2＝e256154）labels.zh-TW.ts＋guide.zh-TW.ts 全部字串葉節點的快照（鍵依碼位排序；guide 的鍵以 guide. 開頭；產生方式見 verification/revamp-v42/V42-0-baseline.md）。
+ * v4 快照之後 v4.1 在 guide. 與 shell.guideV41. 下新增的字串沒有凍結值，所以 v4.2 另以這份快照逐鍵逐字比對（三份快照：v3 2,581、v4 2,839、v4.1 3,163）。
+ */
+const V41_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v42/labels-v41.flat.json"), "utf8")) as Record<string, string>;
 /** V41-1 起才有的說明頁標籤檔（D-V41-12＝A'）；只給伺服器模組 import，不進工作台首載。 */
 const GUIDE_FILE = resolve("src/i18n/guide.zh-TW.ts");
 
-const get = (path: string): unknown => path.split(".").reduce<unknown>((node, key) => (node !== null && typeof node === "object" && Object.hasOwn(node, key) ? (node as Record<string, unknown>)[key] : undefined), labels);
+const lookup = (root: unknown, path: string): unknown => path.split(".").reduce<unknown>((node, key) => (node !== null && typeof node === "object" && Object.hasOwn(node, key) ? (node as Record<string, unknown>)[key] : undefined), root);
+const get = (path: string): unknown => lookup(labels, path);
+/** V42-0：三份快照合在一起看時的取值——guide. 開頭的路徑取 guideLabels（頂層只有 guide），其餘取 labels。 */
+const getAny = (path: string): unknown => (path.startsWith("guide.") ? lookup(guideLabels, path) : get(path));
 function unflatten(flat: Record<string, string>): Record<string, unknown> {
   const root: Record<string, unknown> = {};
   for (const [path, value] of Object.entries(flat)) {
@@ -178,8 +193,8 @@ describe("V4-0a labels 護欄：v3.0.0 既有字串逐鍵逐字不變，新葉�
     expect(changed).toEqual([]);
   });
 
-  it("快照以外的新葉節點只能在 V4_NEW_KEY_PREFIXES 下（V41-0 起另允許 shell.guideV41.，見下方 V41-0 護欄）", () => {
-    const extra = ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V3_FLAT, path) && !isV4NewKey(path) && !isV41NewKey(path));
+  it("快照以外的新葉節點只能在 V4_NEW_KEY_PREFIXES 下（V41-0 起另允許 shell.guideV41.、V42-0 起另允許 V42_NEW_KEY_PREFIXES，見下方 V41-0、V42-0 護欄）", () => {
+    const extra = ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V3_FLAT, path) && !isV4NewKey(path) && !isV41NewKey(path) && !isV42NewKey(path));
     expect(extra).toEqual([]);
     expect(new Set(ENTRIES.map(([path]) => path)).size).toBe(ENTRIES.length);
   });
@@ -201,9 +216,9 @@ describe("V41-0 labels 護欄：v4.0.0 既有字串逐鍵逐字不變，新葉�
     expect(changed).toEqual([]);
   });
 
-  it("labels.zh-TW.ts 快照以外的新葉節點只能在 shell.guideV41. 下；LABEL_GROUPS 維持 24 組（沒有 guide 分組）", () => {
+  it("labels.zh-TW.ts 快照以外的新葉節點只能在 shell.guideV41. 下（V42-0 起另允許 V42_NEW_KEY_PREFIXES，見下方 V42-0 護欄）；LABEL_GROUPS 維持 24 組（沒有 guide 分組）", () => {
     const extra = ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V4_FLAT, path));
-    expect(extra.filter(path => !path.startsWith("shell.guideV41."))).toEqual([]);
+    expect(extra.filter(path => !path.startsWith("shell.guideV41.") && !isV42NewKey(path))).toEqual([]);
     expect(GROUPS).toHaveLength(24);
     expect(GROUPS).not.toContain("guide");
   });
@@ -215,5 +230,47 @@ describe("V41-0 labels 護欄：v4.0.0 既有字串逐鍵逐字不變，新葉�
     const entries = labelEntries(guideLabels);
     expect(entries.length).toBeGreaterThan(0);
     expect(entries.map(([path]) => path).filter(path => !path.startsWith("guide."))).toEqual([]);
+  });
+});
+
+describe("V42-0 labels 護欄：v4.1.2 既有字串逐鍵逐字不變，新葉節點只在 V42_NEW_KEY_PREFIXES（或 guide.）下", () => {
+  /** 說明頁的全部字串葉節點（guideLabels 頂層只有 guide，路徑全以 guide. 開頭）。 */
+  const GUIDE_ENTRIES = labelEntries(guideLabels);
+
+  it("快照是 v4.1.2 的全部 3,163 個字串葉節點（labels 2,842＋guide 321，鍵已排序）、涵蓋 v3 與 v4 快照且字串相同；V42 前綴 9 個、都在 LABEL_GROUPS 內，快照裡沒有任何 V42 前綴的鍵，與 V3、V4、V41 前綴不重疊", () => {
+    const keys = Object.keys(V41_FLAT);
+    expect(keys).toHaveLength(3163);
+    expect(keys.filter(path => !path.startsWith("guide."))).toHaveLength(2842);
+    expect(keys.filter(path => path.startsWith("guide."))).toHaveLength(321);
+    expect(keys).toEqual([...keys].sort());
+    // 頂層＝LABEL_GROUPS 的 24 組＋說明頁的 guide。
+    expect([...new Set(keys.map(path => path.split(".")[0]))].sort()).toEqual([...GROUPS, "guide"].sort());
+    expect(Object.entries(V3_FLAT).filter(([path, value]) => V41_FLAT[path] !== value).map(([path]) => path)).toEqual([]);
+    expect(Object.entries(V4_FLAT).filter(([path, value]) => V41_FLAT[path] !== value).map(([path]) => path)).toEqual([]);
+    expect(V42_NEW_KEY_PREFIXES).toEqual(["data.channelSettingsV42.", "shell.periodBarV42.", "shell.scopeV42.", "overview.channelsV42.", "diagnosis.channelsV42.", "meeting.channelsV42.", "products.perspectivesV42.", "exports.v42.", "storage.v42."]);
+    expect(new Set(V42_NEW_KEY_PREFIXES).size).toBe(9);
+    for (const prefix of V42_NEW_KEY_PREFIXES) {
+      expect(prefix, prefix).toMatch(/^[A-Za-z]+\.[A-Za-z]*[vV]42\.$/);
+      expect(GROUPS, prefix).toContain(prefix.split(".")[0]);
+    }
+    expect(keys.filter(isV42NewKey)).toEqual([]);
+    // V42 與 V3、V4、V41 的錨點不重疊：任一路徑不會同時算成兩種新鍵。
+    expect(V42_NEW_KEY_PREFIXES.filter(prefix => [...V3_NEW_KEY_PREFIXES, ...V4_NEW_KEY_PREFIXES, ...V41_NEW_KEY_PREFIXES].some(other => other.startsWith(prefix) || prefix.startsWith(other)))).toEqual([]);
+  });
+
+  it("快照的每個鍵都還在（labels 或 guideLabels），字串逐字相同（v4.2 不改既有字串）", () => {
+    const changed = Object.entries(V41_FLAT).filter(([path, value]) => getAny(path) !== value).map(([path, value]) => `${path}：快照 ${JSON.stringify(value)}，現在 ${JSON.stringify(getAny(path))}`);
+    expect(changed).toEqual([]);
+  });
+
+  it("labels.zh-TW.ts 快照以外的新葉節點只能在 V42_NEW_KEY_PREFIXES 下；guide.zh-TW.ts 快照以外的新葉節點只能在 guide. 下；LABEL_GROUPS 維持 24 組（沒有 guide 分組）", () => {
+    const extra = ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V41_FLAT, path));
+    expect(extra.filter(path => !isV42NewKey(path))).toEqual([]);
+    const extraGuide = GUIDE_ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V41_FLAT, path));
+    expect(extraGuide.filter(path => !path.startsWith("guide."))).toEqual([]);
+    expect(Object.keys(guideLabels)).toEqual(["guide"]);
+    expect(new Set(GUIDE_ENTRIES.map(([path]) => path)).size).toBe(GUIDE_ENTRIES.length);
+    expect(GROUPS).toHaveLength(24);
+    expect(GROUPS).not.toContain("guide");
   });
 });

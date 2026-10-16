@@ -1,0 +1,10 @@
+# EC ProfitLens v4.2 新增 data-testid 清單（V42-0 建立，docs/revamp-v4.2/06_BATCHES.md V42-0 第 4 項；建立日 2026-10-16，基準 v4.1.2＝e256154，建立時沒有任何列）
+# 格式：testid<TAB>來源<TAB>批次<TAB>說明（原始碼位置；收集到它的 SSR 情境或瀏覽器步驟）。以 # 開頭的是註解。與 verification/revamp-v41/testids-v41-added.txt 相同。
+# 來源：
+#   ssr  = tests/testid-baseline.test.ts 以 renderToStaticMarkup 渲染各頁狀態（含 tests/helpers/page-states.tsx 的整頁狀態）後實際出現（嚴格比對，少一個即失敗）。
+#   e2e  = 只在瀏覽器互動後出現，由瀏覽器測試實際收集；本檔在 vitest 只做原始碼檢查。
+#   cond = 條件項（失敗狀態等），SSR 與收集流程都不進入；說明欄列出覆蓋它的既有測試；在 vitest 只做原始碼檢查。
+# 批次：新增這個 testid 的批次（V42-1、V42-2a、V42-2b、V42-3、V42-4、V42-5、V42-6）。
+# 規則：V42-1 起每批把本批新增的 testid 追加到本檔最後（不排序、不刪列），之後批次刪掉或改名 v4.2 新 testid 時 tests/testid-baseline.test.ts 會失敗。
+#   新 testid 依 CLAUDE.md（v4.2）：channel-settings、channel-settings-row-{code}、channel-settings-group-{groupId}、scope-select、scope-option-group-{groupId}、group-row-{groupId}、channel-drill-{code}、products-perspective、products-perspective-{view}、chart-products-{id}（id 只用 [a-z][a-z0-9]*；資料表 -table、柱 -bar-cat-{category}、格 -cell-{channel}-cat-{category}）、products-structure-{channel}、products-combined-{block}；不用陣列索引。
+#   已在 verification/revamp-v4/testids-v3.txt、verification/revamp-v4/testids-v4-added.txt 或 verification/revamp-v41/testids-v41-added.txt 的 testid 不重複列入（testid-baseline 斷言）。
