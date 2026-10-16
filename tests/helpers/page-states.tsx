@@ -179,6 +179,26 @@ export function kpiEvidence(snapshot: WorkspaceSnapshot, name: MetricName): Evid
   return { name, metric: report.current.metrics[name], period: report.current.period, sources: report.current.sources, channels: report.scope.channels, title: metricDefinitions[name].label };
 }
 
+/**
+ * V4-3a 的 9 通路記憶體合成資料（上期、本期各 7 天，通路代碼 CH01–CH09，不寫檔）。V42-0 從 diagnosis-many-channels 的 IIFE 原樣抽出成一個 helper
+ * （docs/revamp-v4.2/06_BATCHES.md V42-0 第 7 項），讓 diagnosis-many-channels 與 overview-many-channels 用同一份資料（位元組相同、dataset_hash 相同）；資料內容不變，只是搬位置。
+ */
+async function manyChannelsActive(id: string): Promise<Active> {
+  const base = fixture("golden").manifest as Record<string, unknown>, day = (offset: number) => new Date(Date.parse("2026-01-01T00:00:00Z") + offset * 86_400_000).toISOString().slice(0, 10);
+  const channels = Array.from({ length: 9 }, (_, index) => `CH${String(index + 1).padStart(2, "0")}`), dates = Array.from({ length: 14 }, (_, index) => day(index));
+  const rows = (make: (date: string, channel: string, index: number, offset: number) => string) => dates.flatMap((date, offset) => channels.map((channel, index) => make(date, channel, index, offset)));
+  const input: DatasetInput = {
+    manifest: { ...base, dataset_id: "synthetic-many-channels-9x7", data_as_of: day(14), coverage_start: day(0), coverage_end: day(13), channels, previous_period: { start: day(0), end: day(6) }, current_period: { start: day(7), end: day(13) } },
+    files: {
+      "sales_daily.csv": ["date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency", ...rows((date, channel, index, offset) => `${date},${channel},SKU-${index + 1},HOME,2,${(1000 + offset + index).toFixed(2)},50.00,0.00,400.00,TWD`)].join("\n"),
+      "channel_costs_daily.csv": ["date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency", ...rows((date, channel) => `${date},${channel},30.00,10.00,20.00,5.00,TWD`)].join("\n"),
+      "ad_spend_daily.csv": ["date,channel,ad_spend,currency", ...rows((date, channel) => `${date},${channel},100.00,TWD`)].join("\n"),
+    },
+  };
+  const dataset = validateDataset(input).dataset!;
+  return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id, revision: 1 };
+}
+
 export type StateMarkup = { name: string; html: string; state: ShellState | null };
 export async function pageStates(): Promise<StateMarkup[]> {
   const demo = await load("demo", "demo");
@@ -287,23 +307,9 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // 健檢＋4 通路合成資料（D-V4-31）：G10 的 SOCIAL 是「不適用」列（9/15 平台抽成 −6,000，扣項為負）、LIVE 本期資料待補，兩列只有文字、沒有段；
     // G7b 的 LIVE 不畫 sparkline，其餘 3 條最後一週未滿 7 天畫空心點；G9 只畫差額類規則。
     "diagnosis-synthetic": { panel: "diagnosis", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "synthetic", revision: 1 }; })(), status: "partial" },
-    // 健檢＋9 通路（記憶體合成資料，上期、本期各 7 天，通路代碼 CH01–CH09，不寫檔）：通路 > 8 時 G10 只留資料表（state="empty"、不畫段），
-    // G7b 不計算 channelWeeks、改成表格之後一句說明（channel-weeks-too-many；PRD §4.4 G10、§8.2）。
-    "diagnosis-many-channels": { panel: "diagnosis", active: await (async () => {
-      const base = fixture("golden").manifest as Record<string, unknown>, day = (offset: number) => new Date(Date.parse("2026-01-01T00:00:00Z") + offset * 86_400_000).toISOString().slice(0, 10);
-      const channels = Array.from({ length: 9 }, (_, index) => `CH${String(index + 1).padStart(2, "0")}`), dates = Array.from({ length: 14 }, (_, index) => day(index));
-      const rows = (make: (date: string, channel: string, index: number, offset: number) => string) => dates.flatMap((date, offset) => channels.map((channel, index) => make(date, channel, index, offset)));
-      const input: DatasetInput = {
-        manifest: { ...base, dataset_id: "synthetic-many-channels-9x7", data_as_of: day(14), coverage_start: day(0), coverage_end: day(13), channels, previous_period: { start: day(0), end: day(6) }, current_period: { start: day(7), end: day(13) } },
-        files: {
-          "sales_daily.csv": ["date,channel,sku,category,units_sold,gross_sales,discounts,refunds,cogs_net,currency", ...rows((date, channel, index, offset) => `${date},${channel},SKU-${index + 1},HOME,2,${(1000 + offset + index).toFixed(2)},50.00,0.00,400.00,TWD`)].join("\n"),
-          "channel_costs_daily.csv": ["date,channel,platform_fees,payment_fees,fulfillment_costs,other_variable_costs,currency", ...rows((date, channel) => `${date},${channel},30.00,10.00,20.00,5.00,TWD`)].join("\n"),
-          "ad_spend_daily.csv": ["date,channel,ad_spend,currency", ...rows((date, channel) => `${date},${channel},100.00,TWD`)].join("\n"),
-        },
-      };
-      const dataset = validateDataset(input).dataset!;
-      return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id: "many-channels", revision: 1 };
-    })(), status: "ready" },
+    // 健檢＋9 通路（記憶體合成資料，上期、本期各 7 天，通路代碼 CH01–CH09，不寫檔；V42-0 起資料由上方的 manyChannelsActive 組，與 overview-many-channels 共用）：
+    // 通路 > 8 時 G10 只留資料表（state="empty"、不畫段），G7b 不計算 channelWeeks、改成表格之後一句說明（channel-weeks-too-many；PRD §4.4 G10、§8.2）。
+    "diagnosis-many-channels": { panel: "diagnosis", active: await manyChannelsActive("many-channels"), status: "ready" },
 
     // ── V4-3b 新增頁面狀態在此之後（PRD §8.6；同批在 tests/mounted-testids.test.tsx 的「V4-3b 新增 M1 測試」錨點後加對應測試）──
     // 健檢圖區收合（G12「五項比率走勢」<details> 沒有 open）在既有的 diagnosis、diagnosis-synthetic、diagnosis-many-channels 三個狀態都成立，不另立狀態。
@@ -425,6 +431,12 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // V4-10 代理 B（G17；axe「待辦頁新增一張卡」的 SSR 對應）：空工作區新增一張待辦（golden 手動草稿，沒有期限、未開始）。
     // G17 小表 4 列：未填期限 1、其餘 0（只有 chart-actions-due-bar-none 有條）；caption「0 件逾期，0 件 7 天內到期」。沒有期限，輸出不隨執行日期改變。
     "actions-one-card": { panel: "actions", active: golden, status: "ready", actionWorkspace: addActionDraft(emptyActionWorkspace(), golden, "n1"), scenarioWorkspace: scenarios },
+
+    // ── V42-0 新增頁面狀態在此之後（PRD §15 G4 擁擠度目視；同批在 tests/mounted-testids.test.tsx 的「V42-0 新增 M1 測試」錨點後加對應測試）──
+    // 總覽＋9 通路（與 diagnosis-many-channels 同一份記憶體合成資料，manyChannelsActive；docs/revamp-v4.2/06_BATCHES.md V42-0 第 7 項、01_PRD.md §15「G4 超過約 6 個通路會擠」）：
+    // G4 的固定高框是 .chart-frame.sm（180 px），通路數沒有上限（G7b、G10、G11 的 > 8 退化只在健檢頁）——9 列雙長條擠在同一個框內；緊湊表與資料表各 9 列、差額條 9 條
+    // （chart-overview-channels-bar-CH01…CH09）。本狀態只給目視與 M1／M6，不改畫面；擁擠程度的量測見 verification/revamp-v42/V42-0-baseline.md。
+    "overview-many-channels": { panel: "overview", active: await manyChannelsActive("many-channels"), status: "ready" },
 
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
