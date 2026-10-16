@@ -2,7 +2,7 @@
 
 > V42-0 建立（2026-10-16）。依據：`docs/revamp-v4.2/06_BATCHES.md` V42-0 第 2–9 項與「護欄與棘輪時程」表、`docs/revamp-v4.2/00_README.md`「驗收產物」。本文件寫「V42-0 實測」「V42-0 基準」時，指 V42-0 在 v4.1.2 程式碼（`src/` 一個字都沒改）上量到的值；之後各批以這裡的數字為門檻或比對基準（`/` First Load 門檻＝實測＋8,192，D-V42-20＝A）。
 >
-> **草稿狀態**：第 1、2、4、6、7 節由實作代理 C 填寫（`npm audit`、testid 清單計數、子集稽核、功能保留表）。第 3 節（labels 快照）與第 5 節的結果（copy-scan 新規則）由整合代理填入代理 A 的數字；第 8 節的瀏覽器量測（畫面基準 64 張、`metrics.spec` 的 First Load 與 DOM 節點、390 五個 TBT、8 頁＋2 說明頁 Lighthouse、axe、keyboard-walk、network-log、`GUIDE_MEDIA=check`、launch-check）由主流程跑共通驗收後填入；填入前一律是「由主流程填寫」。
+> **狀態**：第 1、2、4、6、7 節由實作代理 C 填寫（`npm audit`、testid 清單計數、子集稽核、功能保留表）。第 3 節（labels 快照）、第 4 節的測試結果、第 5 節的結果（copy-scan 新規則）與第 6 節的 `overview-many-channels` 由整合代理於合併後填入（已填）；畫面基準 64 張已自 `verification/revamp-v41/V41-6/snapshots/` 逐位元組複製到 `verification/revamp-v42/V42-0/snapshots/`（`diff -rq` 相同），待主流程不帶 `--update-snapshots` 跑；第 8 節的瀏覽器量測（畫面基準 64 張、`metrics.spec` 的 First Load 與 DOM 節點、390 五個 TBT、8 頁＋2 說明頁 Lighthouse、axe、keyboard-walk、network-log、`GUIDE_MEDIA=check`、launch-check）由主流程跑共通驗收後填入；填入前一律是「由主流程填寫」。
 
 ## 1 產生日與基準
 
@@ -13,7 +13,8 @@
 | 分支 | `revamp/v4.2`（自 `origin/main`＝`00584a5` 開出；不 push） |
 | 開工錨點 | `bcb6c91`（plan(v4.2): V42-0 開工錨點——CLAUDE.md 整份換成 v4.2 版；06 與 00_README 的 V42-0 狀態改為進行中） |
 | 程式碼狀態 | V42-0 不改 `src/` 任何檔案（`git diff --stat e256154 -- src` 為空；本報告的代理 C 工作只新增 `verification/revamp-v42/` 下的檔案）；不碰 `package.json`、`package-lock.json`（`git diff --stat e256154 -- package.json package-lock.json` 為空） |
-| 禁區與邊界 | 五條命令由整合代理在合併後跑一次並貼到驗收文件；代理 C 沒有碰 `src/domain`、`fixtures`、`docs/METRICS.md`、`docs/SCENARIOS.md`、`src/application/assist-kpi.ts`、`src/application/breakeven-mer.ts`、`tests/assist-kpi.test.ts`、`tests/breakeven-mer.test.ts`、`src/app/api`、`vercel.json`、`src/application/analytics.ts`、`.env*` |
+| 整合 | 三個代理的分支以 `--no-ff` 依 A、B、C 順序併入（無衝突；三方改動的檔案不重疊）：`1d55d9e`（A：labels 快照、V42 前綴護欄、copy-scan、第五份 testid 清單）、`8615252`（B：capture config、`metrics.spec` 預留、第六步留位、`overview-many-channels`）、`c8ff85d`（C：功能保留表、子集稽核、本文件骨架、`npm audit`）；整合後 `git diff --stat bcb6c91 HEAD -- src` 為空 |
+| 禁區與邊界 | 五條命令由整合代理在合併後跑一次（2026-10-16，整合 commit 之後）：五條全部為空；`git diff --stat bcb6c91 HEAD -- src` 為空（V42-0 不改 `src/` 任何檔）；代理 C 沒有碰 `src/domain`、`fixtures`、`docs/METRICS.md`、`docs/SCENARIOS.md`、`src/application/assist-kpi.ts`、`src/application/breakeven-mer.ts`、`tests/assist-kpi.test.ts`、`tests/breakeven-mer.test.ts`、`src/app/api`、`vercel.json`、`src/application/analytics.ts`、`.env*` |
 
 ## 2 `npm audit`（v4.1.2 的依賴，沒有任何變動）
 
@@ -40,7 +41,41 @@ v4.2 的「允許新增 npm 依賴」清單為空（CLAUDE.md、06 共同規則�
 
 ## 3 labels 快照（`verification/revamp-v42/labels-v41.flat.json`）
 
-> **由整合代理填入（代理 A 的數字）**：葉節點數（三份：v3 2,581、v4 2,839、v41 ＝ ？）、各分組計數（24 組＝`LABEL_GROUPS`）、`guide.*` 的葉節點數、檔案 sha256、產生命令（與 V41-0 §3 相同，只換輸出路徑並一併載入 `guideLabels`）、`tests/labels-structure.test.ts` 的 `V42_NEW_KEY_PREFIXES` 清單（D-V42-22：`data.channelSettingsV42.`、`shell.periodBarV42.`、`shell.scopeV42.`、`overview.channelsV42.`、`diagnosis.channelsV42.`、`meeting.channelsV42.`、`products.perspectivesV42.`、`exports.v42.`、`storage.v42.`）與新增測試的數量、三份快照逐鍵逐字比對結果。本批不加 key、`LABEL_GROUPS` 維持 24 組。
+| 項目 | 值 |
+|---|---|
+| 葉節點數 | **3,163**＝`labels.zh-TW.ts` 2,842＋`guide.zh-TW.ts` 321（三份快照：v3 2,581 → v4 2,839 → v4.1 3,163；比 v4 快照多 324＝`guide.` 321＋`shell.guideV41.` 3，其他 0） |
+| 來源 | `src/i18n/labels.zh-TW.ts`（sha256 `ac84a980e95578a4f45822a1bfc59d37f3faf8834c7463c388691648d310dd82`）與 `src/i18n/guide.zh-TW.ts`（sha256 `53cc3953fcff878044098881168150fec8d1de7331102ad213204a856a8a8964`），兩檔與 `git show e256154:` 同值（`git diff e256154 -- src/i18n` 為空） |
+| 各分組 | actions 127、assist 37、brand 4、data 142、diagnosis 102、empty 19、errors 85、events 23、evidence 82、exports 292、format 28、glossary 220、importWizard 243、meeting 291、metrics 100、overview 260、products 144、relaunch 3、rules 32、scenarios 216、shell 273、storage 66、summary 19、targets 34（24 組＝`LABEL_GROUPS`）＋ guide 321（`guideLabels` 頂層只有 `guide`，不在 `LABEL_GROUPS`）；頂層共 25 個 |
+| 格式 | 同 `verification/revamp-v41/labels-v4.flat.json`：`{ "點分路徑": "字串" }`；鍵依 UTF-16 碼位排序（已驗證 `keys === [...keys].sort()`），2 空格縮排，檔尾一個換行，3,165 行；陣列元素以索引為路徑段；guide 的鍵以 `guide.` 為根 |
+| sha256 | `0bc9927dc9ceff9e4c04d766b39011b00262190522823fa31d722ae483269d9f` |
+| 與 v3 快照 | v3 快照的 2,581 個鍵都在、字串逐字相同（不符 0） |
+| 與 v4 快照 | v4 快照的 2,839 個鍵都在、字串逐字相同（不符 0） |
+| V42 前綴 | 快照裡 `V42_NEW_KEY_PREFIXES` 下的鍵 0 個（本批不加 key） |
+
+產生方式（在 repo 根目錄執行一次；與 V41-0 §3 相同，多載入 `loadGuideLabels()` 並合併排序）：
+
+```bash
+mkdir -p verification/revamp-v42 && node --input-type=module -e '
+import { writeFileSync } from "node:fs";
+import { loadLabels, loadGuideLabels } from "./scripts/lib/load-labels.mjs";
+import { labelEntries } from "./scripts/lib/copy-scan.mjs";
+const labels = await loadLabels(), guide = await loadGuideLabels();
+if (!guide) throw new Error("guide labels missing");
+const fromLabels = labelEntries(labels), fromGuide = labelEntries(guide);
+const entries = [...fromLabels, ...fromGuide].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+const flat = Object.fromEntries(entries);
+if (Object.keys(flat).length !== entries.length) throw new Error("duplicate path");
+writeFileSync("verification/revamp-v42/labels-v41.flat.json", JSON.stringify(flat, null, 2) + "\n");
+console.log(`labels ${fromLabels.length} guide ${fromGuide.length} total ${entries.length}`);
+'
+# 輸出：labels 2842 guide 321 total 3163
+```
+
+護欄（`tests/labels-structure.test.ts`；整合後 19 個測試全過）：
+- 新增 `V42_NEW_KEY_PREFIXES`（D-V42-22 的 9 個：`data.channelSettingsV42.`、`shell.periodBarV42.`、`shell.scopeV42.`、`overview.channelsV42.`、`diagnosis.channelsV42.`、`meeting.channelsV42.`、`products.perspectivesV42.`、`exports.v42.`、`storage.v42.`）與 `isV42NewKey`；`V41_FLAT` 讀本快照；`getAny()` 對 `guide.` 路徑取 `guideLabels`（靜態 import，與 `tests/guide-content`、`guide-routes` 相同）、其餘取 `labels`。
+- 新 describe「V42-0 labels 護欄」3 個測試：(1) 快照 3,163 個鍵（labels 2,842、guide 321）且已排序，頂層＝`LABEL_GROUPS` 24 組＋`guide`，涵蓋 v3 與 v4 快照且字串相同；V42 前綴 9 個、格式 `/^[A-Za-z]+\.[A-Za-z]*[vV]42\.$/`、頂層都在 `LABEL_GROUPS` 內、快照裡沒有 V42 前綴的鍵、與 V3（38）、V4（11）、V41（2）前綴不重疊；(2) 快照每個鍵都還在（`labels` 或 `guideLabels`）、字串逐字相同；(3) `labels.zh-TW.ts` 快照以外的新葉節點只能在 V42 前綴下、`guide.zh-TW.ts` 快照以外的新葉節點只能在 `guide.` 下、`guideLabels` 頂層只有 `guide`、`LABEL_GROUPS` 維持 24 組且沒有 `guide`。
+- 依 V41-0 的做法，既有的 `isNewKey`、V4-0a 的「快照以外的新葉節點」與 V41-0 的「`labels.zh-TW.ts` 快照以外的新葉節點只能在 `shell.guideV41.` 下」三處改成也接受 V42 前綴（否則 V42-1 加第一個 key 時這三個既有測試會失敗）；既有 V3／V4／V41 的字串比對斷言本身一字未改。
+- 本批沒有新增任何 key、`LABEL_GROUPS` 維持 24 組。
 
 ## 4 testid 五份基準
 
@@ -52,13 +87,13 @@ v4.2 的「允許新增 npm 依賴」清單為空（CLAUDE.md、06 共同規則�
 | `verification/revamp-v41/testids-v41-added.txt` | 108（V41-1 到 V41-6 追加的 v4.1 testid） | 0 |
 | `verification/revamp-v42/testids-v42-added.txt`（V42-0 新增） | 0（只有表頭；格式同 v41 新增清單：testid、來源、批次、說明；批次欄 V42-1 到 V42-5，可帶 a／b） | 0 |
 
-計數方式：`grep -v '^#' <檔> | grep -c .`（2026-10-16，HEAD `bcb6c91`）。`tests/testid-baseline.test.ts` 改成比五份（由整合代理填入測試數與結果）：每份的格式、ssr 列都在 SSR markup、e2e／cond 列原始碼仍會產生；v42 新增清單不重複 v3、v4、v41 清單。
+計數方式：`grep -v '^#' <檔> | grep -c .`（2026-10-16，HEAD `bcb6c91`；整合後重數相同：228／416／343／108／0）。`tests/testid-baseline.test.ts` 改成比五份（`BASELINES` 加第五筆 `{ label: "v42 新增", file: verification/revamp-v42/testids-v42-added.txt, minRows: 0, batchColumn: true, batchPattern: /^V42-[1-6][ab]?$/ }`；整合後 18 個測試全過：五份各 3 個＝格式正確、ssr 列都在 SSR markup、e2e／cond 列原始碼仍會產生，加「五份清單互相一致」（v42 新增清單不重複 v3、v4、v41 清單）、PRD §11.7 點名來源、V3-0 六組共 3 個）；五份刪除數全部 0。`verification/revamp-v42/testids-v42-added.txt` 只有表頭（10 行註解、0 列；表頭 `^# .+\n# 格式：` 的格式檢查通過）。
 
 ## 5 掃描規則（copy-scan 新規則；06 V42-0 第 3 項）
 
 | 檔案 | 改動 | 對既有字串的結果 |
 |---|---|---|
-| `scripts/lib/copy-scan.mjs` | `SCOPED_BLACKLIST.synonym` 的「賠錢」「虧損」範圍由 `path.startsWith("products.chartsV4.")` 擴到也涵蓋 `products.perspectivesV42.`（v4.1.2 是 `:90-91` 的兩條）；`L1_KEY_PATTERNS`（`:116`）加 `/^products\.perspectivesV42\.[^.]+\.title$/`（視角標題每個子句 ≤ 14 字） | **由整合代理填入**：16 項指標改前改後應完全相同（本批沒有任何 `products.perspectivesV42.*` 的 key，違規 0）；`tests/fixtures/copy-style-ceiling.json` 不動；`tests/copy-style.test.ts` 若加合成輸入測試，寫出數量 |
+| `scripts/lib/copy-scan.mjs` | `SCOPED_BLACKLIST.synonym` 的「賠錢」「虧損」範圍由 `path.startsWith("products.chartsV4.")` 擴到 `\|\| path.startsWith("products.perspectivesV42.")`（v4.1.2 是 `:90-91` 的兩條）；`L1_KEY_PATTERNS`（`:116`）由 7 條加到 8 條：`/^products\.perspectivesV42\.[^.]+\.title(\.\|$)/`（寫法同 `chartsV4`，含 `title.<情境>` 子鍵；每個子句 ≤ 14 字）；兩處 doc 註解各加一行 V42-0 | 16 項指標改前＝改後，逐項相同（整合後 `npm run audit:ui -- --json verification/revamp-v42/V42-0/ui-audit.json`）：noticePrefix 0、noticeAnywhere 0、arrows 0、circledNumbers 0、decorativeChars 0、exclamations 0、emoji 0、allCaps 0、pipes 0、**blacklistSynonym 12**、blacklistJargon 0、blacklistTone 0、blacklistEmotion 0、placeholderMalformed 0、placeholderVariantMismatch 0、**l1ClauseOverLimit 0**；新規則對 `products.perspectivesV42.*` 目前 0 個鍵 → 0 違規。`tests/fixtures/copy-style-ceiling.json` 不動（blacklistSynonym 12、其餘 0）；`tests/copy-style.test.ts` 沒有加合成輸入測試（22 個既有測試全過）。design 15 項同 V41-6：hex 0、圓角 4、字級 11、字距 0、rotate 0、JSX 箭頭 3、其餘 0（含 JSX 中文 0、元件字串常值中文 0）；靜態 `data-testid` 相異 267（出現 270、動態屬性 76、`testId` 屬性 15）；相異 class 選擇器 940 |
 
 ## 6 子集敏感分支稽核（06 V42-0 第 7 項；唯讀）
 
@@ -76,7 +111,7 @@ v4.2 的「允許新增 npm 依賴」清單為空（CLAUDE.md、06 共同規則�
 - 子集在畫面上的缺口集中在範圍文字與選單：`dashboard.tsx:605` 的選取值對子集顯示「全部通路」、`:608` 與 10 處 `channelsLabel`／`everyChannel` 寫法列出成員清單、`waterfall.ts:268` 與 `diagnosis-group.ts:88` 對子集只寫「合計」、`multi-scenario-workbench.tsx:41-48` 的通路選單列出全部通路且預設可能在範圍外。這些都是「V42-2a 修」，每處一條測試。
 - `decision.ts:93-99`（`SINGLE_CHANNEL_REQUIRED`）、`channel-table.tsx:92-93`、`action-workspace.ts:196-198`、`targets.ts:132-140`、AI 與會議快照負載（代碼或 `C01` 代號）、備份還原的對帳，對子集的行為都是預期，列為不受影響並寫明理由。
 - PRD §4.4 寫 `waterfall.ts:267-268` 會列出成員代碼，實際是寫「合計」；清單以程式為準。
-- `overview-many-channels`（9 通路）頁面狀態的目視結果：**由整合代理填入**（`tests/helpers/page-states.tsx`，不在代理 C 的範圍）。
+- `overview-many-channels`（9 通路）頁面狀態（`tests/helpers/page-states.tsx` 的「V42-0 新增頁面狀態」錨點後；與 `diagnosis-many-channels` 共用 `manyChannelsActive()`，輸入 JSON 位元組相同、`dataset_hash` `9e2c8f32ddd659de6282fc858ba08762ba57fa61331e9f1097d79556d4897338`）：`tests/mounted-testids.test.tsx` 的 V42-0 M1 測試（整合後 76 個全過）以 SSR 確認總覽頁掛載（kpi-band、snapshot-sentence、top-three、channel-mix、assist-kpis、overview-advanced 各 1）、主層仍是 4 個圖區塊、G4 框 `.chart-frame.sm` 固定 `height:180px`（不隨通路數變）、`recharts-wrapper` 520×180 共 1 個、精簡表 9 列、`chart-overview-channels-bar-CH01`…`CH09` 各 1 且依通路順序、資料表 `<details>` 收合 9 列。擁擠程度（PRD §15 G4 風險列）：Recharts 在 SSR 不畫 bar，所以用幾何估算——繪圖區高 180 − 4 − 4 − 30（XAxis）＝142 px，9 通路每列 ≈ 15.8 px，低於設計的雙 bar 8（上期）＋18（本期）＋4 間距＝30 px，Recharts 的數值 `barSize` 退回 `useFull` 時兩條 bar 各縮到 ≈ 7.1 px、間距 0，端點數字（~12–13 px 字）會疊到鄰列；示範資料 2 通路每列 ≈ 71 px；PRD §15「約 6 通路」對應每列 ≈ 23.7 px（仍放不下 30 px，6 通路就已觸發退回），4 通路 ≈ 35.5 px 放得下。**瀏覽器截圖未拍**（本批不改畫面、V42-0 的 64 張基準不含這個狀態）；上面是幾何估算，支持 PRD §15 的風險列，V42-2a／2b 做群組合計列時以瀏覽器實際畫面為準。
 
 ## 7 功能保留與 E2E 文字斷言（06 V42-0 第 8 項）
 
