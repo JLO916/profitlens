@@ -1,0 +1,342 @@
+{
+  "frame": {
+    "class": "chart-frame sm",
+    "style": "height: 180px;",
+    "x": 867,
+    "y": 307.38,
+    "width": 524,
+    "height": 180
+  },
+  "wrapper": {
+    "x": 867,
+    "y": 307.38,
+    "width": 524,
+    "height": 180
+  },
+  "bars": [
+    [
+      {
+        "x": 1003,
+        "y": 312.38,
+        "width": 288.83,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 328.15,
+        "width": 289.58,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 343.93,
+        "width": 290.32,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 359.71,
+        "width": 291.07,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 375.49,
+        "width": 291.81,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 391.26,
+        "width": 292.56,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 407.04,
+        "width": 293.3,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 422.82,
+        "width": 294.04,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 438.6,
+        "width": 294.79,
+        "height": 7.1
+      }
+    ],
+    [
+      {
+        "x": 1003,
+        "y": 319.48,
+        "width": 294.04,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 335.25,
+        "width": 294.79,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 351.03,
+        "width": 295.53,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 366.81,
+        "width": 296.28,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 382.59,
+        "width": 297.02,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 398.36,
+        "width": 297.77,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 414.14,
+        "width": 298.51,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 429.92,
+        "width": 299.26,
+        "height": 7.1
+      },
+      {
+        "x": 1003,
+        "y": 445.7,
+        "width": 300,
+        "height": 7.1
+      }
+    ]
+  ],
+  "texts": [
+    {
+      "text": "0",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 999.66,
+      "y": 458.9,
+      "width": 6.69,
+      "height": 14
+    },
+    {
+      "text": "1,000 元",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 1086.66,
+      "y": 458.9,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,000 元",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 1193,
+      "y": 458.9,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "CH01",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 964.31,
+      "y": 312.52,
+      "width": 30.69,
+      "height": 14
+    },
+    {
+      "text": "CH03",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 964.31,
+      "y": 344.08,
+      "width": 30.69,
+      "height": 14
+    },
+    {
+      "text": "CH05",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 964.31,
+      "y": 375.64,
+      "width": 30.69,
+      "height": 14
+    },
+    {
+      "text": "CH07",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 964.31,
+      "y": 407.19,
+      "width": 30.69,
+      "height": 14
+    },
+    {
+      "text": "CH09",
+      "class": "recharts-text recharts-cartesian-axis-tick-value",
+      "x": 964.31,
+      "y": 438.75,
+      "width": 30.69,
+      "height": 14
+    },
+    {
+      "text": "上期 2,716 元",
+      "class": "chart-value",
+      "x": 1297.83,
+      "y": 308.92,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,723 元",
+      "class": "chart-value",
+      "x": 1298.58,
+      "y": 324.7,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,730 元",
+      "class": "chart-value",
+      "x": 1299.32,
+      "y": 340.48,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,737 元",
+      "class": "chart-value",
+      "x": 1300.07,
+      "y": 356.26,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,744 元",
+      "class": "chart-value",
+      "x": 1300.81,
+      "y": 372.04,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,751 元",
+      "class": "chart-value",
+      "x": 1301.56,
+      "y": 387.81,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,758 元",
+      "class": "chart-value",
+      "x": 1302.3,
+      "y": 403.59,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,765 元",
+      "class": "chart-value",
+      "x": 1303.04,
+      "y": 419.37,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "上期 2,772 元",
+      "class": "chart-value",
+      "x": 1303.79,
+      "y": 435.15,
+      "width": 72.7,
+      "height": 14
+    },
+    {
+      "text": "2,765 元",
+      "class": "chart-value is-strong",
+      "x": 1303.04,
+      "y": 316.02,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,772 元",
+      "class": "chart-value is-strong",
+      "x": 1303.79,
+      "y": 331.8,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,779 元",
+      "class": "chart-value is-strong",
+      "x": 1304.53,
+      "y": 347.58,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,786 元",
+      "class": "chart-value is-strong",
+      "x": 1305.28,
+      "y": 363.36,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,793 元",
+      "class": "chart-value is-strong",
+      "x": 1306.02,
+      "y": 379.14,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,800 元",
+      "class": "chart-value is-strong",
+      "x": 1306.77,
+      "y": 394.91,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,807 元",
+      "class": "chart-value is-strong",
+      "x": 1307.51,
+      "y": 410.69,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,814 元",
+      "class": "chart-value is-strong",
+      "x": 1308.26,
+      "y": 426.47,
+      "width": 45.38,
+      "height": 14
+    },
+    {
+      "text": "2,821 元",
+      "class": "chart-value is-strong",
+      "x": 1309,
+      "y": 442.25,
+      "width": 45.38,
+      "height": 14
+    }
+  ],
+  "kvRows": 9,
+  "dataRows": 9
+}

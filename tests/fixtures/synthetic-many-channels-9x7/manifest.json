@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "synthetic-many-channels-9x7",
+  "source_type": "synthetic",
+  "currency": "TWD",
+  "timezone": "Asia/Taipei",
+  "data_as_of": "2026-01-15",
+  "coverage_start": "2026-01-01",
+  "coverage_end": "2026-01-14",
+  "channels": [
+    "CH01",
+    "CH02",
+    "CH03",
+    "CH04",
+    "CH05",
+    "CH06",
+    "CH07",
+    "CH08",
+    "CH09"
+  ],
+  "previous_period": {
+    "start": "2026-01-01",
+    "end": "2026-01-07"
+  },
+  "current_period": {
+    "start": "2026-01-08",
+    "end": "2026-01-14"
+  },
+  "sales_coverage_confirmed": true,
+  "amount_basis": "product_amounts_excluding_tax_and_customer_shipping_income",
+  "note": "All entities and values are synthetic. Not real business outcomes."
+}
