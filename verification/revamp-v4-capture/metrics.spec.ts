@@ -138,7 +138,7 @@ const GUIDE_PATH = "/guide";
  * verification/revamp-v42/V42-0/metrics.json 的 firstLoadJs.gzipBytes）。0 表示尚未量——V42-0 的主流程跑完 capture 後把實測值填進來；常數 > 0 時（V42-1 起）門檻＝這個值＋V42_HOME_FIRST_LOAD_ALLOWANCE，
  * 同時取代 v41 的「≤ V41-0 實測＋1,024」（v41.homeFirstLoad 仍記錄、不再斷言）。B5 的 545,397 照舊斷言。
  */
-const V42_HOME_FIRST_LOAD_BASELINE = 0;
+const V42_HOME_FIRST_LOAD_BASELINE = 519_705;
 const V42_HOME_FIRST_LOAD_ALLOWANCE = 8_192;
 /**
  * V42-0（護欄表「`/` First Load JS」；CLAUDE.md「棘輪與基準」）：v4.2 隨頁載入的面板才有的 testid 字面值（帶引號，寫法同 SPLIT_SENTINELS），併入 `/` 首載 chunk 的 0 次斷言（ALL_SPLIT_SENTINELS）。

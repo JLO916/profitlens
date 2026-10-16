@@ -1,5 +1,17 @@
 # Status
 
+## V42-0 基準與護欄（v4.2 第一批，2026-10-16；不改畫面）
+
+使用者 2026-10-16 回覆「其他都依建議」（D-V42-1 到 23 依建議值）與「V42-0」。分支 `revamp/v4.2` 自 `origin/main`（v4.1.2＝`e256154`，`00584a5`）開出，不 push；CLAUDE.md 整份換成 v4.2 版。
+
+**內容**：`verification/revamp-v42/labels-v41.flat.json`（3,163 個葉節點，含 guide）與 `V42_NEW_KEY_PREFIXES`（9 個）；copy-scan 的「賠錢」「虧損」與 L1 規則涵蓋 `products.perspectivesV42.*`；第五份 testid 清單；`verification/revamp-v42.capture.config.ts` 與 64 張基準（自 V41-6 複製）；`metrics.spec` 的 `V42_HOME_FIRST_LOAD_BASELINE`＝519,705（V42-1 起門檻 527,897）、`V42_SPLIT_SENTINELS`、`b9Perspectives` 預留；Lighthouse 第六步留位；`overview-many-channels` 頁面狀態（9 通路；G4 每根 7.1 px、端點數字互疊，V42-2b 要處理）；功能保留表 v4.2（195 列）；子集敏感分支稽核 31 條（V42-2a 修 20、V42-1 修 1、不受影響 10）；`npm audit` 仍 8 high、lockfile 未動。`src/` 一個檔都沒改。
+
+**驗收**（程式 `b384dcd`＋常數填入）：unit 167 檔、3,577 全過；lint 0；typecheck 通過；contrast 85／85；E2E 1,143／0／29；畫面基準 64 張 0 差異；`/` First Load 519,705、說明頁 131,465、`GUIDE_SENTINELS` 0；390 TBT 五項通過（中位數 1,029.4／791.5／89.1／983.0／12.6）；axe 28／28／28／26 全 0；`GUIDE_MEDIA=check` 47／47；launch-check 本機 13＋19；禁區與邊界五條為空。
+
+**沒有做**：push、部署（每一次都要當次同意）；H8、H9 在後面的批次；H6 待人工。
+
+驗收見 `verification/revamp-v42-V42-0-acceptance.md`；基準見 `verification/revamp-v42/V42-0-baseline.md`。
+
 ## EC ProfitLens v4.1.2 正式上線（2026-10-16；V41-6 修正批）
 
 使用者 2026-10-15 在 v4.1.1 上線後回報兩項要修正：範例檔無法下載、側欄入口改名「操作導覽」並加問號圖示（同一則訊息的另外兩項是新功能，規劃在 `docs/revamp-v4.2/`，待拍板）。

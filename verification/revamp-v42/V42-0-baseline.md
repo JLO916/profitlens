@@ -2,7 +2,7 @@
 
 > V42-0 建立（2026-10-16）。依據：`docs/revamp-v4.2/06_BATCHES.md` V42-0 第 2–9 項與「護欄與棘輪時程」表、`docs/revamp-v4.2/00_README.md`「驗收產物」。本文件寫「V42-0 實測」「V42-0 基準」時，指 V42-0 在 v4.1.2 程式碼（`src/` 一個字都沒改）上量到的值；之後各批以這裡的數字為門檻或比對基準（`/` First Load 門檻＝實測＋8,192，D-V42-20＝A）。
 >
-> **狀態**：第 1、2、4、6、7 節由實作代理 C 填寫（`npm audit`、testid 清單計數、子集稽核、功能保留表）。第 3 節（labels 快照）、第 4 節的測試結果、第 5 節的結果（copy-scan 新規則）與第 6 節的 `overview-many-channels` 由整合代理於合併後填入（已填），其 G4 擁擠程度的瀏覽器目視（1440 截圖與幾何量測）由審查修正補做（已填，見 §6 與 §8 的目視列）；畫面基準 64 張已自 `verification/revamp-v41/V41-6/snapshots/` 逐位元組複製到 `verification/revamp-v42/V42-0/snapshots/`（`diff -rq` 相同），待主流程不帶 `--update-snapshots` 跑；第 8 節的瀏覽器量測（畫面基準 64 張、`metrics.spec` 的 First Load 與 DOM 節點、390 五個 TBT、8 頁＋2 說明頁 Lighthouse、axe、keyboard-walk、network-log、`GUIDE_MEDIA=check`、launch-check）由主流程跑共通驗收後填入；填入前一律是「由主流程填寫」。
+> **狀態**：第 1、2、4、6、7 節由實作代理 C 填寫（`npm audit`、testid 清單計數、子集稽核、功能保留表）。第 3 節（labels 快照）、第 4 節的測試結果、第 5 節的結果（copy-scan 新規則）與第 6 節的 `overview-many-channels` 由整合代理於合併後填入（已填），其 G4 擁擠程度的瀏覽器目視（1440 截圖與幾何量測）由審查修正補做（已填，見 §6 與 §8 的目視列）；畫面基準 64 張已自 `verification/revamp-v41/V41-6/snapshots/` 逐位元組複製到 `verification/revamp-v42/V42-0/snapshots/`（`diff -rq` 相同），待主流程不帶 `--update-snapshots` 跑；第 8 節的瀏覽器量測（畫面基準 64 張、`metrics.spec` 的 First Load 與 DOM 節點、390 五個 TBT、8 頁＋2 說明頁 Lighthouse、axe、keyboard-walk、network-log、`GUIDE_MEDIA=check`、launch-check）由主流程跑共通驗收後填入（2026-10-16 已全部填入，程式 `b384dcd`，`V42_HOME_FIRST_LOAD_BASELINE` 填入 519,705）。
 
 ## 1 產生日與基準
 
@@ -126,23 +126,23 @@ console.log(`labels ${fromLabels.length} guide ${fromGuide.length} total ${entri
 
 V42-0 沒有任何 `batch`＝V42-0 的列（本批不改畫面）；V42-6 只確認 `batch`＝V42-n 的列都已打勾。
 
-## 8 瀏覽器量測（主流程，由主流程填寫）
+## 8 瀏覽器量測（主流程；2026-10-16 已填）
 
 | 項目 | 結果 | 證據 |
 |---|---|---|
-| 完整 E2E（帶三個 `*_OUT`） | 由主流程填寫（V41-6 為 1,143 passed、0 failed、29 skipped） | `verification/revamp-v42/V42-0/axe.json`、`keyboard-walk.json`、`network-log.json` |
-| 畫面基準 64 張（`verification/revamp-v42.capture.config.ts`；基準自 V41-6 複製，不帶 `--update-snapshots`） | 由主流程填寫（必須 0 差異） | `verification/revamp-v42/V42-0/snapshots/` |
+| 完整 E2E（帶三個 `*_OUT`） | **1,143 passed、0 failed、29 skipped（35.8 分鐘）**；在錨點 `bcb6c91` 執行，之後合併的 commit 不含 `src/` 與 `tests/e2e/`（`git diff --stat bcb6c91 HEAD -- src tests/e2e` 為空） | `verification/revamp-v42/V42-0/axe.json`、`keyboard-walk.json`、`network-log.json` |
+| 畫面基準 64 張（`verification/revamp-v42.capture.config.ts`；基準自 V41-6 複製，不帶 `--update-snapshots`） | **38 passed、0 failed，64 張 0 差異** | `verification/revamp-v42/V42-0/snapshots/` |
 | overview-many-channels G4 目視（1440 截圖；06 V42-0 第 7 項、PRD §15） | **已做**（審查修正補做，不在共通驗收的 64 張內）：9 通路時 G4 的長條每根 7.1 px、間距 0、端點數字互疊、Y 軸只畫 5／9 個通路標籤；精簡表與資料表各 9 列可讀；PRD §15 風險列成立。細節與結論見 §6 | `verification/revamp-v42/V42-0/overview-many-channels-channel-mix-1440.png`、`overview-many-channels-overview-1440.png`、`overview-many-channels-g4-geometry.json`；腳本 `overview-many-channels.spec.ts`（`CAPTURE_PORT=<埠> npx playwright test -c verification/revamp-v42/V42-0/`，對已啟動的 PUBLIC_DEMO 伺服器跑；資料 `tests/fixtures/synthetic-many-channels-9x7/`） |
-| `/` 的 First Load JS（gzip） | 由主流程填寫（V41-6 為 519,705；`V42_HOME_FIRST_LOAD_BASELINE`＝實測，V42-1 起門檻＝實測＋8,192；B5 545,397 照舊） | `metrics.json` 的 `v42.homeFirstLoad` |
-| 404 頁的 First Load（框架基準） | 由主流程填寫（V41-6 為 131,465）；說明頁 ≤ 框架基準＋5,120 | `metrics.json` 的 `v41.frameworkBaseline` |
-| 首載 chunk 清單 | 由主流程填寫（`SPLIT_SENTINELS` 與 `GUIDE_SENTINELS` 在 `/` 首載 chunk 0 次；本批 `SPLIT_SENTINELS` 預留位置 0 個） | `first-load-modules.json` |
-| B2 首屏、B3 390 無橫向捲動 | 由主流程填寫 | `metrics.json` |
-| B9 1440 DOM 節點（七頁） | 由主流程填寫（V41-6：總覽 3,325、健檢 2,174、商品 2,510、試算 683、待辦 711、會議 1,064、資料來源 1,209；非預設視角的欄位預留，V42-3 起記基準） | `metrics.json` |
-| 390 TBT（五項，低負載各 3 次取中位數與 loadavg） | 由主流程填寫：載入示範資料（門檻 1,109.1）、通路健檢（832.3）、商品毛利（129.9）、會議（1,071.2）、資料來源（50.0）；每次的 1 分鐘 loadavg 一併記；第六步「商品毛利切到品類視角」留位不量（V42-3 起） | `lighthouse/`、`lighthouse-runs/` |
-| Lighthouse（8 頁＋2 說明頁，1440 與 390） | 由主流程填寫（Accessibility 不低於同頁基準且 ≥ 95，說明頁目標 100） | 同上 |
-| axe 四尺寸 | 由主流程填寫（V41-6 為 28／28／28／26 個狀態，0 serious） | `axe.json` |
-| keyboard-walk | 由主流程填寫（除 `checked_at` 外應與 V41-6 相同） | `keyboard-walk.json` |
-| network-log | 由主流程填寫（下載集合恰好 5 種、無 POST） | `network-log.json` |
-| `GUIDE_MEDIA=check` | 由主流程填寫（V41-6 後 47 項，差異 0） | `verification/guide-media/` 輸出 |
-| launch-check（本機 3100） | 由主流程填寫（13 項＋19 項） | `launch-check-local.json` |
-| audit:ui、contrast | 由主流程填寫（V41-6：hex 0、字級種類 11、JSX 中文 0；contrast 全過） | `ui-audit.json` |
+| `/` 的 First Load JS（gzip） | **519,705**（與 V41-6 相同）；`V42_HOME_FIRST_LOAD_BASELINE`＝519,705 已填入，V42-1 起門檻 527,897＝實測＋8,192；B5 545,397 照舊 | `metrics.json` 的 `v42.homeFirstLoad` |
+| 404 頁的 First Load（框架基準） | **131,465**（不變）；`/guide` 與 11 個功能區頁都是 131,465（差 0，門檻 136,585） | `metrics.json` 的 `v41.frameworkBaseline` |
+| 首載 chunk 清單 | 6 個 modern 腳本（同 V41-6）；`SPLIT_SENTINELS` 8 個與 `GUIDE_SENTINELS` 2 個都 0 次（對照組 `操作導覽：每一頁怎麼用` 1 次）；`V42_SPLIT_SENTINELS` 0 個 | `first-load-modules.json` |
+| B2 首屏、B3 390 無橫向捲動 | 通過（`metrics.spec` 38／38，門檻同 V41-6） | `metrics.json` |
+| B9 1440 DOM 節點（七頁） | 總覽 3,337、健檢 2,186、商品 2,522、試算 695、待辦 723、會議 1,076、資料來源 1,221（與 V41-6 的 `metrics.json` 相同；1280 總覽 3,361、390 總覽 3,324）；`b9Perspectives` 預留欄位為空 | `metrics.json` |
+| 390 TBT（五項，低負載各 3 次取中位數與 loadavg） | 三次（1 分鐘負載 2.33、2.31、2.37）：載入示範資料 977.9／1,029.4／1,080.9 → **1,029.4**（門檻 1,109.1）；通路健檢 788.0／791.5／822.1 → **791.5**（832.3）；商品毛利 88.3／89.1／97.9 → **89.1**（129.9）；會議 1,020.9／983.0／970.6 → **983.0**（1,071.2）；資料來源 11.9／12.6／17.0 → **12.6**（50.0）；五項都在門檻內，當 v4.2 的起點；第六步留位不量 | `lighthouse/`、`lighthouse-runs/run1`、`run2`、`metrics.json` |
+| Lighthouse（8 頁＋2 說明頁，1440 與 390） | 工作台 a11y 全 100；首頁 Performance 1440 100、390 95／94／94；說明頁 `/guide`、`/guide/overview` a11y 與 SEO 100、Performance 1440 100、390 98–99、CLS 0 | 同上 |
+| axe 四尺寸 | 28／28／28／26 個狀態，0 問題 | `axe.json` |
+| keyboard-walk | 除 `checked_at` 外與 V41-6 逐位元組相同 | `keyboard-walk.json` |
+| network-log | 桌機與手機各 24 個請求；下載集合 5 種（analysis_csv、excel、pptx、decision_json、backup）；非 GET 0、外部網域 0 | `network-log.json` |
+| `GUIDE_MEDIA=check` | 47／47（44 張截圖＋15 個影片 cue），0 差異 | `verification/guide-media/` 輸出 |
+| launch-check（本機 3100） | 13／13、補充 19／19 | `launch-check-local.json` |
+| audit:ui、contrast | hex 0、字級種類 11、JSX 中文 0、元件字串常值中文 0；contrast 85／85 | `ui-audit.json` |
