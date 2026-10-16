@@ -115,6 +115,12 @@ v4.1.1 上線後，使用者 2026-10-15 回報（同一則訊息的第 1、2 項
 - 修正只有對 Vercel 的部署（preview 或正式站）跑 launch-check 才能證明；本機 `next start` 直接讀 `public/`，19 項補充在本機一定通過。
 - 其餘同 RELEASES v4.1.2 的「已知限制」：H6（含 T5、T6）待人工；匯出檔開檔檢查待人工；Skew Protection 沒開（D-V41-16）；3 張截圖的原生控制項是英文；21 張截圖在 390 較小。
 
-## 6. 上線
+## 6. 上線（使用者 2026-10-16 回覆「部署 v4.1.2」，當次同意）
 
-待使用者當次同意。上線步驟（同 v4.1.1）：推送 `revamp/v4.1` 與 `main`（`main` 從 `66c241a` fast-forward 到發布 commit），由 Vercel Git 整合部署正式站；annotated tag `v4.1.2` 指向發布 commit 並推送；對正式站跑 `scripts/launch-check.mjs`（13 項與補充 19 項，其中 5 項 `public-file` 是這次修正唯一能在正式站證明的檢查）；用無頭 Chromium 實際點範例檔連結確認下載到的檔名與位元組；之後補上線紀錄 commit（README 改成「正式站已是 v4.1.2（2026-10-16）」、RELEASES 的正式站檢查一行、本節、STATUS、06 進度），再推送一次讓正式站用同樣的程式重建並再跑一次 launch-check。
+- **推送**：`revamp/v4.1`（含 v4.2 規劃套件的 docs commit `ebc04eb`，另建一個 preview）；`main` 從 `66c241a` fast-forward 到發布 commit `e256154`。commit 之後的禁區與邊界 diff 都是空的。
+- **部署**：Vercel Git 整合部署 `dpl_J5A1SGdB13av7anqtCjsf4bKUeEj`，target production，READY；`profitlens-tau.vercel.app` 指向它。正式站的 `/api/insights` 回 `{"available":false,"reason":"PUBLIC_DEMO"}`。
+- **tag**：annotated tag `v4.1.2` 指向 `e256154`，已推送。
+- **正式站檢查**：13 項全部通過，補充 19 項全部通過（`verification/revamp-v41/V41-6/launch-check-production.json`）。5 項 `public-file` 在正式站第一次通過：`/templates/examples/{sales_daily,channel_costs_daily,ad_spend_daily}.csv`、`manifest.json`、`/docs/ORDER_AGGREGATION.md` 都 200，content-type 正確，位元組與 repo 的 `public/` 相同。
+- **實際下載**：無頭 Chromium（1440×1000）在正式站首頁空狀態的「需要的檔案」表點 3 個「範例檔」連結，download 事件的建議檔名與位元組（298、233、125）都和 repo 相同、沒有失敗（`verification/revamp-v41/V41-6/production-download-check.json`；腳本只在 scratchpad）。v4.1.1 正式站同一個動作得到的是檔名「404」、狀態 canceled。
+- **上線後的文件 commit**：README 改成「正式站已是 v4.1.2（2026-10-16）」、RELEASES 補正式站檢查一行、本節、STATUS、DECISIONS、06／README 進度，以及 v4.2 的拍板（使用者同一則回覆「其他都依建議」）。推送 `revamp/v4.1` 與 `main` 後，正式站用同樣的程式重建一次（比照 v4.1.1），重建後再跑一次 launch-check，結果記在 STATUS。
+- **沒有做**：Skew Protection（D-V41-16，使用者在 Vercel 設定決定）；H6 與匯出開檔檢查待人工。

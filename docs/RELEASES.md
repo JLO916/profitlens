@@ -6,9 +6,9 @@
 
 發布日期：2026-10-16。
 
-**發布方式**：v4.1.1 上線後，使用者 2026-10-15 回報兩項要修正：「匯入範本＞範例檔，三個需要的檔案都無法正確下載」與「側邊選單的『使用說明』改為『操作導覽』並增加 ? 的 icon」，開工修正批 V41-6（D-V41-26 到 D-V41-30 依建議值；版本號 4.1.2 依 D-V41-29）。上線步驟：經使用者當次同意後推送 `revamp/v4.1` 與 `main`（`main` 從 `66c241a` fast-forward 到發布 commit），由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.2` 指向發布 commit 並推送；對正式站跑 13 項 HTTP 與補充 19 項。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.2。
+**發布方式**：v4.1.1 上線後，使用者 2026-10-15 回報兩項要修正：「匯入範本＞範例檔，三個需要的檔案都無法正確下載」與「側邊選單的『使用說明』改為『操作導覽』並增加 ? 的 icon」，開工修正批 V41-6（D-V41-26 到 D-V41-30 依建議值；版本號 4.1.2 依 D-V41-29）。使用者 2026-10-16 回覆「部署 v4.1.2」，當次同意正式上線。推送 `revamp/v4.1` 與 `main`（`main` 從 `66c241a` fast-forward 到發布 commit `e256154`），由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.2` 指向 `e256154` 並已推送。
 
-**正式站檢查**：PROD_PLACEHOLDER
+**正式站檢查**：deployment `dpl_J5A1SGdB13av7anqtCjsf4bKUeEj`（target production，READY，`profitlens-tau.vercel.app` 指向它）。13 項 HTTP 全部通過，補充 19 項也全部通過，`live_ai_called: false`（`verification/revamp-v41/V41-6/launch-check-production.json`）；5 項 `public-file`（4 個範例檔與 `ORDER_AGGREGATION.md`）在正式站都回 200、content-type 是 text/csv、application/json、text/markdown，位元組與 repo 的 `public/` 相同——這是從 v2.0.0 以來第一次。另用無頭 Chromium 在正式站首頁空狀態實際點 3 個「範例檔」連結：下載事件的檔名是 `sales_daily.csv`、`channel_costs_daily.csv`、`ad_spend_daily.csv`，位元組 298、233、125 與 repo 相同、沒有失敗（`verification/revamp-v41/V41-6/production-download-check.json`）。
 
 **上線時沒有完成的事**：
 - H6（v4 可用性複測與外部盲評，含 v4.1 加的 T5、T6）仍待人工；依 D-V41-17 不擋上線。T5 答案鍵的入口名已同步改成「操作導覽」。
