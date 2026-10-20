@@ -5,7 +5,7 @@ import { Bar, BarChart, CartesianGrid, Cell, LabelList, ReferenceLine, Responsiv
 import { track } from "@/application/analytics";
 import { channelConclusion, type ChannelConclusionRow } from "@/application/chart-takeaways";
 import { chartColors, chartFontSize, chartHeights } from "@/application/chart-theme";
-import { channelLabel, demoAlias } from "@/application/copy";
+import { channelLabel, snapshotResolver } from "@/application/copy";
 import { metricComparison } from "@/application/manager-summary";
 import { deltaTone, emptyKindOf, formatAmountL1, formatAxisWan, formatEmpty, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -80,8 +80,8 @@ export function channelChangeText(metric: Metric): string {
 
 export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
   const { report } = snapshot;
-  const alias = demoAlias(report.dataset_id);
-  const conclusion = channelConclusion(snapshot, { alias });
+  const resolver = snapshotResolver(snapshot);
+  const conclusion = channelConclusion(snapshot, { resolver });
   // V4-2 G4：各通路的差額（同一個 builder 給條與 number-link），差額條共用一把尺（PRD §7.2：同一張表的內嵌條共用最大值）。
   const changes = useMemo(() => new Map(report.scope.channels.map(channel => [channel, channelChangeEvidence(snapshot, channel)])), [report.scope.channels, snapshot]);
   const changeScale = useMemo(() => barCellScale([...changes.values()].map(evidence => evidence.metric.value)), [changes]);
@@ -133,7 +133,7 @@ export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
     })}</tbody>
   </table>;
 
-  const table = <div className="table-scroll" tabIndex={0} role="region" aria-label={ui.channelTableAria}><table><caption>{fill(ui.captionWithUnit, { caption: ui.channelCaption })}</caption><thead><tr><th>{ui.colChannel}</th><th>{labels.shell.periods.current}{metricDefinitions.net_revenue.label}</th><th>{labels.shell.periods.previous}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.shell.periods.current}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.shell.periods.current}{metricDefinitions.contribution_margin.shortLabel}</th></tr></thead><tbody>{Object.keys(report.current.channels).map(channel => <tr key={channel}><th>{channelLabel(channel, alias)}</th><td>{number(channel, "current", "net_revenue")}</td><td>{number(channel, "previous", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_margin")}</td></tr>)}</tbody></table></div>;
+  const table = <div className="table-scroll" tabIndex={0} role="region" aria-label={ui.channelTableAria}><table><caption>{fill(ui.captionWithUnit, { caption: ui.channelCaption })}</caption><thead><tr><th>{ui.colChannel}</th><th>{labels.shell.periods.current}{metricDefinitions.net_revenue.label}</th><th>{labels.shell.periods.previous}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.shell.periods.current}{metricDefinitions.contribution_after_marketing.shortLabel}</th><th>{labels.shell.periods.current}{metricDefinitions.contribution_margin.shortLabel}</th></tr></thead><tbody>{Object.keys(report.current.channels).map(channel => <tr key={channel}><th>{channelLabel(channel, resolver)}</th><td>{number(channel, "current", "net_revenue")}</td><td>{number(channel, "previous", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_after_marketing")}</td><td>{number(channel, "current", "contribution_margin")}</td></tr>)}</tbody></table></div>;
 
   return <ChartFrame id="channel" testId="channel-mix" title={conclusion.title} subtitle={conclusion.subtitle} legend={legend} height="sm" state={rows.length === 0 ? "empty" : "ready"} after={kv}
     dataTable={{ summary: fill(ui.dataTable, { title: labels.overview.sections.channelMix }), content: table }}>

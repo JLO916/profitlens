@@ -16,7 +16,7 @@ import { parseEvents, type EventSet } from "@/application/events";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
-import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
 import { metricDefinitions } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceBackupSource } from "@/application/workspace-backup";
@@ -100,7 +100,7 @@ export function shellPage(state: ShellState): ReactElement {
   // V4-8b：dashboard 的 usePanelReady／panelWaiting（這裡沒有匯入中的 chunk 狀態）。
   const ready = !state.chunk;
   const local = active.dataset.manifest.source_type === "user_provided";
-  const alias = demoAlias(active.dataset.manifest.dataset_id);
+  const resolver = snapshotResolver(active.snapshot);
   const report = active.snapshot.report;
   // performLoad／activate：表單日期與比較方式取自快照。
   const dates = { previousStart: report.previous.period.start, previousEnd: report.previous.period.end, currentStart: report.current.period.start, currentEnd: report.current.period.end };
@@ -137,10 +137,10 @@ export function shellPage(state: ShellState): ReactElement {
         <PageHeader title={panelCopy(panel).headline} description={panelCopy(panel).explain} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} presentSwitch={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary present-switch" data-testid="present-switch" onClick={noop}>{labels.shell.nav[panel === "meeting" ? "overview" : "meeting"].headline}</button> : undefined} />
         {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} initialState={state.wizardState} /></div>}
         <PeriodBar
-          channel={{ value: report.scope.channels.length > 1 ? "" : report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: noop }}
+          channel={{ value: report.scope.channels.length > 1 ? "" : report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, resolver) })), onChange: noop }}
           presets={presets} isPressed={presetMatches} onPreset={noop}
           comparisonMode={comparisonMode} onComparisonMode={noop} dates={dates} onDates={noop} onSubmit={noop}
-          scope={{ previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channelsLabel(report.scope.channels, alias), dataAsOf: active.snapshot.data_as_of }} />
+          scope={{ previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channelsLabel(report.scope.channels, resolver), dataAsOf: active.snapshot.data_as_of }} />
         <NeedsAttention filterError={state.filterError ?? ""} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={noop} yoyReason={yoyReason} />
         {state.chunk === "loading" && <PanelLoadingState />}
         {state.chunk === "failed" && <PanelErrorState onRetry={noop} />}

@@ -5,7 +5,8 @@ import { useMemo } from "react";
 import { track } from "@/application/analytics";
 import { CHANNEL_FEE_FIELDS, CHANNEL_STRUCTURE_MAX, CHANNEL_STRUCTURE_SM_MAX, CHANNEL_STRUCTURE_VERSION, channelStructure, type ChannelStructure, type ChannelStructureRow } from "@/application/chart-structure";
 import { chartColors } from "@/application/chart-theme";
-import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import { deltaTone, formatPeriodL1, metricDefinitions } from "@/application/presentation";
 import { profitWaterfall } from "@/application/waterfall";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -68,16 +69,16 @@ export function sharePerHundredText(perHundred: string | null): string | null {
 }
 
 /** G10 的資料與文字（純函式，tests/chart-structure.test.ts）。 */
-export function shareSectionModel(snapshot: WorkspaceSnapshot, options: { alias?: boolean } = {}): ShareSectionModel {
+export function shareSectionModel(snapshot: WorkspaceSnapshot, options: { resolver?: NameResolver } = {}): ShareSectionModel {
   const { report } = snapshot;
-  const alias = options.alias ?? demoAlias(report.dataset_id);
+  const resolver = options.resolver ?? snapshotResolver(snapshot);
   const channels = report.scope.channels;
   const structure = channelStructure(snapshot, "current");
   const scoped = (row: ChannelStructureRow): ShareRowModel => {
-    const waterfall = profitWaterfall(snapshot, row.channel ?? "all", { alias });
+    const waterfall = profitWaterfall(snapshot, row.channel ?? "all", { resolver });
     const share = (metric: MetricName) => waterfall.rows.find(item => item.metric === metric)?.share ?? null;
     return {
-      key: row.key, channel: row.channel, label: row.channel === null ? labels.overview.sections.total : channelLabel(row.channel, alias), total: row.channel === null,
+      key: row.key, channel: row.channel, label: row.channel === null ? labels.overview.sections.total : channelLabel(row.channel, resolver), total: row.channel === null,
       perHundred: waterfall.perHundred, shares: { cogs: share("cogs_net"), ad: share("ad_spend"), remain: share("contribution_after_marketing") }, structure: row,
     };
   };
@@ -97,8 +98,8 @@ export function shareSectionModel(snapshot: WorkspaceSnapshot, options: { alias?
 
   const notApplicable = rows.filter(row => !row.total && row.structure.status === "notApplicable").map(row => row.channel!);
   const { period } = report.current;
-  const base = fill(copy.subtitle, { section: copy.section, period: formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of }), scope: channelsLabel(channels, alias) });
-  const subtitle = notApplicable.length ? fill(copy.subtitleNote, { subtitle: base, channels: channelsLabel(notApplicable, alias) }) : base;
+  const base = fill(copy.subtitle, { section: copy.section, period: formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of }), scope: channelsLabel(channels, resolver) });
+  const subtitle = notApplicable.length ? fill(copy.subtitleNote, { subtitle: base, channels: channelsLabel(notApplicable, resolver) }) : base;
   return { rows, structure, chartable: channels.length <= CHANNEL_STRUCTURE_MAX, height: channels.length <= CHANNEL_STRUCTURE_SM_MAX ? "sm" : "lg", titleKind, title, subtitle, notApplicable };
 }
 

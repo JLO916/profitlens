@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { COVERAGE_RANGE_FIELD, coverageTimeline } from "../src/application/chart-coverage";
 import { chartColors, chartHeights, chartRowHeights } from "../src/application/chart-theme";
-import { channelsLabel } from "../src/application/copy";
+import { channelsLabel, snapshotResolver } from "../src/application/copy";
 import type { EventSet } from "../src/application/events";
 import { formatDateL1, formatPeriodL1 } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
@@ -174,7 +174,7 @@ describe("G20：合成資料、示範資料、golden", () => {
     const { dataset, snapshot } = await snapshotOf(fixture("demo"));
     const html = render({ dataset, snapshot, onFilter: noop });
     expect(titleOf(html)).toBe(fill(copy.title.none, { start: "6/1", end: "8/23" }));
-    expect(textOf(element(html, 'id="data-coverage-sub"')!)).toContain(channelsLabel(["DTC", "MARKETPLACE"], true));
+    expect(textOf(element(html, 'id="data-coverage-sub"')!)).toContain(channelsLabel(["DTC", "MARKETPLACE"], snapshotResolver(snapshot)));
     expect(rowsOf(html)).toEqual([]);
     expect(html).toContain(`<p class="note">${copy.tableNone}</p>`);
     // 軸起日＝涵蓋起日（6/1）：沒有軸外的無列說明。

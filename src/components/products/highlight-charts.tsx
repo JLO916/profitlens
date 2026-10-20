@@ -5,6 +5,7 @@ import { track } from "@/application/analytics";
 import { PRODUCT_PARETO_VERSION, productParetoLead, type ProductPareto, type ProductParetoEntry } from "@/application/chart-pareto";
 import { chartColors } from "@/application/chart-theme";
 import { channelLabel, formatHeadlineAmount } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import { deltaTone, formatAmountL1, formatCount, formatRateL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import type { ProductComparisonRow } from "@/domain/product-comparison";
 import { fill, labels } from "@/i18n";
@@ -49,7 +50,7 @@ export const PRODUCT_VARIANCE_BLOCK_ROWS = 5;
 /** 柱與資料表的 testid 語意 key：{channel}-{sku}（不用陣列索引，CL-2）。 */
 export const productChartKey = (row: Pick<ProductComparisonRow, "channel" | "sku">) => `${row.channel}-${row.sku}`;
 /** 「SKU · 通路」（示範資料用通路 alias）。 */
-export const productChartLabel = (row: Pick<ProductComparisonRow, "channel" | "sku">, alias: boolean) => fill(copy.product, { sku: row.sku, channel: channelLabel(row.channel, alias) });
+export const productChartLabel = (row: Pick<ProductComparisonRow, "channel" | "sku">, resolver: NameResolver) => fill(copy.product, { sku: row.sku, channel: channelLabel(row.channel, resolver) });
 
 /** 兩張圖共用的頁面範圍：抽屜 builder 的 ctx，以及副標用的兩期起訖（M/D–M/D）與通路範圍字（同 product-scope 那一行）。 */
 export interface ProductChartScope {
@@ -87,7 +88,7 @@ export function paretoCumulativeEvidence(pareto: ProductPareto, index: number, c
     formula: fill(copy.pareto.drawer.cumulativeFormula, { n, metric: METRIC }),
     definition: fill(copy.pareto.drawer.cumulativeDefinition, { n, metric: METRIC }),
     formulaTechnical: copy.pareto.drawer.cumulativeFormulaTechnical,
-    componentLabel: row => productChartLabel(row, ctx.alias),
+    componentLabel: row => productChartLabel(row, ctx.resolver),
   });
 }
 /** G14 累計佔比格的抽屜（D-V4-32＝A：unitOverride percent；組成是分子、分母兩個為負額合計）。 */
@@ -111,7 +112,7 @@ export function paretoSectionModel(pareto: ProductPareto, scope: ProductChartSco
   const lead = productParetoLead(pareto);
   const title = lead === null ? section : fill(copy.pareto.title, { n: formatCount(pareto.count, "L2"), metric: METRIC, k: formatCount(lead.k, "L2"), pct: formatRateL1(lead.entry.share.value) });
   const bars = pareto.rows.map((entry): RankedBarRow<EvidenceSelection> => ({
-    key: productChartKey(entry.row), label: productChartLabel(entry.row, scope.ctx.alias), value: entry.value.value, tone: "unfavorable",
+    key: productChartKey(entry.row), label: productChartLabel(entry.row, scope.ctx.resolver), value: entry.value.value, tone: "unfavorable",
     display: formatAmountL1(entry.value.value), evidence: paretoBarEvidence(entry, scope.ctx),
     extra: fill(copy.pareto.cumulative, { pct: formatRateL1(entry.share.value) }),
   }));
@@ -160,14 +161,14 @@ export function ProductParetoSection({ pareto, model, scope, onEvidence, after, 
     rowHeaderLabel: labels.products.pageV3.columns.product,
     rows,
     rowKey: row => productChartKey(row.entry.row),
-    rowHeader: row => ({ label: productChartLabel(row.entry.row, ctx.alias) }),
+    rowHeader: row => ({ label: productChartLabel(row.entry.row, ctx.resolver) }),
     columns: PARETO_TABLE_COLUMNS,
     valueOf: (row, column): ChartDataCell => { const metric = paretoMetric(row.entry, column.data); return { value: metric.value, reasonCodes: metric.reason_codes, unfavorable: column.data !== "share" && unfavorableMoney(metric.value) }; },
     evidenceOf: (row, column) => column.data === "gross_profit" ? paretoBarEvidence(row.entry, ctx) : column.data === "cumulative" ? paretoCumulativeEvidence(pareto, row.index, ctx) : paretoShareEvidence(pareto, row.index, ctx),
     hasEvidence: everyCellLinked,
     onEvidence,
     cellAria: (row, column, text) => column.data === "gross_profit"
-      ? fill(comparison.evidenceAria, { channel: channelLabel(row.entry.row.channel, ctx.alias), sku: row.entry.row.sku, period: "", label: SHORT, value: text })
+      ? fill(comparison.evidenceAria, { channel: channelLabel(row.entry.row.channel, ctx.resolver), sku: row.entry.row.sku, period: "", label: SHORT, value: text })
       : fill(copy.pareto.cellAria[column.data], { n: formatCount(row.index + 1, "L2"), metric: METRIC, value: text }),
     notes: [fill(copy.pareto.tableNote, { metric: METRIC })],
     className: "products-pareto-table",
@@ -205,7 +206,7 @@ export function varianceSectionModel(lists: { decrease: readonly ProductComparis
   const section = fill(copy.variance.section, { metric: METRIC });
   const { ctx } = scope;
   const bar = (row: ProductComparisonRow): RankedBarRow<EvidenceSelection> => ({
-    key: productChartKey(row), label: productChartLabel(row, ctx.alias), value: row.changes.gross_profit.value, tone: toneOf(row),
+    key: productChartKey(row), label: productChartLabel(row, ctx.resolver), value: row.changes.gross_profit.value, tone: toneOf(row),
     display: formatSignedDelta(row.changes.gross_profit.value, "L1"), evidence: varianceBarEvidence(row, ctx),
   });
   const blocks: RankedBarBlock<EvidenceSelection>[] = [
@@ -215,7 +216,7 @@ export function varianceSectionModel(lists: { decrease: readonly ProductComparis
   const lead = lists.decrease[0] ?? lists.increase[0] ?? null;
   const titleKind: VarianceSectionModel["titleKind"] = lists.decrease.length ? "decrease" : lists.increase.length ? "increase" : "none";
   const title = lead === null ? fill(copy.variance.title.none, { metric: METRIC })
-    : fill(copy.variance.title[titleKind as "decrease" | "increase"], { product: productChartLabel(lead, ctx.alias), metric: METRIC, amount: formatHeadlineAmount(lead.changes.gross_profit.value) });
+    : fill(copy.variance.title[titleKind as "decrease" | "increase"], { product: productChartLabel(lead, ctx.resolver), metric: METRIC, amount: formatHeadlineAmount(lead.changes.gross_profit.value) });
   return {
     title, titleKind, section, blocks,
     subtitle: fill(copy.variance.subtitle, { section, current: scope.current, previous: scope.previous, scope: scope.channels }),
@@ -264,15 +265,15 @@ export function ProductVarianceSection({ model, scope, onEvidence, after, ready 
     rowHeaderLabel: labels.products.pageV3.columns.product,
     rows: model.tableRows,
     rowKey: productChartKey,
-    rowHeader: row => ({ label: productChartLabel(row, ctx.alias) }),
+    rowHeader: row => ({ label: productChartLabel(row, ctx.resolver) }),
     columns: VARIANCE_TABLE_COLUMNS,
     valueOf: (row, column) => varianceCell(row, column.data),
     evidenceOf: (row, column) => column.data === "change" ? varianceBarEvidence(row, ctx) : productEvidence(row, column.data, "gross_profit", SHORT, ctx),
     hasEvidence: everyCellLinked,
     onEvidence,
     cellAria: (row, column, text) => column.data === "change"
-      ? fill(comparison.deltaEvidenceAria, { channel: channelLabel(row.channel, ctx.alias), sku: row.sku, label: `${METRIC}${labels.exports.csv.suffix.change}`, value: text })
-      : fill(comparison.evidenceAria, { channel: channelLabel(row.channel, ctx.alias), sku: row.sku, period: column.data === "previous" ? labels.shell.periods.previous : "", label: SHORT, value: text }),
+      ? fill(comparison.deltaEvidenceAria, { channel: channelLabel(row.channel, ctx.resolver), sku: row.sku, label: `${METRIC}${labels.exports.csv.suffix.change}`, value: text })
+      : fill(comparison.evidenceAria, { channel: channelLabel(row.channel, ctx.resolver), sku: row.sku, period: column.data === "previous" ? labels.shell.periods.previous : "", label: SHORT, value: text }),
     notes: [copy.variance.tableNote],
     className: "products-variance-table",
   });

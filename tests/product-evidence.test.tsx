@@ -2,7 +2,8 @@ import { createElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto } from "@/application/chart-pareto";
-import { categoryLabel, channelLabel, demoAlias } from "@/application/copy";
+import { categoryLabel, channelLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import { evidenceFilterError, scopedEvidenceFilter } from "@/application/evidence-filter";
 import { formatAmountL1, formatAmountL3, formatRateL1, formatRateL3, metricDefinitions } from "@/application/presentation";
 import { productHighlights } from "@/application/product-highlights";
@@ -99,16 +100,16 @@ function clickAll(container: TreeElement, onEvidence: ReturnType<typeof vi.fn<(e
 const copy = labels.products.comparison;
 const legacyPresence: Record<ProductComparisonRow["previous"]["presence"], string> = { observed: copy.presence.observed, no_rows_confirmed: copy.presence.noRowsConfirmed, unknown_coverage: copy.presence.unknownCoverage };
 const legacyChangeLabel = (name: ProductMoneyMetric) => `${metricDefinitions[name].label}${labels.exports.csv.suffix.change}`;
-type LegacyScope = { previous: Period; current: Period; alias: boolean };
-function legacyMetric(row: ProductComparisonRow, period: "previous" | "current", name: ProductMoneyMetric, label: string, { previous, current, alias }: LegacyScope): EvidenceSelection {
-  const categoryText = (value: string) => value ? categoryLabel(value, alias) : copy.blankCategoryShort;
+type LegacyScope = { previous: Period; current: Period; resolver: NameResolver };
+function legacyMetric(row: ProductComparisonRow, period: "previous" | "current", name: ProductMoneyMetric, label: string, { previous, current, resolver }: LegacyScope): EvidenceSelection {
+  const categoryText = (value: string) => value ? categoryLabel(value, resolver) : copy.blankCategoryShort;
   const value = row[period];
   const metric = value.metrics[name];
   const periodLabel = labels.shell.periods[period];
   return { sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: periodLabel, label }), name, metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: legacyPresence[value.presence] }) };
 }
-function legacyDelta(row: ProductComparisonRow, name: "net_revenue" | "gross_profit", { previous, current, alias }: LegacyScope): EvidenceSelection {
-  const categoryText = (value: string) => value ? categoryLabel(value, alias) : copy.blankCategoryShort;
+function legacyDelta(row: ProductComparisonRow, name: "net_revenue" | "gross_profit", { previous, current, resolver }: LegacyScope): EvidenceSelection {
+  const categoryText = (value: string) => value ? categoryLabel(value, resolver) : copy.blankCategoryShort;
   const metric = row.changes[name];
   const label = legacyChangeLabel(name);
   return { sku: row.sku, title: fill(copy.deltaEvidenceTitle, { sku: row.sku, label }), name, metric, period: { start: previous.start, end: current.end }, channels: [row.channel],
@@ -124,7 +125,7 @@ async function load(name: string, input: DatasetInput): Promise<Loaded> {
   const dataset = validateDataset(input).dataset!;
   const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
   const comparison = compareProducts(dataset, snapshot.report.scope);
-  return { name, dataset, snapshot, rows: comparison.rows, ctx: { previous: comparison.scope.previous_period, current: comparison.scope.current_period, alias: demoAlias(dataset.manifest.dataset_id) } };
+  return { name, dataset, snapshot, rows: comparison.rows, ctx: { previous: comparison.scope.previous_period, current: comparison.scope.current_period, resolver: snapshotResolver(snapshot) } };
 }
 /**
  * 兩期有無資料不同、空品類（上面 5 個資料集每列兩期的 presence 都相同、都有品類，測不到範圍行的 previousPresence／currentPresence 與「未填」品類）：
@@ -153,9 +154,9 @@ beforeAll(async () => {
 });
 
 describe("V4-4 商品抽屜 builder：只搬移（與凍結的舊閉包逐欄相同）", () => {
-  it("示範資料套別名；合成資料不套（ctx.alias 取自 demoAlias）", () => {
-    expect(sets.find(set => set.name === "demo")!.ctx.alias).toBe(true);
-    expect(synthetic.ctx.alias).toBe(false);
+  it("示範資料套別名；合成資料不套（ctx.resolver 取自 snapshotResolver）", () => {
+    expect(sets.find(set => set.name === "demo")!.ctx.resolver.channel("DTC")).toBe(labels.data.demoChannelAlias.DTC);
+    expect(synthetic.ctx.resolver.channel(synthetic.dataset.manifest.channels[0])).toBe(synthetic.dataset.manifest.channels[0]);
   });
 
   it("比對的資料集涵蓋兩期 presence 不同（已確認沒有列、範圍未確認）與空品類，範圍行的上期、本期說明與「未填」品類都被比到", () => {
@@ -224,7 +225,7 @@ describe("V4-4 商品抽屜 builder：只搬移（與凍結的舊閉包逐欄相
 });
 
 // ── G14 累計格、累計佔比格（product-pareto-v1）。
-const cumulativeText = (index: number): ProductParetoCumulativeText => ({ title: `CUMULATIVE-${index + 1}`, formula: "CUMULATIVE-FORMULA", componentLabel: row => `${row.sku} / ${channelLabel(row.channel, false)}` });
+const cumulativeText = (index: number): ProductParetoCumulativeText => ({ title: `CUMULATIVE-${index + 1}`, formula: "CUMULATIVE-FORMULA", componentLabel: row => `${row.sku} / ${channelLabel(row.channel, makeResolver({}, ""))}` });
 const shareText = (index: number): ProductParetoShareText => ({ title: `SHARE-${index + 1}`, formula: "SHARE-FORMULA", definition: "SHARE-DEFINITION", formulaTechnical: "SHARE-TECHNICAL", numeratorLabel: "SHARE-NUMERATOR", denominatorLabel: "SHARE-DENOMINATOR" });
 const drawer = (set: Loaded, evidence: EvidenceSelection) => renderToStaticMarkup(createElement(EvidenceDrawer, { dataset: set.dataset, snapshot: set.snapshot, evidence, onClose: () => undefined }));
 const between = (html: string, from: string, to: string) => { const start = html.indexOf(from); return html.slice(start, html.indexOf(to, start)); };

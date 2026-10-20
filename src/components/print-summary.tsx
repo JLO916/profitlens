@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { variantKpis, variantOneLiner, variantSpec, type ExportVariant } from "@/application/export-variants";
 import { createPortal } from "react-dom";
 import { summaryDecisionState, summaryExportHeader, type ManagerSummary as SummaryData, type SummaryDecisionContext } from "@/application/manager-summary";
-import { channelLabel, channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
+import { channelLabel, channelsLabel, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import { clientHeaderLine } from "@/application/export-header";
 import { pnlExportAmount, pnlExportShare, pnlExportTable, type PnlRow } from "@/application/pnl-table";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatSignedDelta, metricDefinitions } from "@/application/presentation";
@@ -23,7 +24,7 @@ export const PRINT_PNL_COLUMNS = 5;
 
 export interface PrintSummaryProps {
   /** V3-9b：每週管理損益表（附錄）要用 snapshot.weeks；只給 report 時不放這張表。 */
-  summary: SummaryData; decisionContext?: SummaryDecisionContext; snapshot?: Pick<WorkspaceSnapshot, "report"> & Partial<Pick<WorkspaceSnapshot, "weeks">>; meeting?: PrintMeeting | null;
+  summary: SummaryData; decisionContext?: SummaryDecisionContext; snapshot?: Pick<WorkspaceSnapshot, "report"> & Partial<Pick<WorkspaceSnapshot, "weeks" | "channel_names">>; meeting?: PrintMeeting | null;
   /** V3-7 版頭第 1 行；預設 dataset_id（V3-10 可由呼叫端傳畫面上的資料集名稱）。 */
   datasetName?: string;
   /** V3-7 版頭的產出時間；預設掛上列印版面的當下（測試注入固定時間）。 */
@@ -83,11 +84,11 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
   const [printedAt] = useState(() => generatedAt ?? new Date());
   const header = summaryExportHeader(summary, { generatedAt: generatedAt ?? printedAt, datasetName });
   const decisions = summaryDecisionState(summary, decisionContext);
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshot && snapshot.report.dataset_id === summary.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, summary.dataset_id);
   const page = labels.meeting.page;
   // V3-2b：一頁摘要的句子用 L1（萬），通路表用 L2（整數元）；門檻沿用輸入值到分（L3）。
   const signedL1 = (value: string | null) => formatSignedDelta(value, "L1");
-  const priorityCopy = (item: SummaryData["priorities"][number]) => snapshot ? ruleCopy(snapshot, item.primary, alias) : { headline: item.title, nextStep: item.recommendation };
+  const priorityCopy = (item: SummaryData["priorities"][number]) => snapshot ? ruleCopy(snapshot, item.primary, resolver) : { headline: item.title, nextStep: item.recommendation };
   const notes = decisionContext?.notes ?? "";
   const noteChars = Array.from(notes);
   const notesTruncated = noteChars.length > PRINT_NOTES_LIMIT;
@@ -104,16 +105,16 @@ export function PrintSummary({ summary, decisionContext, snapshot, meeting = nul
   const chartAppendix = chartSource && !meeting && (spec.charts.print.appendix.length > 0 || spec.charts.print.appendixTables.length > 0) ? spec.charts.print : null;
   return <article className={styles.printSurface} data-testid="manager-summary-print" data-variant={spec.variant === "standard" ? undefined : spec.variant}>
     {/* V3-7 §7.9／§6.3 #50：版頭改成台灣報表格式四行（資料集、報表名、兩期與單位、指標版本與產出時間；8pt 附註字級，報表名是 14pt 標題），之後是會議名稱與日期一行（有會議時）與範圍一行；其後內容順序不變。 */}
-    <header className={styles.printHeader} data-testid="print-report-header"><p className={styles.printNote} data-testid="print-header-dataset">{header.datasetName}</p>{spec.header.clientLine && <p className={styles.printNote} data-testid="print-header-client">{clientHeaderLine(header)}</p>}<h1>{header.title}</h1><p className={styles.printPeriod} data-testid="print-header-period"><span>{header.periodLine}</span><span>{header.unitLine}</span></p><p className={styles.printNote} data-testid="print-header-version">{header.versionLine}</p>{spec.sections.scope && meeting && <p className={styles.printMeta} data-testid="print-header-meeting">{fill(page.printHeader, { name: meeting.name, date: meeting.date, asOf: summary.data_as_of })}</p>}{spec.sections.scope && <p className={styles.printScope} data-testid="print-header-scope">{fill(meeting ? scopeCopy.printScopeMeeting : scopeCopy.printScope, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias), mode: periodValues(summary).mode })}</p>}</header>
+    <header className={styles.printHeader} data-testid="print-report-header"><p className={styles.printNote} data-testid="print-header-dataset">{header.datasetName}</p>{spec.header.clientLine && <p className={styles.printNote} data-testid="print-header-client">{clientHeaderLine(header)}</p>}<h1>{header.title}</h1><p className={styles.printPeriod} data-testid="print-header-period"><span>{header.periodLine}</span><span>{header.unitLine}</span></p><p className={styles.printNote} data-testid="print-header-version">{header.versionLine}</p>{spec.sections.scope && meeting && <p className={styles.printMeta} data-testid="print-header-meeting">{fill(page.printHeader, { name: meeting.name, date: meeting.date, asOf: summary.data_as_of })}</p>}{spec.sections.scope && <p className={styles.printScope} data-testid="print-header-scope">{fill(meeting ? scopeCopy.printScopeMeeting : scopeCopy.printScope, { state: decisionContext?.decisionState ?? copy.draftDecision, asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, resolver), mode: periodValues(summary).mode })}</p>}</header>
     {spec.sections.oneLiner && snapshot && <p className={styles.printOneLiner} data-testid="print-one-liner">{variantOneLiner(summary, snapshot)}</p>}
     <div className={styles.printHeadlines} data-testid={spec.sections.kpis === "four" ? "print-kpis" : undefined}>{kpis.map(row => <p key={row.metric}><strong>{metricDefinitions[row.metric].label}</strong><br />{fill(copy.printHeadline, { prev: formatAmountL1(row.previous.value), cur: formatAmountL1(row.current.value), change: signedL1(row.change.value) })}</p>)}</div>
     {/* V3-9b F14：決策備註是內部備註——老闆一頁版與客戶報告版的決議一行不帶備註。 */}
     {decisionContext?.reviewName && <p className={styles.printDecision} data-testid="print-decision-line">{spec.internal.decisionNotes ? fill(copy.printMeetingLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision, notes: firstPageNotes }) : fill(variants.printDecisionLine, { name: decisionContext.reviewName, state: decisionContext.decisionState ?? copy.draftDecision })}</p>}
     {chartSource && spec.charts.print.page.map(id => <PrintChart key={id} id={id} source={chartSource} className={styles.printChart} />)}
     {spec.sections.priorityDetail ? <><h2>{labels.overview.sections.topThree}</h2><p>{fill(copy.printThresholdLine, { amount: formatAmountL3(summary.importance_threshold) })}</p>
-    <ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong> · {scopeLabel(item.primary.scope, alias)} · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol></>
+    <ol>{summary.priorities.map(item => { const rule = priorityCopy(item); return <li key={item.code}><strong>{rule.headline}</strong> · {scopeLabel(item.primary.scope, resolver)} · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}<p>{rule.nextStep}</p></li>; })}</ol></>
       : <><h2>{labels.overview.sections.topThree}</h2><ol data-testid="print-top-three">{summary.priorities.map(item => <li key={item.code}><strong>{priorityCopy(item).headline}</strong> · <span>{labels.overview.sections.impact}</span> {signedL1(item.impact?.value ?? null)}</li>)}</ol></>}{!summary.priorities.length && <p>{labels.overview.notes.noPriorities}</p>}
-    {spec.sections.channels && <table><caption>{fill(copy.printChannelCaption, { metric: metricDefinitions.contribution_after_marketing.label })}</caption><thead><tr><th>{copy.channelColumn}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.previous })}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current })}</th><th>{fill(labels.format.units.yuanColumn, { label: copy.changeColumn })}</th></tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th>{channelLabel(row.channel, alias)}</th><td>{formatAmountL2(row.contribution.previous.value)}</td><td>{formatAmountL2(row.contribution.current.value)}</td><td>{formatSignedDelta(row.contribution.change.value, "L2")}</td></tr>)}</tbody></table>}
+    {spec.sections.channels && <table><caption>{fill(copy.printChannelCaption, { metric: metricDefinitions.contribution_after_marketing.label })}</caption><thead><tr><th>{copy.channelColumn}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.previous })}</th><th>{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current })}</th><th>{fill(labels.format.units.yuanColumn, { label: copy.changeColumn })}</th></tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th>{channelLabel(row.channel, resolver)}</th><td>{formatAmountL2(row.contribution.previous.value)}</td><td>{formatAmountL2(row.contribution.current.value)}</td><td>{formatSignedDelta(row.contribution.change.value, "L2")}</td></tr>)}</tbody></table>}
     {spec.sections.decisions && <><h2>{copy.printDecisionsHeading}</h2>
     {/* 第一頁每個選入方案只印一行；完整假設在附錄。 */}
     {decisions.selectedScenarios.length ? decisions.selectedScenarios.map(plan => <div key={plan.id} data-testid="print-scenario-line"><p>{fill(copy.printScenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatAmountL1(plan.baseline ?? null), contribution: formatAmountL1(plan.contribution ?? null), delta: formatSignedDelta(plan.delta ?? null, "L1") })}</p></div>) : <p>{copy.noScenario}</p>}

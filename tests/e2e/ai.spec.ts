@@ -4,6 +4,7 @@ import { acceptScenarioAssumptions } from "./misc-helpers-v3";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL3 } from "../../src/application/presentation";
 import { evidenceSubtitle } from "../../src/components/evidence-drawer";
+import { makeResolver } from "../../src/application/channel-settings";
 import { appendFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { test as base, expect, type Page } from "@playwright/test";
@@ -318,8 +319,8 @@ test("MOCK：只傳精確預覽與同意，合法 placeholder 由本機解析並
   // Golden dataset keeps the raw channel name (demo alias applies only to synthetic-demo).
   // V3-5（§7.8）：範圍行改為標題下的副標「{範圍} · {期間}（· 通路：…）」，期間是 formatPeriodL1（M/D），與報表本期相同時前綴「本期」；
   // 期待值由抽屜同一支 evidenceSubtitle 以 golden manifest（data_as_of、channels、上期／本期）組出，範圍是 AI 引用證據的 scopeLabel。
-  const goldenManifest = JSON.parse(await readFile(resolve("fixtures/golden/manifest.json"), "utf8")) as { data_as_of: string; channels: string[]; previous_period: { start: string; end: string }; current_period: { start: string; end: string } };
-  const subtitle = evidenceSubtitle({ period: { start: "2026-08-02", end: "2026-08-02" }, channels: ["DTC"], scopeLabel: ai.evidenceScope }, { alias: false, anchor: goldenManifest.data_as_of, allChannels: goldenManifest.channels, report: { current: { period: goldenManifest.current_period }, previous: { period: goldenManifest.previous_period } } });
+  const goldenManifest = JSON.parse(await readFile(resolve("fixtures/golden/manifest.json"), "utf8")) as { dataset_id: string; data_as_of: string; channels: string[]; previous_period: { start: string; end: string }; current_period: { start: string; end: string } };
+  const subtitle = evidenceSubtitle({ period: { start: "2026-08-02", end: "2026-08-02" }, channels: ["DTC"], scopeLabel: ai.evidenceScope }, { resolver: makeResolver(undefined, goldenManifest.dataset_id), anchor: goldenManifest.data_as_of, allChannels: goldenManifest.channels, report: { current: { period: goldenManifest.current_period }, previous: { period: goldenManifest.previous_period } } });
   await expect(dialog.locator(".evidence-head .sub")).toHaveText(subtitle);
   await expect(dialog).toHaveAccessibleDescription(subtitle);
   await expect(dialog.locator(".evidence-head .sub")).toContainText("DTC");

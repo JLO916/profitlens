@@ -4,7 +4,7 @@ import { breakevenMer } from "@/application/breakeven-mer";
 import { assistWeeks } from "@/application/chart-assist-weeks";
 import { channelWeeks } from "@/application/chart-channel-weeks";
 import { channelStructure } from "@/application/chart-structure";
-import { demoAlias } from "@/application/copy";
+import { snapshotResolver } from "@/application/copy";
 import { priorityEvidence } from "@/application/manager-summary";
 import { buildPnlTable } from "@/application/pnl-table";
 import { metricDefinitions } from "@/application/presentation";
@@ -196,7 +196,7 @@ export function builderCases({ dataset, snapshot }: LadderLoaded): LadderCase[] 
     add("impact", diagnostic.id, impactEvidence(snapshot, diagnostic));
   }
   const comparison = compareProducts(dataset, report.scope);
-  const ctx = { previous: comparison.scope.previous_period, current: comparison.scope.current_period, alias: demoAlias(dataset.manifest.dataset_id) };
+  const ctx = { previous: comparison.scope.previous_period, current: comparison.scope.current_period, resolver: snapshotResolver(snapshot) };
   for (const row of comparison.rows) {
     for (const name of ["net_revenue", "gross_profit"] as const) {
       for (const period of ["previous", "current"] as const) add("product", `${row.channel}|${row.sku}|${period}|${name}`, productEvidence(row, period, name, metricDefinitions[name].label, ctx, { drill: period === "current" }));

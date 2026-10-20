@@ -7,7 +7,7 @@ import { downloadText } from "@/application/download";
 import { exportWorkspaceBackup, restoreWorkspaceBackup, MAX_WORKSPACE_BYTES, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
 import { deleteLocalWorkspace, hasLocalWorkspace, loadLocalWorkspace, saveLocalWorkspace, type LocalWorkspaceInfo } from "@/application/local-store";
 import { AUTO_SAVE_DELAY_MS, createAutoSaver, formatSavedDateTime, formatSavedTime, type AutoSaver } from "@/application/auto-save";
-import { channelsLabel, demoAlias } from "@/application/copy";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import { ShellIcon } from "./shell/shell-icon";
 
@@ -207,7 +207,6 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
   }
 
   // R1-2: the whole panel lives in the top-bar「儲存」menu; R2: every visible string comes from labels. Testids are unchanged.
-  const alias = candidate ? demoAlias(candidate.dataset.manifest.dataset_id) : false;
   // R6-6：已保存時顯示「已保存 hh:mm」（這一版由自動或手動存在這台電腦）；下載備份確認的版本沿用「此版本已保存」。
   const savedTag = !source ? labels.shell.status.noWorkspace : dirty ? labels.shell.status.unsaved : lastSaved && lastSaved.version === version ? fill(labels.shell.status.savedAt, { time: formatSavedTime(lastSaved.at) }) : labels.shell.status.savedVersion;
   const savedAtText = existing?.savedAt ? formatSavedDateTime(new Date(existing.savedAt)) : null;
@@ -246,7 +245,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
       </div>
       {candidate && <section className="restore-preview" aria-label={copy.restorePreviewAria}>
         <h3>{copy.restoreHeading}</h3>
-        <p>{fill(copy.restoreSummary, { datasetId: candidate.dataset.manifest.dataset_id, asOf: candidate.snapshot.data_as_of, channels: channelsLabel(candidate.snapshot.report.scope.channels, alias) })}</p>
+        <p>{fill(copy.restoreSummary, { datasetId: candidate.dataset.manifest.dataset_id, asOf: candidate.snapshot.data_as_of, channels: channelsLabel(candidate.snapshot.report.scope.channels, snapshotResolver(candidate.snapshot)) })}</p>
         <p>{fill(copy.restorePeriods, { prevStart: candidate.snapshot.report.previous.period.start, prevEnd: candidate.snapshot.report.previous.period.end, curStart: candidate.snapshot.report.current.period.start, curEnd: candidate.snapshot.report.current.period.end })}</p>
         <p>{fill(copy.restoreCounts, { plans: candidate.scenario_workspace.contexts.reduce((sum, context) => sum + context.plans.length, 0), actions: candidate.action_workspace.items.length })}</p>
         {dirty && <p className="alert partial">{copy.unsavedWarning}</p>}

@@ -5,7 +5,8 @@ import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } fro
 import type { SummaryDecisionContext } from "@/application/manager-summary";
 import { exportMeetingMarkdown, lastMeeting, type Meeting } from "@/application/meeting";
 import { downloadText } from "@/application/download";
-import { channelsLabel, demoAlias } from "@/application/copy";
+import { channelsLabel } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import type { ReviewDecisionState, ReviewSession } from "@/application/review-session";
 
@@ -36,7 +37,7 @@ export function currentViewDecisionContext(snapshot: Pick<WorkspaceSnapshot, "da
       id: doc.id, problem: doc.problem || ui.actionProblemMissing, action: doc.action, owner: doc.owner_role, deadline: doc.deadline, risk: doc.stop_condition, pinned: doc.pinned,
       executionStatus: EXECUTION_LABELS[doc.execution_status as ActionExecutionStatus] ?? EXECUTION_LABELS.not_started, executionNotes: doc.progress_notes,
       status: doc.status === "stale" || doc.binding.dataset_hash !== snapshot.dataset_hash ? "stale" as const : doc.status === "confirmed" ? "current" as const : "draft" as const,
-      scopeLabel: fill(ui.actionScope, { channels: channelsLabel(doc.binding.scope.channels, demoAlias(doc.binding.dataset_id)), start: doc.binding.period.start, end: doc.binding.period.end }),
+      scopeLabel: fill(ui.actionScope, { channels: channelsLabel(doc.binding.scope.channels, makeResolver(undefined, doc.binding.dataset_id)), start: doc.binding.period.start, end: doc.binding.period.end }),
     })),
   };
 }

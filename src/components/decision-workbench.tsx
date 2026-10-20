@@ -15,7 +15,8 @@ import { deltaTone, formatAmountL1, formatAmountL2, formatAmountL3, formatPeriod
 import { ABSOLUTE_FIELDS, SCENARIO_PRESETS, absoluteAvailability, absoluteContext, absoluteToRelative, applyPreset, rangeHint, relativeEquivalent, relativeToAbsolute, relativeToAbsoluteValue, type AbsoluteContext, type AbsoluteField, type ScenarioNumericField, type ScenarioPresetId } from "@/application/scenario-presets";
 import type { VersionedScenarioPlan } from "@/application/scenario-workspace";
 import type { WorkspaceSnapshot } from "@/application/workspace";
-import { channelsLabel, demoAlias } from "@/application/copy";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import type { EvidenceSelection } from "./evidence-drawer";
 import { ScenarioSensitivity } from "./scenario-sensitivity";
@@ -149,7 +150,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
   const session = captured ?? current;
   const stale = isDecisionStale(session, snapshot, revision);
   const singleChannel = session.scope.channels.length === 1;
-  const alias = demoAlias(session.dataset_id);
+  const resolver = session.dataset_id === snapshot.report.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, session.dataset_id);
   const fieldId = useId();
   // R5-3 進頁即表單：還沒有方案時先顯示本地草稿「方案 1」，第一次編輯或計算才寫入 state（只是看頁面不會標成未保存）。
   const [draftId, setDraftId] = useState(() => crypto.randomUUID());
@@ -243,7 +244,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
   const period = formatPeriodL1(session.period.start, session.period.end, { days: false, anchor: session.data_as_of });
   const calculated = plans.flatMap(plan => { const n = revisionOf(plan); return plan.result?.status === "valid" && n !== undefined ? [{ id: plan.id, name: plan.name, revision: n }] : []; });
   // V4-5 代理 B（G15 方案差額）：純函式模型，只重新呈現各方案 result 的試算後貢獻與差額（不相加）；沒有方案時（過期且清空）與比較表一樣不渲染。
-  const variance = plans.length > 0 ? scenarioVarianceModel({ plans, baseline: session.baseline.amounts.contribution_after_marketing, channels: channelsLabel(session.scope.channels, alias), period, staleSuffix: stale ? staleSuffix : "" }) : null;
+  const variance = plans.length > 0 ? scenarioVarianceModel({ plans, baseline: session.baseline.amounts.contribution_after_marketing, channels: channelsLabel(session.scope.channels, resolver), period, staleSuffix: stale ? staleSuffix : "" }) : null;
   // V3-6（PRD §7.4 頁首、§6.3 #39）：「匯出本頁」頁內下拉，三項呼叫 v2「匯出」區的同一個 download(format)；Esc／點外面關閉沿用 Dashboard 的 `.topbar-menu.auto-close`。
   const exportMenu = <details className="topbar-menu auto-close export-page scenario-export" data-testid="scenario-export-menu">
     <summary className="ui-btn ui-btn-secondary" data-testid="export-page-scenarios">{labels.products.pageV3.exportPage}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
@@ -254,7 +255,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
     {/* V3-6（PRD §7.4 基準列）：一列定義列表，不用卡片；新鮮度在同一列右側，只有過期時改 warning 色並出現「改用目前資料並清空輸入」。 */}
     <section className="scenario-baseline" aria-labelledby={ids.baseline}>
       <div className="baseline-row">
-        <h2 id={ids.baseline} className="baseline-title">{fill(page.baselineTitle, { channels: channelsLabel(session.scope.channels, alias), period })}</h2>
+        <h2 id={ids.baseline} className="baseline-title">{fill(page.baselineTitle, { channels: channelsLabel(session.scope.channels, resolver), period })}</h2>
         <dl className="baseline-list">
           {(["net_revenue", "contribution_after_marketing"] as const).map(name => <div key={name}><dt>{metricDefinitions[name].label}</dt><dd><button type="button" className="number-link" data-testid={`baseline-${name}`} disabled={stale || !singleChannel} onClick={() => baselineEvidence(name)}>{amountL1(session.baseline.amounts[name])}</button></dd></div>)}
           <div><dt>{fill(ui.baselineRates, { discountRate: metricDefinitions.discount_rate.shortLabel, refundRatio: metricDefinitions.refund_ratio.shortLabel })}</dt><dd>{formatRateL1(session.baseline.rates.discount_rate)} ／ {formatRateL1(session.baseline.rates.refund_ratio)}</dd></div>

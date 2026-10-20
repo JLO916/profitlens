@@ -7,7 +7,7 @@ import { formatAmountL2, formatAmountL3, formatMultiple, formatRateL2, formatRat
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { DIAGNOSIS_DEFAULT_OPEN, DIAGNOSIS_SCOPE_CHIPS, DiagnosisList, diagnosisCounts, displayMetric, rankingLabel, rankingSelection } from "../src/components/diagnosis-list";
 import { alertStatus, TopThree } from "../src/components/top-three";
-import { channelsLabel } from "../src/application/copy";
+import { channelsLabel, snapshotResolver } from "../src/application/copy";
 import { Diagnosis } from "../src/components/workspace-panels";
 import { validateDataset } from "../src/domain/validation";
 import type { AnalysisFilters, Diagnostic, Scope } from "../src/domain/types";
@@ -76,7 +76,7 @@ describe("DiagnosisList renders one collapsible row per rule", () => {
     badge("favorable", listV3.countFavorable, counts.favorable);
     // 範圍文字只在標題列出現一次（13px，右側）。
     expect(html.match(/class="sec-scope"/g)).toHaveLength(1);
-    expect(html).toContain(`<span class="sec-scope">${channelsLabel(snap.report.scope.channels, false)}</span>`);
+    expect(html).toContain(`<span class="sec-scope">${channelsLabel(snap.report.scope.channels, snapshotResolver(snap))}</span>`);
     expect(html).toContain(`<p class="sub">${labels.diagnosis.panel.diagnosisNote}</p>`);
     expect(html).not.toContain("diagnostic-grid");
     // 每一列的 <summary> 都不含互動元件（summary 本身就是展開鈕）也不含「｜」。
@@ -257,20 +257,20 @@ describe("rankingSelection keeps the R1 evidence behaviour", () => {
   it("delta rules carry the formula and previous/current components; current-only rules do not", async () => {
     const snap = await snapshot();
     const groups = diagnosisGroups(snap).groups;
-    const discount = rankingSelection(snap, groups.find(item => item.rule === "DISCOUNT_BURDEN_UP")!.scopes[0], false)!;
+    const discount = rankingSelection(snap, groups.find(item => item.rule === "DISCOUNT_BURDEN_UP")!.scopes[0], snapshotResolver(snap))!;
     expect(discount.metric.value).toBe("250.00");
     expect(discount.formula).toBe(fill(labels.diagnosis.panel.deltaFormula, { metric: labels.metrics.discounts.headline }));
     expect(discount.components?.map(item => [item.label, item.metric.value])).toEqual([[labels.shell.periods.previous, "200.00"], [labels.shell.periods.current, "450.00"]]);
     expect(discount.period).toEqual({ start: "2026-08-01", end: "2026-08-02" });
     expect(discount.scopeLabel).toBe(labels.diagnosis.panel.scopeAll);
-    const negative = rankingSelection(snap, groups.find(item => item.rule === "NEGATIVE_CHANNEL_CM")!.scopes[0], false)!;
+    const negative = rankingSelection(snap, groups.find(item => item.rule === "NEGATIVE_CHANNEL_CM")!.scopes[0], snapshotResolver(snap))!;
     expect(negative.metric.value).toBe("-15.00");
     expect(negative.formula).toBeUndefined();
     expect(negative.period).toEqual({ start: "2026-08-02", end: "2026-08-02" });
     expect(rankingLabel("NEGATIVE_CHANNEL_CM")).toBe(labels.diagnosis.panel.rankingCurrent);
     expect(rankingLabel("REV_UP_CM_DOWN")).toBe(labels.overview.sections.rankingAmount);
     const missing = diagnosisGroups(await snapshot("errors/missing_cogs")).groups[0];
-    expect(rankingSelection(snap, missing.scopes[0], false)).toBeNull();
+    expect(rankingSelection(snap, missing.scopes[0], snapshotResolver(snap))).toBeNull();
   });
 });
 

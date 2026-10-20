@@ -4,7 +4,8 @@ import { useCallback, useMemo } from "react";
 import { track } from "@/application/analytics";
 import { coverageTimeline, type CoverageFileKey, type CoverageMissingFileKey, type CoverageSegment, type CoverageTimeline } from "@/application/chart-coverage";
 import { chartColors } from "@/application/chart-theme";
-import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import type { EventSet } from "@/application/events";
 import { formatCount, formatDateL1, formatPeriodL1 } from "@/application/presentation";
 import type { IssueFilter } from "@/application/issue-filter";
@@ -110,14 +111,14 @@ export interface CoverageChartModel {
   tracks: TimelineTrackInput[];
   /** 資料表之後的說明（在收合的 <details> 內）。 */
   notes: string[];
-  alias: boolean;
+  resolver: NameResolver;
 }
 
-/** G20 的標題、副標、軌與區帶（純函式，tests/charts-data-coverage-v4.test.tsx）。alias：示範資料的通路別名。 */
-export function coverageChartModel(timeline: CoverageTimeline | null, options: { alias?: boolean } = {}): CoverageChartModel {
-  const alias = options.alias ?? false;
+/** G20 的標題、副標、軌與區帶（純函式，tests/charts-data-coverage-v4.test.tsx）。resolver：通路名稱解析器（沒給時通路代碼原樣）。 */
+export function coverageChartModel(timeline: CoverageTimeline | null, options: { resolver?: NameResolver } = {}): CoverageChartModel {
+  const resolver = options.resolver ?? makeResolver(undefined, "");
   if (timeline === null) {
-    return { timeline, state: "empty", titleKind: "noData", title: copy.section, subtitle: fill(copy.subtitleEmpty, { section: copy.section }), yoyLine: null, message: undefined, bands: [], tracks: [], notes: [], alias };
+    return { timeline, state: "empty", titleKind: "noData", title: copy.section, subtitle: fill(copy.subtitleEmpty, { section: copy.section }), yoyLine: null, message: undefined, bands: [], tracks: [], notes: [], resolver };
   }
   const anchor = timeline.dataAsOf;
   const md = (iso: string) => formatDateL1(iso, { anchor });
@@ -125,9 +126,9 @@ export function coverageChartModel(timeline: CoverageTimeline | null, options: {
   const titleKind: CoverageTitleKind = timeline.fallback ? "range" : longest === null ? "none" : longest.days === 1 ? "missingOneDay" : "missing";
   const title = titleKind === "range" ? copy.title.range
     : longest === null ? fill(copy.title.none, { start: md(timeline.coverage.start), end: md(timeline.coverage.end) })
-      : longest.days === 1 ? fill(copy.title.missingOneDay, { file: fileTitle(longest.key), date: md(longest.start), channel: channelLabel(longest.channel, alias) })
-        : fill(copy.title.missing, { file: fileTitle(longest.key), start: md(longest.start), end: md(longest.end), n: formatCount(longest.days, "L2"), channel: channelLabel(longest.channel, alias) });
-  const subtitle = fill(copy.subtitle, { section: copy.section, range: formatPeriodL1(timeline.coverage.start, timeline.coverage.end, { anchor }), channels: channelsLabel(timeline.channels, alias) });
+      : longest.days === 1 ? fill(copy.title.missingOneDay, { file: fileTitle(longest.key), date: md(longest.start), channel: channelLabel(longest.channel, resolver) })
+        : fill(copy.title.missing, { file: fileTitle(longest.key), start: md(longest.start), end: md(longest.end), n: formatCount(longest.days, "L2"), channel: channelLabel(longest.channel, resolver) });
+  const subtitle = fill(copy.subtitle, { section: copy.section, range: formatPeriodL1(timeline.coverage.start, timeline.coverage.end, { anchor }), channels: channelsLabel(timeline.channels, resolver) });
 
   const { yoy } = timeline;
   let yoyLine: string | null = null;
@@ -162,7 +163,7 @@ export function coverageChartModel(timeline: CoverageTimeline | null, options: {
     // D-V4-53＝B：去年同期期間內、軸起日之前的缺列不在圖上，資料表照列；說明這些列的天數寫在圖上方的去年同期那一行。
     ...(timeline.yoyBeforeAxis.length > 0 ? [fill(copy.yoyBeforeAxisNote, { yoy: labels.shell.periods.presets.yoy, date: md(timeline.axis.start), n: formatCount(timeline.yoyBeforeAxis.length, "L2") })] : []),
   ];
-  return { timeline, state: timeline.fallback ? "empty" : "ready", titleKind, title, subtitle, yoyLine, message: timeline.fallback ? copy.rangeFallback : undefined, bands, tracks, notes, alias };
+  return { timeline, state: timeline.fallback ? "empty" : "ready", titleKind, title, subtitle, yoyLine, message: timeline.fallback ? copy.rangeFallback : undefined, bands, tracks, notes, resolver };
 }
 
 type CoverageColumnKey = "channel" | "start" | "end" | "days";
@@ -195,14 +196,14 @@ export function coverageDataTable(model: CoverageChartModel, onFilter?: (filter:
     rowKey: segment => coverageSegmentTestId(segment),
     rowHeader: segment => ({ label: fileTitle(segment.key) }),
     columns: COVERAGE_TABLE_COLUMNS,
-    valueOf: (segment, column) => ({ value: column.data === "channel" ? channelLabel(segment.channel, model.alias) : column.data === "days" ? String(segment.days) : segment[column.data] }),
+    valueOf: (segment, column) => ({ value: column.data === "channel" ? channelLabel(segment.channel, model.resolver) : column.data === "days" ? String(segment.days) : segment[column.data] }),
     evidenceOf: () => null,
     onEvidence: () => undefined,
     notes: model.notes,
     className: "coverage-data-table",
     actionColumn: onFilter ? {
       label: copy.columns.action,
-      render: segment => <button type="button" className="ui-btn ui-btn-text coverage-filter" aria-label={fill(copy.filterName, { file: fileTitle(segment.key), channel: channelLabel(segment.channel, model.alias) })} onClick={() => onFilter(coverageFilterOf(segment))}>{copy.filterButton}</button>,
+      render: segment => <button type="button" className="ui-btn ui-btn-text coverage-filter" aria-label={fill(copy.filterName, { file: fileTitle(segment.key), channel: channelLabel(segment.channel, model.resolver) })} onClick={() => onFilter(coverageFilterOf(segment))}>{copy.filterButton}</button>,
     } : undefined,
   });
 }
@@ -226,7 +227,7 @@ export function CoverageChart({ dataset, snapshot = null, events = null, onFilte
   const previous = scope?.previous_period, current = scope?.current_period;
   const yoy = snapshot?.yoy ?? null;
   const timeline = useMemo(() => dataset === null ? null : coverageTimeline(dataset, events, yoy, previous && current ? { previous, current } : undefined), [dataset, events, yoy, previous, current]);
-  const model = useMemo(() => coverageChartModel(timeline, { alias: dataset === null ? false : demoAlias(dataset.manifest.dataset_id) }), [timeline, dataset]);
+  const model = useMemo(() => coverageChartModel(timeline, { resolver: dataset === null ? undefined : snapshot && snapshot.report.dataset_id === dataset.manifest.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, dataset.manifest.dataset_id) }), [timeline, dataset, snapshot]);
   const anchor = timeline?.dataAsOf;
   const dateLabel = useCallback((iso: string) => formatDateL1(iso, { anchor }), [anchor]);
   const onSegment = useCallback((segment: TimelineSegmentRef) => {

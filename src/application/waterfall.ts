@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import { chartColors } from "@/application/chart-theme";
-import { channelLabel, demoAlias, formatHeadlineAmount } from "@/application/copy";
+import { channelLabel, formatHeadlineAmount, snapshotResolver } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import { deltaTone, deltaWord, formatAmountL1, formatAmountL3, formatEmpty, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, type AmountField, type Metric, type MetricName, type Metrics } from "@/domain/types";
@@ -167,9 +168,9 @@ function largestComponent(components: Record<AmountField, Metric>, change: Exact
 /**
  * 貢獻變化拆解（C17）：上期扣廣告後貢獻 → 九項差額 → 本期扣廣告後貢獻，加上橋接表、平衡檢核與 L1 結論標題。
  * 九項直接用 report.bridge.components（正數＝讓扣廣告後貢獻增加），不重算。
- * options 只為與 profitWaterfall／channelConclusion 同一個呼叫介面；拆解不含通路名稱，alias 不影響結果。
+ * options 只為與 profitWaterfall／channelConclusion 同一個呼叫介面；拆解不含通路名稱，resolver 不影響結果。
  */
-export function bridgeWaterfall(snapshot: WorkspaceSnapshot, options?: { alias?: boolean }): BridgeWaterfall;
+export function bridgeWaterfall(snapshot: WorkspaceSnapshot, options?: { resolver?: NameResolver }): BridgeWaterfall;
 export function bridgeWaterfall(snapshot: WorkspaceSnapshot): BridgeWaterfall {
   const { report } = snapshot;
   const { bridge } = report;
@@ -224,19 +225,19 @@ export function bridgeWaterfall(snapshot: WorkspaceSnapshot): BridgeWaterfall {
 }
 
 /** 利潤結構的範圍選項（profit-waterfall-scope 分段按鈕）：合計＋目前範圍內的各通路（report.scope.channels 順序）。 */
-export function profitWaterfallScopes(snapshot: WorkspaceSnapshot, options: { alias?: boolean } = {}): { id: "all" | string; label: string }[] {
-  const alias = options.alias ?? demoAlias(snapshot.report.dataset_id);
-  return [{ id: "all", label: labels.overview.profit.scope.all }, ...snapshot.report.scope.channels.map(channel => ({ id: channel, label: channelLabel(channel, alias) }))];
+export function profitWaterfallScopes(snapshot: WorkspaceSnapshot, options: { resolver?: NameResolver } = {}): { id: "all" | string; label: string }[] {
+  const resolver = options.resolver ?? snapshotResolver(snapshot);
+  return [{ id: "all", label: labels.overview.profit.scope.all }, ...snapshot.report.scope.channels.map(channel => ({ id: channel, label: channelLabel(channel, resolver) }))];
 }
 
 /**
  * 本期利潤結構（F2，§10.3）：合計用 report.current.metrics，通路用 report.current.channels[通路].metrics；只讀既有指標，不重算。
  * allChannels：資料集的全部通路；給了且目前範圍涵蓋全部時，合計的副標寫「全部通路」（與本期一句話的範圍行相同），否則寫「合計」。
  */
-export function profitWaterfall(snapshot: WorkspaceSnapshot, scope: "all" | string, options: { alias?: boolean; allChannels?: readonly string[] } = {}): ProfitWaterfall {
+export function profitWaterfall(snapshot: WorkspaceSnapshot, scope: "all" | string, options: { resolver?: NameResolver; allChannels?: readonly string[] } = {}): ProfitWaterfall {
   const { report } = snapshot;
   const copy = labels.overview.profit;
-  const alias = options.alias ?? demoAlias(report.dataset_id);
+  const resolver = options.resolver ?? snapshotResolver(snapshot);
   const channels = report.current.channels;
   const source: Metrics | null = scope === "all" ? report.current.metrics : Object.hasOwn(channels, scope) ? channels[scope].metrics : null;
   const metricOf = (name: MetricName): Metric => source?.[name] ?? MISSING_METRIC;
@@ -265,7 +266,7 @@ export function profitWaterfall(snapshot: WorkspaceSnapshot, scope: "all" | stri
     : fill(perHundredValue.isNegative() && !perHundredValue.isZero() ? copy.title.negative : copy.title.positive, { n: perHundredValue.abs().toFixed(1) });
 
   const everyChannel = !!options.allChannels && options.allChannels.length > 0 && options.allChannels.every(channel => report.scope.channels.includes(channel));
-  const scopeLabel = scope === "all" ? (everyChannel ? labels.shell.periodBar.filter.allChannels : labels.overview.sections.total) : channelLabel(scope, alias);
+  const scopeLabel = scope === "all" ? (everyChannel ? labels.shell.periodBar.filter.allChannels : labels.overview.sections.total) : channelLabel(scope, resolver);
   const rows: ProfitRow[] = PROFIT_WATERFALL_METRICS.map(({ metric, kind }) => {
     const value = metricOf(metric);
     return { id: metric, metric, label: metricDefinitions[metric].label, kind, value, share: ratio(exact(value.value), netRevenue) };

@@ -25,6 +25,7 @@ import { barCellFill, barCellShareBase, barCellShareGeometry, barCellSigned } fr
 import { channelEvidence } from "@/components/overview/charts/channel-section";
 import { cumulativeDayEvidence, cumulativeEvidence } from "@/components/overview/charts/cumulative-section";
 import { frozenLadderMetrics, ladderCases, ladderDatasets } from "./helpers/evidence-ladder-cases";
+import { snapshotResolver } from "@/application/copy";
 
 // V4-7b 代理 B：ladderMetrics 搬到 src/application/evidence-ladder.ts，抽屜改從那裡匯入。這裡把它包一層開關：預設走搬移後的函式（本檔其餘測試不受影響），
 // 設了 impl 時改走它（V4-7b 段用搬移前的原文凍結 frozenLadderMetrics），同一份抽屜渲染兩次逐字比對 SSR。
@@ -102,7 +103,7 @@ describe("固定標題列（§7.8、C6）", () => {
 });
 
 describe("副標組字（evidenceSubtitle）", () => {
-  const options = () => ({ alias: false, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot.report });
+  const options = () => ({ resolver: snapshotResolver(snapshot), anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot.report });
 
   /** 規格：期間與報表本期／上期相同時加名稱，否則只寫 M/D 範圍。 */
   const periodText = (period: { start: string; end: string }) => {

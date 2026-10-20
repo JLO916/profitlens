@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { CHANNEL_WEEKS_MAX_CHANNELS, CHANNEL_WEEKS_VERSION, channelWeeks } from "@/application/chart-channel-weeks";
 import { chartColors } from "@/application/chart-theme";
-import { channelLabel, demoAlias } from "@/application/copy";
+import { channelLabel, snapshotResolver } from "@/application/copy";
 import { evidenceFilterText } from "@/application/evidence-filter";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { deltaTone, formatAmountL2, formatAmountL3, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
@@ -176,7 +176,7 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
     for (const row of rowsOf(html, "tbody")) {
       const all = cells(row);
       expect(all).toHaveLength(9);
-      const channel = snap.report.scope.channels.find(code => all[0].text === channelLabel(code, demoAlias(snap.report.dataset_id)))!;
+      const channel = snap.report.scope.channels.find(code => all[0].text === channelLabel(code, snapshotResolver(snap)))!;
       const cell = all[7];
       expect([cell.tag, attr(cell.attrs, "role"), attr(cell.attrs, "class"), attr(cell.attrs, "data-label"), attr(cell.attrs, "data-list-role")]).toEqual(["td", "cell", "spark-cell", head, "spark"]);
       const svg = openTag(cell.html, `data-testid="${channelSparkTestId(channel)}"`)!;
@@ -202,7 +202,7 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
   it("「各通路每週」：表格之後的收合 <details class=data-alternative>（保持掛載）；列＝通路（順序同寬表目前的排序），欄＝近 6 週，格＝扣廣告後貢獻 L2 number-link", async () => {
     const snap = await snapshot("demo");
     const html = renderG7b(snap);
-    const alias = demoAlias(snap.report.dataset_id);
+    const resolver = snapshotResolver(snap);
     expect(html.indexOf('<details class="data-alternative"')).toBeGreaterThan(html.indexOf("</table></div>"));
     const details = detailsOf(html);
     expect(openTag(details, '<details class="data-alternative"')).toBe('<details class="data-alternative">');
@@ -218,7 +218,7 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
     const body = rowsOf(table, "tbody");
     // 預設排序（本期扣廣告後貢獻由低到高）＝寬表的列序。
     const order = sortChannelRows(buildManagerSummary(snap).channels, DEFAULT_CHANNEL_SORT).map(row => row.channel);
-    expect(body.map(row => cells(row)[0].text)).toEqual(order.map(channel => channelLabel(channel, alias)));
+    expect(body.map(row => cells(row)[0].text)).toEqual(order.map(channel => channelLabel(channel, resolver)));
     for (const [index, row] of body.entries()) {
       const series = data.channels.find(item => item.channel === order[index])!;
       const values = cells(row).slice(1);
@@ -228,11 +228,11 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
         expect(cell.text).toBe(text);
         // V4-8a（D-V4-45＝B）：不利（deltaTone L2）的週值帶 C33 unfavorable（number-link negative）。
         const linkClass = deltaTone("contribution_after_marketing", series.values[week].metric.value, "L2") === "unfavorable" ? "number-link negative" : "number-link";
-        expect(cell.html).toBe(`<button type="button" class="${linkClass}" aria-label="${fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(series.channel, alias), metric: fill(tableV3.cellLabel, { period: data.weeks[week].label, metric: metricLabel }), value: text })}">${text}</button>`);
+        expect(cell.html).toBe(`<button type="button" class="${linkClass}" aria-label="${fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(series.channel, resolver), metric: fill(tableV3.cellLabel, { period: data.weeks[week].label, metric: metricLabel }), value: text })}">${text}</button>`);
       });
     }
     // V4-8a（D-V4-45＝B）示範資料：MARKETPLACE 六週都不利、上不利色；其他通路不上色（D-V3-7 有利不上色）。
-    expect(body.map(row => [cells(row)[0].text, cells(row).slice(1).filter(cell => cell.html.startsWith('<button type="button" class="number-link negative"')).length])).toEqual(order.map(channel => [channelLabel(channel, alias), channel === "MARKETPLACE" ? 6 : 0]));
+    expect(body.map(row => [cells(row)[0].text, cells(row).slice(1).filter(cell => cell.html.startsWith('<button type="button" class="number-link negative"')).length])).toEqual(order.map(channel => [channelLabel(channel, resolver), channel === "MARKETPLACE" ? 6 : 0]));
     // 6 週都是完整週：沒有「未滿 7 天」欄註與表後說明。
     expect(details).not.toContain(labels.overview.trendV3.incompleteShort);
     expect(details).not.toContain(fill(spark.incompleteNote, { metric: metricLabel }));
@@ -262,7 +262,7 @@ describe("G7b 通路寬表「近 {n} 週」與「各通路每週」（V4-3a）",
     expect(technical).toContain(`<div data-testid="evidence-arrange-version"><dt>${labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>${CHANNEL_WEEKS_VERSION}</code></dd></div>`);
     expect(drawer).toContain(fill(labels.format.units.yuan, { value: formatAmountL3(evidence.metric.value!) }));
     expect(drawer).not.toContain(formatSignedDelta(evidence.metric.value!, "L3"));
-    expect(byTestId(drawer, "evidence-filter")).toContain(evidenceFilterText(evidence.filter, { alias: true, anchor: dataset.manifest.data_as_of })!);
+    expect(byTestId(drawer, "evidence-filter")).toContain(evidenceFilterText(evidence.filter, { resolver: snapshotResolver(snap), anchor: dataset.manifest.data_as_of })!);
   });
 
   // V4-3a 代理 E（合併 A 的 ladderMetrics 修正與 B 的 channelWeekEvidence 之後才能寫；06 V4-3a 驗收重點「單一通路週證據不畫全通路階梯（SSR）」）。

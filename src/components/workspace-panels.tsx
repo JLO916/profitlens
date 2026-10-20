@@ -14,7 +14,8 @@ import { exportProductsCsv } from "@/application/export";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import { formatSavedDateTime } from "@/application/auto-save";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import type { TaxConversion } from "@/application/tax-basis";
 import { exportTargetsCsv, targetDisplay, targetsCsvTemplate, type TargetIssue, type TargetSet } from "@/application/targets";
 import { eventsCsvTemplate, exportEventsCsv, type EventIssue, type EventSet } from "@/application/events";
@@ -69,7 +70,7 @@ interface IssueFilterState { filter: IssueFilter; request: number; issues: reado
  */
 export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion, targets = null, events = null, targetIssues = [], eventIssues = [], importedAt = null, onTargets, onEvents, onRemoveTargets, onRemoveEvents, onRemoveTargetRow, onRemoveEventRow }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null; targetIssues?: TargetIssue[]; eventIssues?: EventIssue[]; /** §7.7.1 第 8 點：匯入時間（ISO；V4-7c 起是到分的 UTC「YYYY-MM-DDTHH:MMZ」，還原帶 imported_at 的備份後也有）；呼叫端沒有記錄時省略該列。 */ importedAt?: string | null; onTargets?: (file: File | undefined) => void; onEvents?: (file: File | undefined) => void; onRemoveTargets?: () => void; onRemoveEvents?: () => void; onRemoveTargetRow?: (line: number) => void; onRemoveEventRow?: (line: number) => void }) {
   const settings = dataset.manifest;
-  const alias = demoAlias(settings.dataset_id);
+  const resolver = snapshot.report.dataset_id === settings.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, settings.dataset_id);
   const anchor = settings.data_as_of;
   const files = [
     { name: "sales_daily.csv", title: labels.importWizard.files.sales, description: dataPanel.fileGrain.sales, rows: dataset.sales, fields: ["date", "channel", "sku", "category", "units_sold", ...SALES_FIELDS, "currency"] },
@@ -131,11 +132,11 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
         <div><dt>{dataPanel.meta.coverage}</dt><dd>{coverage}</dd></div>
         <div><dt>{labels.importWizard.basis.label}</dt><dd>{basisText}</dd></div>
         <div><dt>{dataPanel.meta.currencyTimezone}</dt><dd>{settings.currency}{v3.separator}{settings.timezone}</dd></div>
-        <div><dt>{dataPanel.meta.channels}</dt><dd>{channelsLabel(settings.channels, alias)}</dd></div>
+        <div><dt>{dataPanel.meta.channels}</dt><dd>{channelsLabel(settings.channels, resolver)}</dd></div>
         <div><dt>{dataPanel.meta.coverageConfirmed}</dt><dd>{settings.sales_coverage_confirmed ? dataPanel.meta.coverageYes : dataPanel.meta.coverageNo}</dd></div>
         <div><dt>{labels.shell.periods.previous}</dt><dd>{period(snapshot.report.previous.period)}</dd></div>
         <div><dt>{labels.shell.periods.current}</dt><dd>{period(snapshot.report.current.period)}</dd></div>
-        <div><dt>{dataPanel.meta.scopeChannels}</dt><dd>{channelsLabel(snapshot.report.scope.channels, alias)}</dd></div>
+        <div><dt>{dataPanel.meta.scopeChannels}</dt><dd>{channelsLabel(snapshot.report.scope.channels, resolver)}</dd></div>
       </dl>
       <p className="note">{dataPanel.datasetCaution}</p>
       <details><summary>{labels.evidence.sections.technicalDetails}</summary><dl className="ui-dl"><div><dt>{labels.data.panel.meta.formatVersionTechnical}</dt><dd className="ui-mono">{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>{labels.data.panel.meta.datasetShaTechnical}</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>{labels.data.panel.meta.filterShaTechnical}</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>{labels.data.panel.meta.amountBasisTechnical}</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
@@ -164,7 +165,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
             {targets && <button type="button" className="ui-btn ui-btn-text" onClick={onRemoveTargets}>{labels.targets.remove}</button>}
           </div>
           {targetIssues.length > 0 && <div className="side-entry-issues" role="alert" data-testid="targets-issues"><SideFileIssueList file="targets.csv" issues={targetIssues} regionLabel={fill(v3.issueTable.sideRegionAria, { name: labels.targets.entry })} /></div>}
-          {targets && <div className="table-scroll" role="region" aria-label={labels.targets.entry} tabIndex={0}><table className="ui-table" data-testid="targets-table"><thead><tr><th scope="col" className="num">{labels.exports.csv.columns.line}</th><th scope="col">{labels.targets.columns.period_start}</th><th scope="col">{labels.targets.columns.period_end}</th><th scope="col">{labels.targets.columns.channel}</th><th scope="col">{labels.targets.columns.metric}</th><th scope="col" className="num">{labels.targets.columns.target}</th><th scope="col"></th></tr></thead><tbody>{targets.rows.map(row => <tr key={row.line}><th scope="row" className="num ui-mono">{row.line}</th><td>{row.period_start}</td><td>{row.period_end}</td><td>{row.channel === "ALL" ? diagnosisPanel.scopeAll : channelLabel(row.channel, alias)}</td><td>{metricDefinitions[row.metric].label}</td><td className="num">{targetDisplay(row)}</td><td className="row-action"><button type="button" className="ui-btn ui-btn-text" aria-label={`${labels.targets.removeRow} ${row.line}`} onClick={() => onRemoveTargetRow?.(row.line)}>{labels.targets.removeRow}</button></td></tr>)}</tbody></table></div>}
+          {targets && <div className="table-scroll" role="region" aria-label={labels.targets.entry} tabIndex={0}><table className="ui-table" data-testid="targets-table"><thead><tr><th scope="col" className="num">{labels.exports.csv.columns.line}</th><th scope="col">{labels.targets.columns.period_start}</th><th scope="col">{labels.targets.columns.period_end}</th><th scope="col">{labels.targets.columns.channel}</th><th scope="col">{labels.targets.columns.metric}</th><th scope="col" className="num">{labels.targets.columns.target}</th><th scope="col"></th></tr></thead><tbody>{targets.rows.map(row => <tr key={row.line}><th scope="row" className="num ui-mono">{row.line}</th><td>{row.period_start}</td><td>{row.period_end}</td><td>{row.channel === "ALL" ? diagnosisPanel.scopeAll : channelLabel(row.channel, resolver)}</td><td>{metricDefinitions[row.metric].label}</td><td className="num">{targetDisplay(row)}</td><td className="row-action"><button type="button" className="ui-btn ui-btn-text" aria-label={`${labels.targets.removeRow} ${row.line}`} onClick={() => onRemoveTargetRow?.(row.line)}>{labels.targets.removeRow}</button></td></tr>)}</tbody></table></div>}
         </section>
         <section className="side-entry" aria-labelledby="events-heading" data-testid="events-entry">
           <div className="side-entry-head"><h3 id="events-heading">{labels.events.entry}</h3><span className="side-entry-state">{events ? fill(labels.events.loaded, { n: events.rows.length, name: events.filename ?? "" }) : labels.events.none}</span></div>
@@ -216,7 +217,7 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
 
 export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void; events?: EventSet | null }) {
   const summary = useMemo(() => buildManagerSummary(snapshot), [snapshot]);
-  const alias = demoAlias(snapshot.report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   // V3-5（PRD §7.2）：健檢結果先放（這是結論；一個規則一列，與三件事同一套 diagnosisGroups）→ 各通路兩期比較（通路寬表 diagnosis 變體）；AI 區塊由 dashboard 接在最後（預設收合）。
   return <>
   <DiagnosisList snapshot={snapshot} groups={summary.diagnosis} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} />
@@ -227,7 +228,7 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null 
   {/* ── V4-3b B：G12 五項比率每週走勢（<details>，收合時掛載）插在這裡（G11 之後、通路寬表之前） */}
   <RatesSection snapshot={snapshot} onEvidence={onEvidence} />
   <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
-    <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, alias)}</span></div>
+    <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, resolver)}</span></div>
     <p className="sub">{diagnosisPanel.channelTableCaution}</p>
     <ChannelWideTable variant="diagnosis" summary={summary} snapshot={snapshot} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />
   </section>
@@ -245,7 +246,7 @@ export function Products({ dataset, snapshot, onEvidence, filenames }: { dataset
   const [search, setSearch] = useState("");
   const channels = snapshot.report.scope.channels;
   const period = snapshot.report.current.period;
-  const alias = demoAlias(dataset.manifest.dataset_id);
+  const resolver = snapshot.report.dataset_id === dataset.manifest.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, dataset.manifest.dataset_id);
   const categories = [...new Set(dataset.sales.filter(row => channels.includes(row.channel)).map(row => row.category).filter(category => category.trim() !== ""))].sort();
   const activeCategory = categories.includes(category) ? category : "";
   const result = useMemo(() => analyzeProducts(dataset, { period, channels, ...(activeCategory ? { category: activeCategory } : {}) }), [dataset, period, channels, activeCategory]);
@@ -253,12 +254,12 @@ export function Products({ dataset, snapshot, onEvidence, filenames }: { dataset
   const rows = result.rows.filter(row => !query || row.sku.toLocaleLowerCase().includes(query));
   return <section className="panel" aria-labelledby="products-heading">
     <div className="section-heading"><div><h2 id="products-heading">{labels.products.sections.productTable}</h2><p className="note">{productsPanel.productsCaution}</p></div><span className="tag">{productsPanel.tagTwdExclusive}</span></div>
-    <div className="product-filters"><label htmlFor="product-category">{productsPanel.filterCategory}<select aria-label={productsPanel.filterCategory} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{productsPanel.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, alias)}</option>)}</select></label><label htmlFor="product-search">{productsPanel.searchSku}<input id="product-search" type="search" placeholder={productsPanel.searchSkuPlaceholder} value={search} onChange={event => setSearch(event.target.value)} /></label></div>
+    <div className="product-filters"><label htmlFor="product-category">{productsPanel.filterCategory}<select aria-label={productsPanel.filterCategory} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{productsPanel.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, resolver)}</option>)}</select></label><label htmlFor="product-search">{productsPanel.searchSku}<input id="product-search" type="search" placeholder={productsPanel.searchSkuPlaceholder} value={search} onChange={event => setSearch(event.target.value)} /></label></div>
     <div className="export-actions"><button className="button quiet" onClick={() => downloadText(exportProductsCsv(dataset, snapshot, rows, { category: activeCategory, query }, filenames), "profitlens-products.csv")}>{labels.exports.downloads.productsCsv}</button><span className="note">{productsPanel.productsCsvHint}</span></div>
-    <div className="metric-strip"><p aria-live="polite">{fill(productsPanel.productCount, { n: rows.length })}</p><p className="note">{fill(productsPanel.productScope, { start: period.start, end: period.end, channels: channelsLabel(channels, alias), category: activeCategory ? categoryLabel(activeCategory, alias) : productsPanel.allCategories })}</p></div>
-    {rows.length === 0 ? <p>{productsPanel.noProducts}</p> : <div className="table-scroll" tabIndex={0} role="region" aria-label={productsPanel.productTableAria}><table className="table" data-testid="product-table"><caption className="sr-only">{productsPanel.productTableCaption}</caption><thead><tr><th scope="col">{dataPanel.previewColumns.channel}</th><th scope="col">SKU</th><th scope="col">{dataPanel.previewColumns.category}</th>{productColumns.map(column => <th scope="col" key={column.name}>{metricDefinitions[column.name].unit === "money" ? fill(labels.format.units.yuanColumn, { label: column.label }) : column.label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={JSON.stringify([row.channel, row.sku])}><td>{channelLabel(row.channel, alias)}</td><th scope="row">{row.sku}</th><td>{row.category.trim() ? categoryLabel(row.category, alias) : productsPanel.uncategorized}</td>{productColumns.map(column => {
+    <div className="metric-strip"><p aria-live="polite">{fill(productsPanel.productCount, { n: rows.length })}</p><p className="note">{fill(productsPanel.productScope, { start: period.start, end: period.end, channels: channelsLabel(channels, resolver), category: activeCategory ? categoryLabel(activeCategory, resolver) : productsPanel.allCategories })}</p></div>
+    {rows.length === 0 ? <p>{productsPanel.noProducts}</p> : <div className="table-scroll" tabIndex={0} role="region" aria-label={productsPanel.productTableAria}><table className="table" data-testid="product-table"><caption className="sr-only">{productsPanel.productTableCaption}</caption><thead><tr><th scope="col">{dataPanel.previewColumns.channel}</th><th scope="col">SKU</th><th scope="col">{dataPanel.previewColumns.category}</th>{productColumns.map(column => <th scope="col" key={column.name}>{metricDefinitions[column.name].unit === "money" ? fill(labels.format.units.yuanColumn, { label: column.label }) : column.label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={JSON.stringify([row.channel, row.sku])}><td>{channelLabel(row.channel, resolver)}</td><th scope="row">{row.sku}</th><td>{row.category.trim() ? categoryLabel(row.category, resolver) : productsPanel.uncategorized}</td>{productColumns.map(column => {
       const metric = row.metrics[column.name];
-      return <td key={column.name}><button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined} aria-label={fill(productsPanel.productCellAria, { channel: channelLabel(row.channel, alias), sku: row.sku, metric: column.label, value: displayMetric(column.name, metric) })} onClick={() => onEvidence({ title: fill(productsPanel.productEvidenceTitle, { sku: row.sku, metric: column.label }), name: column.name, metric, period, channels: [row.channel], sources: row.sources, scopeLabel: fill(productsPanel.productScopeLabel, { sku: row.sku, category: categoryLabel(row.category, alias) }) })}>{displayMetric(column.name, metric)}</button>{metric.value === null && metric.reason_codes.length > 0 && <small className="note">{labels.shell.status.missing}</small>}</td>;
+      return <td key={column.name}><button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined} aria-label={fill(productsPanel.productCellAria, { channel: channelLabel(row.channel, resolver), sku: row.sku, metric: column.label, value: displayMetric(column.name, metric) })} onClick={() => onEvidence({ title: fill(productsPanel.productEvidenceTitle, { sku: row.sku, metric: column.label }), name: column.name, metric, period, channels: [row.channel], sources: row.sources, scopeLabel: fill(productsPanel.productScopeLabel, { sku: row.sku, category: categoryLabel(row.category, resolver) }) })}>{displayMetric(column.name, metric)}</button>{metric.value === null && metric.reason_codes.length > 0 && <small className="note">{labels.shell.status.missing}</small>}</td>;
     })}</tr>)}</tbody></table></div>}
   </section>;
 }

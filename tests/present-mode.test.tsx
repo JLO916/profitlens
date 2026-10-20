@@ -8,7 +8,7 @@ import { fixture } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { createReviewSession } from "@/application/review-session";
-import { channelsLabel, demoAlias } from "@/application/copy";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
 import { fill, labels } from "@/i18n";
 import { PageHeader } from "@/components/shell/page-chrome";
 import { periodSummary } from "@/components/shell/period-bar";
@@ -257,7 +257,7 @@ describe("presentPeriodText（投影中頁首的一行期間文字）", () => {
     const meeting = { ...review, meeting_filters: { ...review.meeting_filters, channels: [channels[0]], previous_period: { start: "2026-01-01", end: "2026-01-07" }, current_period: { start: "2026-01-08", end: "2026-01-14" } } };
     const text = presentPeriodText(snapshot, meeting, channels);
     const summary = periodSummary({ previous: meeting.meeting_filters.previous_period, current: meeting.meeting_filters.current_period, previousDays: 7, currentDays: 7, comparisonMode: meeting.meeting_filters.comparison_mode, channelsText: "", dataAsOf: review.data_as_of }).text;
-    expect(text).toBe(fill(labels.shell.presentV3.period, { period: summary, channels: channelsLabel([channels[0]], demoAlias(snapshot.report.dataset_id)) }));
+    expect(text).toBe(fill(labels.shell.presentV3.period, { period: summary, channels: channelsLabel([channels[0]], snapshotResolver(snapshot)) }));
     expect(text).not.toBe(presentPeriodText(snapshot, null, channels));
   });
 });

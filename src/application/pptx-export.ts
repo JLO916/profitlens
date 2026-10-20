@@ -4,7 +4,7 @@ import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type Exp
 import { fill, labels } from "../i18n";
 import { axisTicks } from "../components/overview/charts/chart-frame";
 import { MAX_PINNED_ACTIONS, type ActionWorkspace } from "./action-workspace";
-import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "./copy";
+import { channelLabel, channelsLabel, ruleCopy, snapshotResolver } from "./copy";
 import { downloadBinary } from "./download";
 import { buildExportHeader, type ExportHeader } from "./export-header";
 import { EXPORT_THEME } from "./export-theme";
@@ -114,7 +114,7 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
   const spec = variantSpec(input.variant);
   const copy = labels.exports.pptx;
   const limit = PPTX_TEXT_LIMITS;
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const name = meeting ? pptxText(meeting.name, limit.title) : "";
   const date = meeting ? pptxText(meeting.date, limit.deadline) : "";
   // V3-7 §7.9：版頭四行。標題用第 2 行（有會議時用會議名稱），其餘放副標（最多三行）。
@@ -131,15 +131,15 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
   const subtitle = pptxText(fill(copy.subtitle, {
     // 版頭的期間用匯出格式「2026-07-13 至 2026-08-23（42 天）」（§8.6）。
     asOf: summary.data_as_of, previous: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end),
-    current: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end), channels: channelsLabel(summary.scope.channels, alias),
+    current: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end), channels: channelsLabel(summary.scope.channels, resolver),
   }), limit.subtitle);
   const kpiRows = spec.sections.kpis === "four" ? variantKpis(summary, snapshot.report) : summary.headlines;
   const key_deltas = kpiRows.map(row => ({ label: metricDefinitions[row.metric].label, previous: money(row.previous, "L1"), current: money(row.current, "L1"), change: money(row.change, "L1", true) }));
   const priorities = summary.priorities.slice(0, PPTX_MAX_PRIORITIES).map(item => {
-    const rule = ruleCopy(snapshot, item.primary, alias);
+    const rule = ruleCopy(snapshot, item.primary, resolver);
     return { headline: pptxText(rule.headline, limit.headline), impact: money(item.impact ?? item.ranking_amount, "L1", true), next_step: spec.sections.priorityDetail ? pptxText(rule.nextStep, limit.nextStep) : "" };
   });
-  const channels = spec.sections.channels ? summary.channels.map(row => ({ channel: pptxText(channelLabel(row.channel, alias), limit.channel), previous: money(row.contribution.previous, "L2"), current: money(row.contribution.current, "L2"), change: money(row.contribution.change, "L2", true) })) : [];
+  const channels = spec.sections.channels ? summary.channels.map(row => ({ channel: pptxText(channelLabel(row.channel, resolver), limit.channel), previous: money(row.contribution.previous, "L2"), current: money(row.contribution.current, "L2"), change: money(row.contribution.change, "L2", true) })) : [];
   // 決策備註是內部備註：老闆一頁版與客戶報告版的決議不帶備註；老闆一頁版沒有會議時不放決議。
   const notes = meeting && spec.internal.decisionNotes ? pptxText(meeting.notes, limit.decision) : "";
   const decision = meeting ? pptxText([fill(copy.decision, { decision: decisionLabel(meeting.decision) }), notes ? fill(copy.decisionNotes, { notes }) : ""].filter(Boolean).join(copy.separator), limit.decision) : spec.sections.decisions ? copy.noMeeting : "";

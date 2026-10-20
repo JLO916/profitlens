@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { channelsLabel, demoAlias, scopeLabel } from "../src/application/copy";
+import { channelsLabel, scopeLabel, snapshotResolver } from "../src/application/copy";
 import { diagnosisGroups, type DiagnosisGroup } from "../src/application/diagnosis-group";
 import type { EventSet } from "../src/application/events";
 import { formatAmountL3, formatSignedDelta } from "../src/application/presentation";
@@ -94,7 +94,7 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
   it("展開內容：限制句、其餘範圍（每個範圍一個 L2 影響金額）；沒有檔期時不出現檔期一行", async () => {
     const snap = await snapshot();
     const html = render(snap);
-    const alias = demoAlias(snap.report.dataset_id);
+    const resolver = snapshotResolver(snap);
     for (const group of diagnosisGroups(snap).priorities) {
       const body = bodyOf(rowOf(html, group.rule));
       expect(body, group.rule).toContain(`<dt>${alerts.limitation}</dt><dd>${group.caution}</dd>`);
@@ -103,7 +103,7 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
         expect(body, group.rule).toContain(`<dt>${alerts.relatedScopes}</dt>`);
         const others = group.scopes.slice(1);
         expect(body.match(/class="number-link impact-amount /g), group.rule).toHaveLength(others.length);
-        for (const scope of others) expect(text(body), `${group.rule} ${scope.label}`).toContain(`${fill(labels.overview.topThree.memberRow, { scope: scopeLabel(scope.scope, alias), amount: "" })}${formatSignedDelta(scope.impact?.value ?? null, "L2")}`);
+        for (const scope of others) expect(text(body), `${group.rule} ${scope.label}`).toContain(`${fill(labels.overview.topThree.memberRow, { scope: scopeLabel(scope.scope, resolver), amount: "" })}${formatSignedDelta(scope.impact?.value ?? null, "L2")}`);
       } else expect(body, group.rule).not.toContain(`<dt>${alerts.relatedScopes}</dt>`);
     }
   });
@@ -111,7 +111,7 @@ describe("V3-4a 本期三件事：C9 摘要型警示列（golden，門檻 0.00�
   it("標題列：3 件時是「本期三件事」，範圍只標一次；依影響金額排序的 `?` 說明與「調整門檻」popover 都收合但掛載", async () => {
     const snap = await snapshot();
     const html = render(snap);
-    const scope = channelsLabel(snap.report.scope.channels, demoAlias(snap.report.dataset_id));
+    const scope = channelsLabel(snap.report.scope.channels, snapshotResolver(snap));
     expect(html).toContain(`<h2 id="top-three-title">${labels.overview.sections.topThree}</h2><span class="sec-scope">${scope}</span>`);
     expect(text(element(html, 'class="sec-head"', "div")).split(scope)).toHaveLength(2);
     expect(html).toContain(`${labels.overview.sections.impactLegend}<button type="button" class="ui-help-trigger" title="${labels.overview.sections.impactLegendHelp}" aria-label="${alerts.sortHelpAria}" aria-expanded="false" aria-controls="top-three-sort-help">`);

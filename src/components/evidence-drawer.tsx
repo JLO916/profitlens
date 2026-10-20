@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, scopedEvidenceFilter, type EvidenceFilter } from "@/application/evidence-filter";
 import { ladderMetrics } from "@/application/evidence-ladder";
 import { emptyKindOf, evidenceRows, formatAmountL1, formatAmountL3, formatCount, formatEmpty, formatMultiple, formatPerUnit, formatPeriodL1, formatPointsValue, formatRateLayer, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
@@ -112,10 +113,10 @@ function sourceValue(field: string, value: string): string {
  * 期間用 formatPeriodL1（M/D，不附天數；以資料到的年份為準，跨年才寫年份）；與報表本期或上期相同時前面加「本期」「上期」。
  * 沒有 scopeLabel 時範圍就是通路（涵蓋資料集全部通路時寫「全部通路」）；scopeLabel 沒寫出通路時另附「通路：…」（v2 範圍行的資訊不少）。只組字，不做任何計算。
  */
-export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "channels" | "scopeLabel">, options: { alias: boolean; anchor?: string; allChannels?: readonly string[]; report?: { current: { period: Period }; previous: { period: Period } }; yoy?: Period }): string {
+export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "channels" | "scopeLabel">, options: { resolver: NameResolver; anchor?: string; allChannels?: readonly string[]; report?: { current: { period: Period }; previous: { period: Period } }; yoy?: Period }): string {
   const sorted = (list: readonly string[]) => [...list].sort().join("|");
   const all = options.allChannels !== undefined && options.allChannels.length > 0 && sorted(options.allChannels) === sorted(evidence.channels);
-  const listed = evidence.channels.length ? channelsLabel(evidence.channels, options.alias) : copy.noChannels;
+  const listed = evidence.channels.length ? channelsLabel(evidence.channels, options.resolver) : copy.noChannels;
   const channels = all ? copy.allChannels : listed;
   const range = formatPeriodL1(evidence.period.start, evidence.period.end, { anchor: options.anchor, days: false });
   const same = (period: Period | undefined) => period !== undefined && period.start === evidence.period.start && period.end === evidence.period.end;
@@ -143,7 +144,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
-  const alias = demoAlias(dataset.manifest.dataset_id);
+  const resolver = snapshot && snapshot.report.dataset_id === dataset.manifest.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, dataset.manifest.dataset_id);
   const definition = metricDefinitions[evidence.name];
   const files = new Set<SourceRef["file"]>(["manifest.json"]);
   for (const field of definition.fields) {
@@ -166,7 +167,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   const [page, setPage] = useState(0);
   const activeTab = tabs.includes(tab) ? tab : tabs[0];
   const needle = query.trim().toLowerCase();
-  const filtered = rows.filter(row => row.file === fileOfTab[activeTab]).filter(row => !needle || [row.date, row.channel, row.sku, row.channel ? channelLabel(row.channel, alias) : null].some(value => value?.toLowerCase().includes(needle)));
+  const filtered = rows.filter(row => row.file === fileOfTab[activeTab]).filter(row => !needle || [row.date, row.channel, row.sku, row.channel ? channelLabel(row.channel, resolver) : null].some(value => value?.toLowerCase().includes(needle)));
   const lastPage = Math.max(0, Math.ceil(filtered.length / pageSize) - 1);
   const currentPage = Math.min(page, lastPage);
   const start = currentPage * pageSize;
@@ -211,10 +212,10 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
   // 指標定義與算法：domain 指標用指標定義；件數、件均這類非 domain 指標用證據自帶的公式說明。版本與技術細節同源。
   const definitionText = evidence.definition ?? (evidence.unitOverride === "count" || evidence.unitOverride === "money_per_unit" ? evidence.formula ?? definition.plain : definition.plain);
   const metricVersion = evidence.metricVersion ?? "contribution-v1";
-  const subtitle = evidenceSubtitle(evidence, { alias, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report, yoy: snapshot?.yoy?.status === "ready" ? snapshot.yoy.period : undefined });
+  const subtitle = evidenceSubtitle(evidence, { resolver, anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot?.report, yoy: snapshot?.yoy?.status === "ready" ? snapshot.yoy.period : undefined });
   const column = v3.sourceColumns;
   const filterCopy = labels.overview.trendYoyV3.filter;
-  const filterText = filterable ? evidenceFilterText(filter, { alias, anchor: dataset.manifest.data_as_of }) : null;
+  const filterText = filterable ? evidenceFilterText(filter, { resolver, anchor: dataset.manifest.data_as_of }) : null;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -317,7 +318,7 @@ function EvidenceDialog({ dataset, snapshot, evidence, onClose, onBasis, filenam
                           {row.missing && <span className="tag">{copy.missingTag}</span>}
                         </th>
                         <td role="cell" className="evidence-date" data-label={column.date} data-list-role="secondary">{row.date ?? copy.wholeDataset}</td>
-                        <td role="cell" data-label={column.channel} data-list-role="secondary">{row.channel ? channelLabel(row.channel, alias) : copy.allChannels}{row.sku ? <small>{fill(labels.evidence.drawer.skuLine, { sku: row.sku })}</small> : null}</td>
+                        <td role="cell" data-label={column.channel} data-list-role="secondary">{row.channel ? channelLabel(row.channel, resolver) : copy.allChannels}{row.sku ? <small>{fill(labels.evidence.drawer.skuLine, { sku: row.sku })}</small> : null}</td>
                         <td role="cell" data-label={column.values} data-list-role="labeled"><dl>{values.map(([field, value]) => <div key={field}><dt>{copy.fields[field] ?? ((AMOUNT_FIELDS as readonly string[]).includes(field) ? metricDefinitions[field as MetricName].label : field)}{mappings?.[row.file]?.[field] && mappings[row.file]![field] !== field && <small>{copy.originalColumn}：{mappings[row.file]![field]}</small>}</dt><dd>{value === null ? copy.missingValue : rawValues?.[row.file as FileName]?.[row.line ?? -1]?.[field] !== undefined ? <span className="converted-value" title={copy.rawToConverted}><s>{sourceValue(field, rawValues[row.file as FileName]![row.line!][field])}</s> → <strong>{sourceValue(field, value)}</strong><span className="sr-only">（{copy.rawToConverted}）</span></span> : sourceValue(field, value)}</dd></div>)}</dl></td>
                       </tr>
                     );

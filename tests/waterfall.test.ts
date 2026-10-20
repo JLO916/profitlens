@@ -1,7 +1,8 @@
 import Decimal from "decimal.js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { chartColors } from "../src/application/chart-theme";
-import { channelLabel, demoAlias, formatHeadlineAmount } from "../src/application/copy";
+import { channelLabel, formatHeadlineAmount, snapshotResolver } from "../src/application/copy";
+import { makeResolver } from "../src/application/channel-settings";
 import { asciiMinus, formatAmountL1, formatAmountL3, formatEmpty, formatPeriodL1, formatRateL1, formatRateL2, formatSignedDelta, metricDefinitions } from "../src/application/presentation";
 import { bridgeWaterfall, PROFIT_WATERFALL_METRICS, profitWaterfall, profitWaterfallScopes, waterfallToneColor, type WaterfallBar } from "../src/application/waterfall";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
@@ -249,15 +250,15 @@ describe("profitWaterfall：本期利潤結構（F2）", () => {
   it("副標：本期利潤結構 · 期間 · 範圍（合計／全部通路／通路名稱）；範圍選項是合計＋各通路", () => {
     const anchor = demo.data_as_of;
     const span = formatPeriodL1(demo.report.current.period.start, demo.report.current.period.end, { days: false, anchor });
-    const alias = demoAlias(demo.report.dataset_id);
+    const resolver = snapshotResolver(demo);
     expect(profitWaterfall(demo, "all").subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: labels.overview.sections.total }));
     expect(profitWaterfall(demo, "all", { allChannels: ["DTC", "MARKETPLACE"] }).subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: labels.shell.periodBar.filter.allChannels }));
     expect(profitWaterfall(demo, "all", { allChannels: ["DTC", "MARKETPLACE", "LINE"] }).scopeLabel).toBe(labels.overview.sections.total);
     const channel = profitWaterfall(demo, "MARKETPLACE");
-    expect(channel.scopeLabel).toBe(channelLabel("MARKETPLACE", alias));
-    expect(channel.subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: channelLabel("MARKETPLACE", alias) }));
-    expect(profitWaterfall(demo, "MARKETPLACE", { alias: false }).scopeLabel).toBe("MARKETPLACE");
-    expect(profitWaterfallScopes(demo)).toEqual([{ id: "all", label: profitCopy.scope.all }, ...demo.report.scope.channels.map(id => ({ id, label: channelLabel(id, alias) }))]);
+    expect(channel.scopeLabel).toBe(channelLabel("MARKETPLACE", resolver));
+    expect(channel.subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: span, scope: channelLabel("MARKETPLACE", resolver) }));
+    expect(profitWaterfall(demo, "MARKETPLACE", { resolver: makeResolver({}, demo.report.dataset_id) }).scopeLabel).toBe("MARKETPLACE");
+    expect(profitWaterfallScopes(demo)).toEqual([{ id: "all", label: profitCopy.scope.all }, ...demo.report.scope.channels.map(id => ({ id, label: channelLabel(id, resolver) }))]);
   });
 
   it("資料表 10 列：金額是指標原值（費用為正），佔淨營收交給 formatRateL2；扣廣告後貢獻列與貢獻率一致", () => {
@@ -316,7 +317,7 @@ describe("profitWaterfall：本期利潤結構（F2）", () => {
     expect(result.missing).toBe(true);
     expect(result.bars.every(bar => bar.tone === "missing" && bar.value === null)).toBe(true);
     expect(result.title).toBe(profitCopy.section);
-    expect(result.scopeLabel).toBe(channelLabel("UNKNOWN", demoAlias(golden.report.dataset_id)));
+    expect(result.scopeLabel).toBe(channelLabel("UNKNOWN", snapshotResolver(golden)));
     expect(profitWaterfall(golden, "constructor").missing).toBe(true);
   });
 });

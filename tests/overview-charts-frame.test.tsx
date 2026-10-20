@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { scanTsxText } from "../scripts/lib/ui-scan.mjs";
 import { channelConclusion, trendTakeaways } from "../src/application/chart-takeaways";
 import { chartColors, chartHeights } from "../src/application/chart-theme";
-import { channelLabel, demoAlias } from "../src/application/copy";
+import { channelLabel, snapshotResolver } from "../src/application/copy";
 import type { EventSet } from "../src/application/events";
 import { formatAmountL2, formatMetric, metricDefinitions } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
@@ -215,9 +215,9 @@ describe("區塊 8 各通路扣廣告後貢獻（ChartFrame id=channel）", () =
     const details = element(section, 'class="data-alternative"')!;
     expect(details).toContain(`<summary>${fill(ui.dataTable, { title: labels.overview.sections.channelMix })}</summary>`);
     expect(details.match(/<thead>[\s\S]*<\/thead>/)![0].match(/<th>/g)).toHaveLength(5);
-    const alias = demoAlias(demo.report.dataset_id);
+    const resolver = snapshotResolver(demo);
     for (const [channel, row] of Object.entries(demo.report.current.channels)) {
-      expect(details, channel).toContain(`<tr><th>${channelLabel(channel, alias)}</th><td><button class="number-link">${formatAmountL2(row.metrics.net_revenue.value)}</button></td><td><button class="number-link">${formatAmountL2(demo.report.previous.channels[channel].metrics.contribution_after_marketing.value)}</button></td>`);
+      expect(details, channel).toContain(`<tr><th>${channelLabel(channel, resolver)}</th><td><button class="number-link">${formatAmountL2(row.metrics.net_revenue.value)}</button></td><td><button class="number-link">${formatAmountL2(demo.report.previous.channels[channel].metrics.contribution_after_marketing.value)}</button></td>`);
     }
     expect(details.match(/<tbody>[\s\S]*<\/tbody>/)![0].match(/<tr>/g)).toHaveLength(Object.keys(demo.report.current.channels).length);
   });

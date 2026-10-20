@@ -7,6 +7,7 @@ import { fill, labels } from "../../src/i18n";
 import { WORKSPACE_VERSION } from "../../src/application/workspace-backup";
 import { BREAKEVEN_MER_VERSION } from "../../src/application/breakeven-mer";
 import { channelsLabel } from "../../src/application/copy";
+import { makeResolver } from "../../src/application/channel-settings";
 import { formatSavedDateTime } from "../../src/application/auto-save";
 import { formatAmountL1, formatAmountL2, formatDateL1, formatMultiple, formatPeriodExport, formatSignedDelta } from "../../src/application/presentation";
 import { decisionSignature } from "../../src/application/decision";
@@ -16,6 +17,8 @@ import { exportPeriodLine, exportReportTitle, exportVersionLineRe, expectExportH
 import { expectMeetingHistoryEmpty, expectMeetingNoScenario, goToScenariosFromMeeting } from "./misc-helpers-v38";
 import { GOLDEN_BREAKEVEN, markdownAssistSection, markdownBreakevenRow, markdownBreakevenVersion, markdownTechnicalLines } from "./breakeven-helpers-v39";
 import { EXPORT_VARIANTS, STANDARD_SHEETS, summaryExportItems, variantPicker } from "./variant-helpers-v39";
+/** V42-1a：通路名稱解析器取代 channelsLabel 的 boolean（golden 不套名稱；示範資料套示範別名）。 */
+const GOLDEN_NAMES = makeResolver(undefined, "golden-v1"), DEMO_NAMES = makeResolver(undefined, "synthetic-demo-12w-v1");
 
 // R6（05 §10–§12、02 §8）：會議紀錄分頁（結束會議、會議歷史、上次會議比較）、備份 v4 的 meeting_history、Excel／PPT／PDF 匯出、首次保存提示與自動保存、總覽一行入口與八個分頁。
 // 金額一律用 golden 手算（fixtures/golden，上期 2026-08-01、本期 2026-08-02）：
@@ -402,10 +405,10 @@ test("b2. 換成示範資料後，固定在 golden 的會議稿仍顯示 golden 
   await toggle.click();
   await expect(banner.locator(".meeting-banner-popover")).toBeVisible();
   await expect(banner.locator(".meeting-banner-popover")).toHaveText(fill(review.viewDifference, {
-    meetingChannels: channelsLabel(channels, false), meetingStart: "2026-08-02", meetingEnd: "2026-08-02",
-    viewChannels: channelsLabel(channels, true), viewStart: "2026-07-13", viewEnd: "2026-08-23", datasetNote: review.viewDifferenceDataset,
+    meetingChannels: channelsLabel(channels, GOLDEN_NAMES), meetingStart: "2026-08-02", meetingEnd: "2026-08-02",
+    viewChannels: channelsLabel(channels, DEMO_NAMES), viewStart: "2026-07-13", viewEnd: "2026-08-23", datasetNote: review.viewDifferenceDataset,
   }));
-  await expect(meeting.locator(".meeting-scope-line")).toContainText(fill(review.sourceLine, { sourceStatus: review.sourceHistorical, channels: channelsLabel(channels, false) }));
+  await expect(meeting.locator(".meeting-scope-line")).toContainText(fill(review.sourceLine, { sourceStatus: review.sourceHistorical, channels: channelsLabel(channels, GOLDEN_NAMES) }));
   for (const channel of channels) await expect(meeting.getByTestId("meeting-agenda-5").getByLabel(fill(review.scenarioSelect, { channel }), { exact: true })).toHaveCount(1);
 });
 
@@ -507,7 +510,7 @@ test("c. 匯出產物：下載選單「摘要匯出（目前檢視）」四項�
   expect(slides[0]).toMatch(new RegExp(`>${exportVersionLineRe().source.slice(1, -1)}<`));
   expect(slides[0]).toContain(fill(headerV3.pptxDataVersion, { datasetHash: "" }));
   expect(slides[0]).not.toContain(fill(labels.exports.pptx.title, { brand: labels.brand.name }));
-  expect(slides[0]).not.toContain(fill(labels.exports.pptx.subtitle, { asOf: GOLDEN_AS_OF, previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
+  expect(slides[0]).not.toContain(fill(labels.exports.pptx.subtitle, { asOf: GOLDEN_AS_OF, previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], GOLDEN_NAMES) }));
   expect(slides[0]).toContain(labels.exports.pptx.noMeeting);
   expect(slides[0]).not.toContain(fill(labels.exports.pptx.titleMeeting, { name: defaultMeetingName, date: today }));
   expect(slides[0]).not.toContain(defaultMeetingName);
@@ -697,7 +700,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   // 三件事的 ol 有 1. 2. 3. 編號。
   expect(await print.locator(":scope > ol").evaluate(element => getComputedStyle(element).listStyleType)).toBe("decimal");
   // 選單版只依目前檢視：版頭之後的範圍一行（狀態＝「目前檢視（不含會議決議）」· 資料到 · 通路 · 比較方式），沒有會議名稱頁首、決議行與選入方案。
-  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScope, { state: meetingPage.printViewState, asOf: GOLDEN_AS_OF, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.shell.periods.sameDays }));
+  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScope, { state: meetingPage.printViewState, asOf: GOLDEN_AS_OF, channels: channelsLabel(["DTC", "MARKETPLACE"], GOLDEN_NAMES), mode: labels.shell.periods.sameDays }));
   await expect(print.getByTestId("print-header-meeting")).toHaveCount(0);
   await expect(print.locator(":scope > header")).not.toContainText(defaultMeetingName);
   await expect(print.getByTestId("print-decision-line")).toHaveCount(0);
@@ -760,7 +763,7 @@ test("d. PDF／列印：下載選單「匯出 PDF」只依目前檢視（頁首 
   await expect(print.getByTestId("print-header-period").locator("span")).toHaveText([exportPeriodLine(GOLDEN_HEADER), headerV3.unitExclusive]);
   await expect(print.getByTestId("print-header-version")).toHaveText(exportVersionLineRe());
   await expect(print.getByTestId("print-header-meeting")).toHaveText(printMeta);
-  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.shell.periods.sameDays }));
+  await expect(print.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], GOLDEN_NAMES), mode: labels.shell.periods.sameDays }));
   await expect(print.locator(":scope > ol > li")).toHaveCount(3);
   // 第一頁的決議行在關鍵差額之後、三件事（h2）之前。
   const decisionLine = print.getByTestId("print-decision-line");

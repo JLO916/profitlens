@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { fixture } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
 import { createSnapshot, hashInput } from "@/application/workspace";
-import { demoAlias } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import { formatDateL1 } from "@/application/presentation";
 import { actionDocuments, addActionDraft, commitActionRebind, confirmBoundAction, contextFor, editActionManagement, editBoundAction, emptyActionWorkspace, knownOwners, previewActionRebind, taipeiToday, type ActionRebindPreview, type ActionSource, type ActionWorkspace } from "@/application/action-workspace";
 import { ActionEditor, factLabel, statusLabels, type EditorProps } from "@/components/action-editor";
@@ -131,7 +131,7 @@ describe("ActionEditor 三段（§7.5 第 4 點、§6.3 #41）", () => {
     const facts = workspace.items[0].card.fact_ids.map(id => context.session.facts.find(fact => fact.id === id)!);
     expect(facts.length).toBeGreaterThan(0);
     const links = element(evidence, 'class="action-evidence"')!;
-    expect(buttons(links).map(button => button.text)).toEqual(facts.map(fact => escapeText(fill(ui.viewEvidenceItem, { fact: factLabel(fact, demoAlias(context.session.dataset_id)) }))));
+    expect(buttons(links).map(button => button.text)).toEqual(facts.map(fact => escapeText(fill(ui.viewEvidenceItem, { fact: factLabel(fact, makeResolver(undefined, context.session.dataset_id)) }))));
     expect(buttons(links).every(button => button.attrs.includes('class="ui-btn ui-btn-text"'))).toBe(true);
     const rebind = buttons(evidence).find(button => button.text === labels.actions.buttons.rebind)!;
     expect(rebind.attrs).toContain('class="ui-btn ui-btn-secondary"');

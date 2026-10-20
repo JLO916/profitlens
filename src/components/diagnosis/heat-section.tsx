@@ -5,7 +5,8 @@ import { track } from "@/application/analytics";
 import { CHANNEL_WEEKS_VERSION } from "@/application/chart-channel-weeks";
 import { chartHeights, chartRowHeights } from "@/application/chart-theme";
 import { DAILY_HEATMAP_MAX_CELLS, DAILY_HEATMAP_MAX_CHANNELS, DAILY_HEATMAP_MAX_DAYS, DAILY_HEATMAP_VERSION, DAILY_HEATMAP_WORST, dailyHeatmap, type DailyHeatmap, type DailyHeatmapResult, type HeatCell, type HeatChannel, type HeatRow, type HeatValueCell } from "@/application/chart-heatmap";
-import { channelLabel, demoAlias } from "@/application/copy";
+import { channelLabel, snapshotResolver } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import { formatAmountL1, formatAmountL2, formatDateL1, formatHeatCell, formatPeriodL1, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { fill, labels } from "@/i18n";
@@ -71,9 +72,9 @@ export function heatCellEvidence(heatmap: Pick<DailyHeatmap, "mode">, channel: s
 }
 
 /** G11 的文字與表格（純函式，tests/charts-diagnosis-v4.test.tsx）。 */
-export function heatSectionModel(snapshot: WorkspaceSnapshot, options: { alias?: boolean } = {}): HeatSectionModel {
+export function heatSectionModel(snapshot: WorkspaceSnapshot, options: { resolver?: NameResolver } = {}): HeatSectionModel {
   const { report } = snapshot;
-  const alias = options.alias ?? demoAlias(report.dataset_id);
+  const resolver = options.resolver ?? snapshotResolver(snapshot);
   const anchor = snapshot.data_as_of;
   const metric = metricDefinitions[METRIC].label;
   const { period } = report.current;
@@ -92,7 +93,7 @@ export function heatSectionModel(snapshot: WorkspaceSnapshot, options: { alias?:
     return { result, title: section, subtitle, calendars: 0, columnsNeeded: 0, tables: [], message };
   }
   const heatmap = result.heatmap;
-  const label = (channel: string) => channelLabel(channel, alias);
+  const label = (channel: string) => channelLabel(channel, resolver);
   // 日格寫 M/D；週格寫週的起訖（只有 1 天的週寫那一天）。
   const span = (range: { start: string; end: string }) => range.start === range.end ? formatDateL1(range.start, { anchor }) : formatPeriodL1(range.start, range.end, { days: false, anchor });
   const when = (cell: HeatValueCell) => span(cell.period);

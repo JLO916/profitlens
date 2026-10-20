@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { ASSIST_KPI_IDS, assistKpis } from "../src/application/assist-kpi";
 import { assistWeeks } from "../src/application/chart-assist-weeks";
-import { channelsLabel, formatHeadlineAmount } from "../src/application/copy";
+import { channelsLabel, formatHeadlineAmount, snapshotResolver } from "../src/application/copy";
 import { createReviewSession } from "../src/application/review-session";
 import { deltaTone, deltaWord, formatGrowth, formatMetric, formatPeriodL1, formatRatePoints, metricDefinitions } from "../src/application/presentation";
 import { achievement, achievementText, mismatchText, targetDisplay, type TargetSet } from "../src/application/targets";
@@ -106,7 +106,7 @@ describe("V3-4a 本期一句話（區塊 2）", () => {
 
   it("只看部分通路時範圍行改列出通路名稱", async () => {
     const dtc = await createSnapshot(golden.dataset, { channels: ["DTC"] }, golden.snapshot.dataset_hash);
-    expect(snapshotMeta(dtc, golden.dataset.manifest.channels)).toContain(channelsLabel(["DTC"], false));
+    expect(snapshotMeta(dtc, golden.dataset.manifest.channels)).toContain(channelsLabel(["DTC"], snapshotResolver(dtc)));
     expect(snapshotMeta(dtc, golden.dataset.manifest.channels)).not.toContain(labels.shell.periodBar.filter.allChannels);
   });
 

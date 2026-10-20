@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown, priorityEvidence, summaryDecisionState, withSummaryScenarioSelection, type ManagerSummary as SummaryData, type SummaryDecisionContext, type SummaryEvidence, type SummaryMetric } from "@/application/manager-summary";
-import { channelLabel, channelsLabel, demoAlias, formatHeadlineAmount, ruleCopy, scopeLabel } from "@/application/copy";
+import { channelLabel, channelsLabel, formatHeadlineAmount, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
 import { downloadText } from "@/application/download";
 import { deltaTone, deltaWord, emptyKindOf, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatGrowth, formatSignedDelta, metricDefinitions, type DeltaTone } from "@/application/presentation";
 import { snapshotSentence } from "@/application/weekly-summary";
@@ -82,7 +82,7 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
   const [printing, setPrinting] = useState(false);
   const appliedThreshold = reviewControls?.importanceThreshold ?? threshold;
   const summary = useMemo(() => buildManagerSummary(snapshot, { importanceThreshold: appliedThreshold, conversion, targets: targets ?? undefined }), [snapshot, appliedThreshold, conversion, targets]);
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const effectiveContext = selectionManaged ? decisionContext : withSummaryScenarioSelection(decisionContext, selected);
   const decisions = summaryDecisionState(summary, effectiveContext);
   // V3-2b：主層金額一律 L1（萬／億）；精確值在「計算與來源」抽屜。
@@ -93,14 +93,14 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
   if (agenda) return <AgendaSummary summary={summary} snapshot={snapshot} agenda={agenda} threshold={thresholdInput} onThresholdInput={setThresholdInput} onThresholdSubmit={submitThreshold} error={error} persistNote={reviewControls ? copy.persistNoteManaged : copy.persistNoteLocal} amount={amount} onEvidence={onEvidence} onCreateAction={onCreateAction} />;
   return <section className={`panel ${styles.summary}`} data-testid="manager-summary" aria-labelledby="manager-summary-title">
     <div className="section-heading"><div><h2 id="manager-summary-title">{copy.title}</h2></div><span className="tag">{decisionContext?.decisionState ?? copy.draftDecision}</span></div>
-    <p className={styles.context}>{fill(copy.context, { asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, alias) })}</p>
+    <p className={styles.context}>{fill(copy.context, { asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, resolver) })}</p>
     <p className="note">{fill(copy.periodLine, periodValues(summary))}</p>
     <div className={styles.headlines}>{summary.headlines.map(row => <div key={row.metric}><h3>{metricDefinitions[row.metric].label}</h3><p className={styles.change}>{amount(row.evidence.change, true, headlineChangeText(row), deltaTone(row.metric, row.change.value, "L1"))}</p><p className="note">{amount(row.evidence.previous)} → {amount(row.evidence.current)}</p></div>)}</div>
     <p className="note">{copy.headlineNote}</p>
     <div className={styles.priorityHeader}><h3>{labels.overview.sections.topThree}</h3><form className={styles.threshold} onSubmit={submitThreshold}><label>{labels.meeting.form.threshold}<input aria-describedby="manager-threshold-help" value={thresholdInput} onChange={event => setThresholdInput(event.target.value)} inputMode="decimal" maxLength={30} /></label><button type="submit" className="button quiet">{labels.shell.buttons.apply}</button></form></div>
     <p className="note" id="manager-threshold-help">{fill(labels.diagnosis.list.thresholdHelp, { amount: formatAmountL3(summary.importance_threshold) })}</p>
     {error && <p role="alert">{error}</p>}
-    {summary.priorities.length ? <ol className={styles.priorities}>{summary.priorities.map(item => { const rule = ruleCopy(snapshot, item.primary, alias); return <li key={item.code} data-testid={`manager-priority-${item.code}`}><div className={styles.priorityTitle}><h4>{rule.headline}</h4></div><p className="top-three-impact"><span>{labels.overview.sections.impact}</span>{item.code === "MISSING_CRITICAL_DATA" ? amount(item.evidence, true) : <ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} />}</p><p className="note">{scopeLabel(item.primary.scope, alias)} · {item.code === "MISSING_CRITICAL_DATA" ? copy.missingDataNote : copy.rankingNote}</p><p>{rule.nextStep}</p>{item.members.length > 1 && <details><summary>{fill(copy.relatedScopes, { n: item.members.length - 1 })}</summary><ul>{item.members.slice(1).map(member => <li key={member.id}>{scopeLabel(member.scope, alias)}：{item.code === "MISSING_CRITICAL_DATA" ? amount(priorityEvidence(snapshot, member), true) : <ImpactAmount snapshot={snapshot} diagnostic={member} onEvidence={onEvidence} />}</li>)}</ul><p className="note">{labels.overview.notes.scopesNotAdditive}</p></details>}{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(item.primary)}>{labels.actions.buttons.addToActions}</button>}</li>; })}</ol> : <p role="status">{labels.overview.notes.noPriorities}</p>}
+    {summary.priorities.length ? <ol className={styles.priorities}>{summary.priorities.map(item => { const rule = ruleCopy(snapshot, item.primary, resolver); return <li key={item.code} data-testid={`manager-priority-${item.code}`}><div className={styles.priorityTitle}><h4>{rule.headline}</h4></div><p className="top-three-impact"><span>{labels.overview.sections.impact}</span>{item.code === "MISSING_CRITICAL_DATA" ? amount(item.evidence, true) : <ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} />}</p><p className="note">{scopeLabel(item.primary.scope, resolver)} · {item.code === "MISSING_CRITICAL_DATA" ? copy.missingDataNote : copy.rankingNote}</p><p>{rule.nextStep}</p>{item.members.length > 1 && <details><summary>{fill(copy.relatedScopes, { n: item.members.length - 1 })}</summary><ul>{item.members.slice(1).map(member => <li key={member.id}>{scopeLabel(member.scope, resolver)}：{item.code === "MISSING_CRITICAL_DATA" ? amount(priorityEvidence(snapshot, member), true) : <ImpactAmount snapshot={snapshot} diagnostic={member} onEvidence={onEvidence} />}</li>)}</ul><p className="note">{labels.overview.notes.scopesNotAdditive}</p></details>}{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(item.primary)}>{labels.actions.buttons.addToActions}</button>}</li>; })}</ol> : <p role="status">{labels.overview.notes.noPriorities}</p>}
     <p className="note">{fill(labels.overview.notes.omittedGroups, { n: summary.omitted_group_count })}</p>
     <details className={styles.wideTable} open><summary>{copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} /></details>
     {showDecisions && <><div className={styles.decisions}><h3>{copy.decisionsHeading}</h3>{!selectionManaged && decisions.scenarios.length > 0 && <label>{copy.selectedScenario}<select aria-label={copy.selectedScenario} value={decisions.selected?.id ?? ""} onChange={event => setSelected(event.target.value)}><option value="">{copy.noneSelected}</option>{decisions.scenarios.map(plan => <option key={plan.id} value={plan.id} disabled={plan.status !== "current"}>{fill(copy.scenarioOption, { name: plan.name, statusOrScope: plan.status === "current" ? plan.scopeLabel : plan.status === "stale" ? copy.scenarioStale : labels.meeting.form.decisions.draft })}</option>)}</select></label>}{decisions.selectedScenarios.length ? <>{decisions.selectedScenarios.map(plan => <div key={plan.id}><p>{fill(copy.scenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatAmountL1(plan.baseline ?? null), contribution: formatAmountL1(plan.contribution ?? null), delta: formatSignedDelta(plan.delta ?? null, "L1") })}</p><details><summary>{labels.scenarios.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((assumption, index) => <li key={index}>{assumption}</li>)}</ul></details></div>)}<p className="note">{copy.scenarioNote}</p></> : <p className="note">{copy.noScenario}</p>}{decisions.mainActions.length ? <ActionSummaryList actions={decisions.mainActions} /> : <p className="note">{decisions.appendixActions.length ? copy.unpinnedNotice : copy.noActions}</p>}</div>
@@ -128,7 +128,7 @@ interface AgendaSummaryProps {
  * 3 各通路表現：精簡表（通路、本期扣廣告後貢獻、差額，L2 number-link）＋「完整通路寬表」details（ChannelWideTable default 變體）。
  */
 function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput, onThresholdSubmit, error, persistNote, amount, onEvidence, onCreateAction }: AgendaSummaryProps) {
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const sentence = snapshotSentence(snapshot, { importanceThreshold: summary.importance_threshold, missingItems: agenda.missingItems });
   const alerts = labels.overview.alerts;
   const contribution = metricDefinitions.contribution_after_marketing.label;
@@ -158,7 +158,7 @@ function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput,
       </details>
       {error && <p role="alert" className="ui-field-error">{error}</p>}
       {summary.priorities.length ? <ol className="alert-list meeting-priorities">{summary.priorities.map(item => {
-        const rule = ruleCopy(snapshot, item.primary, alias);
+        const rule = ruleCopy(snapshot, item.primary, resolver);
         const missing = item.code === "MISSING_CRITICAL_DATA";
         const status = alertStatus({ missing, impact_cents: item.impact_cents });
         const impactValue = item.impact?.value ?? null;
@@ -170,13 +170,13 @@ function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput,
             <summary><ShellIcon name="chevron-right" size={16} className="alert-chev" />{status && <span className="alert-loz"><span className="ui-lozenge" data-tone={status.tone}>{status.text}</span></span>}<h4 className="alert-title">{rule.headline}</h4><span className={`meeting-priority-impact impact-amount ${impactTone}`}><span className="sr-only">{labels.overview.sections.impact}</span>{impactText}</span></summary>
             <div className="alert-body meeting-priority-body">
               <p className="top-three-impact"><span>{labels.overview.sections.impact}</span>{missing ? amount(item.evidence, true) : <ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} />}</p>
-              <p className="meeting-agenda-note">{scopeLabel(item.primary.scope, alias)} · {missing ? copy.missingDataNote : copy.rankingNote}</p>
+              <p className="meeting-agenda-note">{scopeLabel(item.primary.scope, resolver)} · {missing ? copy.missingDataNote : copy.rankingNote}</p>
               <dl className="meeting-priority-copy">
                 <div><dt>{labels.diagnosis.sections.cause}</dt><dd>{rule.cause}</dd></div>
                 <div><dt>{labels.diagnosis.sections.nextStep}</dt><dd>{rule.nextStep}</dd></div>
                 <div><dt>{alerts.limitation}</dt><dd>{rule.caution}</dd></div>
               </dl>
-              {item.members.length > 1 && <details className="meeting-priority-scopes"><summary>{fill(copy.relatedScopes, { n: item.members.length - 1 })}</summary><ul>{item.members.slice(1).map(member => <li key={member.id}>{scopeLabel(member.scope, alias)}：{missing ? amount(priorityEvidence(snapshot, member), true) : <ImpactAmount snapshot={snapshot} diagnostic={member} onEvidence={onEvidence} />}</li>)}</ul><p className="meeting-agenda-note">{labels.overview.notes.scopesNotAdditive}</p></details>}
+              {item.members.length > 1 && <details className="meeting-priority-scopes"><summary>{fill(copy.relatedScopes, { n: item.members.length - 1 })}</summary><ul>{item.members.slice(1).map(member => <li key={member.id}>{scopeLabel(member.scope, resolver)}：{missing ? amount(priorityEvidence(snapshot, member), true) : <ImpactAmount snapshot={snapshot} diagnostic={member} onEvidence={onEvidence} />}</li>)}</ul><p className="meeting-agenda-note">{labels.overview.notes.scopesNotAdditive}</p></details>}
               <div className="meeting-priority-actions"><button type="button" className="ui-btn ui-btn-secondary" onClick={() => onEvidence(impactEvidence(snapshot, item.primary) ?? priorityEvidence(snapshot, item.primary))}>{labels.evidence.buttons.viewEvidence}</button>{onCreateAction && <button type="button" className="ui-btn ui-btn-secondary" onClick={() => onCreateAction(item.primary)}>{labels.actions.buttons.addToActions}</button>}</div>
             </div>
           </details>
@@ -189,7 +189,7 @@ function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput,
       <table className="ui-table meeting-channel-table">
         <caption>{fill(copy.printChannelCaption, { metric: contribution })}</caption>
         <thead><tr><th scope="col">{copy.channelColumn}</th><th scope="col" className="num">{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current })}</th><th scope="col" className="num">{fill(labels.format.units.yuanColumn, { label: copy.changeColumn })}</th></tr></thead>
-        <tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, alias)}</th><td className="num">{tableLink(row.contribution.evidence.current, false)}</td><td className="num">{tableLink(row.contribution.evidence.change, true, row.contribution.change.value === null ? "neutral" : deltaTone("contribution_after_marketing", row.contribution.change.value, "L2"))}</td></tr>)}</tbody>
+        <tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, resolver)}</th><td className="num">{tableLink(row.contribution.evidence.current, false)}</td><td className="num">{tableLink(row.contribution.evidence.change, true, row.contribution.change.value === null ? "neutral" : deltaTone("contribution_after_marketing", row.contribution.change.value, "L2"))}</td></tr>)}</tbody>
       </table>
       <details className="meeting-wide-table"><summary>{agenda.channelSummary ?? copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} /></details>
       <details className="meeting-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}</ul></details>
