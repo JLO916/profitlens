@@ -6,24 +6,32 @@ import type { TaxConversion } from "./tax-basis";
 import { importIssueMessage, type IssueMessageContext, type IssueRef } from "./import";
 import { asciiMinus, formatAmountL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
+import { isDemoDataset, makeResolver, type NameResolver } from "./channel-settings";
 
 // R2 文案機制：示範通路 alias、標題用「萬」金額、規則卡文案模板、CSV 標題列。全部只做呈現，不碰 domain 數值。
+// V42-1a（D-V42-14）過渡期 API：四個名稱函式同時接受舊的 alias: boolean（示範別名，輸出逐字不變）與 NameResolver（快照的 channel_names）；整合後移除 boolean。
 
 /** 只有示範資料集（dataset_id 以 synthetic-demo 開頭）套用顯示 alias；驗證用合成資料與使用者匯入維持原通路代碼。 */
 export function demoAlias(datasetId: string): boolean {
-  return datasetId.startsWith("synthetic-demo");
+  return isDemoDataset(datasetId);
 }
-export function channelLabel(channel: string, alias: boolean): string {
+/** 由快照取名稱解析器：有 channel_names 就用它，否則用該資料集的隱含預設（示範別名）。 */
+export function snapshotResolver(snapshot: Pick<WorkspaceSnapshot, "channel_names" | "report">): NameResolver {
+  return makeResolver(snapshot.channel_names, snapshot.report.dataset_id);
+}
+export function channelLabel(channel: string, alias: boolean | NameResolver): string {
+  if (typeof alias !== "boolean") return alias.channel(channel);
   return (alias && labels.data.demoChannelAlias[channel]) || channel;
 }
-export function channelsLabel(channels: readonly string[], alias: boolean): string {
+export function channelsLabel(channels: readonly string[], alias: boolean | NameResolver): string {
   return channels.map(channel => channelLabel(channel, alias)).join("、");
 }
-export function categoryLabel(category: string, alias: boolean): string {
+export function categoryLabel(category: string, alias: boolean | NameResolver): string {
+  if (typeof alias !== "boolean") return alias.category(category);
   return (alias && labels.data.demoCategoryAlias[category]) || category;
 }
 /** 「合計（官網 · DTC、平台 · MARKETPLACE）」／「官網 · DTC」／「官網 · DTC／SKU-001」 */
-export function scopeLabel(scope: Scope, alias: boolean): string {
+export function scopeLabel(scope: Scope, alias: boolean | NameResolver): string {
   const channels = channelsLabel(scope.channels, alias);
   if (scope.kind === "all") return `${labels.overview.sections.total}（${channels}）`;
   return scope.sku ? `${channels}／${scope.sku}` : channels;
@@ -42,7 +50,7 @@ export interface RuleCopy { headline: string; cause: string; nextStep: string; c
 const fill = (template: string, values: Record<string, string>) => template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? labels.shell.status.missing);
 
 /** 規則卡文案：labels.rules 模板 ＋ 由事實算出的占位符；排序、門檻與公式抽屜仍用原始 ranking_amount。 */
-export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic: Pick<Diagnostic, "code" | "scope" | "fact_ids" | "ranking_amount">, alias: boolean): RuleCopy {
+export function ruleCopy(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic: Pick<Diagnostic, "code" | "scope" | "fact_ids" | "ranking_amount">, alias: boolean | NameResolver): RuleCopy {
   const { report } = snapshot;
   const facts = report.facts.filter(fact => diagnostic.fact_ids.includes(fact.id));
   const isPrevious = (fact: Fact) => fact.period.start === report.previous.period.start && fact.period.end === report.previous.period.end;

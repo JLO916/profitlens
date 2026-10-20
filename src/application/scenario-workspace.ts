@@ -3,8 +3,10 @@ import { calculateScenario, type ScenarioInputs, type ScenarioResult } from '../
 import { blankScenarioInputs, createDecisionSession, decisionSignature, isDecisionStale, validateScenarioName, validateSensitivityInputs, type ColumnMappings, type DecisionSession, type DecisionWorkspaceState, type ScenarioPlan } from './decision';
 import type { FilenameMap } from './export';
 import type { WorkspaceSnapshot } from './workspace';
+import type { ChannelSettings } from './channel-settings';
 
-export interface ScenarioSource { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; revision: number; filenames?: FilenameMap; mappings?: ColumnMappings }
+/** V42-1a：channel_settings 是 Active 的通路設定（選填），試算頁自建單一通路快照時傳給 createSnapshot。 */
+export interface ScenarioSource { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; revision: number; filenames?: FilenameMap; mappings?: ColumnMappings; channel_settings?: ChannelSettings | null }
 export interface VersionedScenarioPlan extends ScenarioPlan { revision: number }
 export interface ScenarioPlanVersion { plan_id: string; revision: number; name: string; inputs: ScenarioInputs; result: ScenarioResult }
 export interface ScenarioSelectionRef { context_id: string; plan_id: string; plan_revision: number; channel: string }

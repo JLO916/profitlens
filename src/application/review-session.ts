@@ -9,7 +9,8 @@ import { buildManagerSummary, type SummaryDecisionContext } from './manager-summ
 import { resolveScenarioReference, type ScenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from './scenario-workspace';
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from './workspace';
 import { fill, labels } from '../i18n';
-import { channelLabel, channelsLabel, demoAlias } from './copy';
+import { channelLabel, channelsLabel } from './copy';
+import { makeResolver, type ChannelSettings, type NameResolver } from './channel-settings';
 import { formatAmountL2, formatPercentNumber, formatPointsValue } from './presentation';
 
 export type ReviewDecisionState = 'draft' | 'adopted' | 'needs_data' | 'not_adopted';
@@ -106,16 +107,18 @@ export function validateReviewSession(review: ReviewSession, workspace?: Scenari
   if (workspace && review.selected_scenarios.some(ref => !referenceMatchesReview(review, workspace, ref))) throw new Error('REVIEW_SCENARIO_SCOPE_MISMATCH');
   if (workspace && review.decision_state === 'adopted' && review.selected_scenarios.some(ref => resolveScenarioReference(workspace, ref).status !== 'current')) throw new Error('REVIEW_ADOPTED_STALE_SCENARIO');
 }
-export async function rebuildReviewSnapshot(review: ReviewSession): Promise<WorkspaceSnapshot> {
+/** V42-1a：settings 是呼叫端的 Active.channel_settings，重算會議來源時傳給 createSnapshot，讓還原後與試算頁的快照顯示同一組名稱。 */
+export async function rebuildReviewSnapshot(review: ReviewSession, settings?: ChannelSettings | null): Promise<WorkspaceSnapshot> {
   validateReviewSession(review);
   const validation = validateDataset(review.source_input);
   if (!validation.dataset || validation.classification === 'blocking' || await hashInput(review.source_input) !== review.dataset_hash) throw new Error('REVIEW_SOURCE_MISMATCH');
-  const snapshot = await createSnapshot(validation.dataset, review.meeting_filters, review.dataset_hash);
+  const snapshot = await createSnapshot(validation.dataset, review.meeting_filters, review.dataset_hash, settings ?? null);
   if (snapshot.filter_hash !== review.filter_hash || snapshot.metric_version !== review.metric_version || snapshot.data_as_of !== review.data_as_of || decisionSignature(snapshot.report.scope) !== decisionSignature(review.meeting_filters)) throw new Error('REVIEW_SOURCE_MISMATCH');
   buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold });
   return snapshot;
 }
-export function buildReviewDecisionContext(review: ReviewSession, scenarios: ScenarioWorkspace, actions: ActionWorkspace): SummaryDecisionContext {
+/** V42-1a（子集稽核 12c）：resolver 給時，方案與待辦的範圍文字用它解析通路名稱；沒給時沿用各列資料集的隱含預設（示範別名），輸出逐字不變。 */
+export function buildReviewDecisionContext(review: ReviewSession, scenarios: ScenarioWorkspace, actions: ActionWorkspace, resolver?: NameResolver): SummaryDecisionContext {
   validateReviewSession(review, scenarios);
   const documents = actionDocuments(actions);
   return {
@@ -123,14 +126,14 @@ export function buildReviewDecisionContext(review: ReviewSession, scenarios: Sce
     selectedScenarioIds: review.selected_scenarios.map(reviewScenarioId), reviewName: review.name, notes: review.notes, decisionState: REVIEW_DECISION_LABELS[review.decision_state],
     scenarios: review.selected_scenarios.map(ref => {
       const { context, version, status } = resolveScenarioReference(scenarios, ref);
-      return { id: reviewScenarioId(ref), name: fill(ui.scenarioNameWithRevision, { name: version.name, revision: version.revision }), status: status === 'current' && review.status === 'current' ? 'current' : 'stale', scopeLabel: `${fill(ui.scenarioScope, { channel: channelLabel(ref.channel, demoAlias(context.session.dataset_id)), start: context.session.period.start, end: context.session.period.end })}${status === 'superseded' ? ` · ${ui.scenarioSuperseded}` : status === 'historical' ? ` · ${ui.scenarioHistorical}` : ''}`, baseline: context.session.baseline.amounts.contribution_after_marketing, contribution: version.result.contribution, delta: version.result.delta, binding: { context_id: context.id, plan_revision: version.revision, dataset_hash: context.session.dataset_hash, filter_hash: context.session.filter_hash, metric_version: context.session.metric_version, scenario_version: context.session.scenario_version, period: context.session.period, channels: context.session.scope.channels, sources: context.session.sources }, assumptions: [fill(ui.assumptionVolume, { value: formatPercentNumber(version.inputs.volume_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionDiscount, { value: formatPointsValue(version.inputs.discount_change_pp, 'L2') }), fill(ui.assumptionFulfillment, { value: formatPercentNumber(version.inputs.fulfillment_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionAdSpend, { value: formatPercentNumber(version.inputs.ad_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionOneOff, { value: fill(labels.format.units.yuan, { value: formatAmountL2(version.inputs.one_time_cost) }) }), ...version.result.assumptions] };
+      return { id: reviewScenarioId(ref), name: fill(ui.scenarioNameWithRevision, { name: version.name, revision: version.revision }), status: status === 'current' && review.status === 'current' ? 'current' : 'stale', scopeLabel: `${fill(ui.scenarioScope, { channel: channelLabel(ref.channel, resolver ?? makeResolver(undefined, context.session.dataset_id)), start: context.session.period.start, end: context.session.period.end })}${status === 'superseded' ? ` · ${ui.scenarioSuperseded}` : status === 'historical' ? ` · ${ui.scenarioHistorical}` : ''}`, baseline: context.session.baseline.amounts.contribution_after_marketing, contribution: version.result.contribution, delta: version.result.delta, binding: { context_id: context.id, plan_revision: version.revision, dataset_hash: context.session.dataset_hash, filter_hash: context.session.filter_hash, metric_version: context.session.metric_version, scenario_version: context.session.scenario_version, period: context.session.period, channels: context.session.scope.channels, sources: context.session.sources }, assumptions: [fill(ui.assumptionVolume, { value: formatPercentNumber(version.inputs.volume_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionDiscount, { value: formatPointsValue(version.inputs.discount_change_pp, 'L2') }), fill(ui.assumptionFulfillment, { value: formatPercentNumber(version.inputs.fulfillment_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionAdSpend, { value: formatPercentNumber(version.inputs.ad_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionOneOff, { value: fill(labels.format.units.yuan, { value: formatAmountL2(version.inputs.one_time_cost) }) }), ...version.result.assumptions] };
     }),
     actions: review.action_bindings.map(binding => {
       const action = documents.find(row => row.id === binding.action_id);
       const bound = action && action.binding.context_id === binding.context_id && action.binding_revision === binding.binding_revision && action.binding.dataset_hash === review.dataset_hash;
       const historical = action?.binding_history.find(row => row.context_id === binding.context_id && row.revision === binding.binding_revision);
       const original = bound ? action.binding : historical;
-      return { id: binding.action_id, problem: action?.problem || ui.actionProblemMissing, action: bound ? action.action : ui.actionUnbound, owner: bound ? action.owner_role : '', deadline: bound ? action.deadline : '', risk: bound ? action.stop_condition : '', pinned: review.pinned_action_ids.includes(binding.action_id), executionStatus: bound ? EXECUTION_STATUS_LABELS[action.execution_status] : undefined, executionNotes: bound ? action.progress_notes : undefined, status: !bound || review.status === 'historical' || action.status === 'stale' ? 'stale' : action.status === 'confirmed' ? 'current' : 'draft', scopeLabel: original ? fill(ui.actionScope, { channels: channelsLabel(original.scope.channels, demoAlias(action?.binding.dataset_id ?? '')), start: original.period.start, end: original.period.end }) : ui.actionScopeUnavailable };
+      return { id: binding.action_id, problem: action?.problem || ui.actionProblemMissing, action: bound ? action.action : ui.actionUnbound, owner: bound ? action.owner_role : '', deadline: bound ? action.deadline : '', risk: bound ? action.stop_condition : '', pinned: review.pinned_action_ids.includes(binding.action_id), executionStatus: bound ? EXECUTION_STATUS_LABELS[action.execution_status] : undefined, executionNotes: bound ? action.progress_notes : undefined, status: !bound || review.status === 'historical' || action.status === 'stale' ? 'stale' : action.status === 'confirmed' ? 'current' : 'draft', scopeLabel: original ? fill(ui.actionScope, { channels: channelsLabel(original.scope.channels, resolver ?? makeResolver(undefined, action?.binding.dataset_id ?? '')), start: original.period.start, end: original.period.end }) : ui.actionScopeUnavailable };
     }),
   };
 }

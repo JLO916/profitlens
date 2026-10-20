@@ -90,7 +90,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   async function prepareRebind(id: string) {
     const ticket = ++request.current; const captured = latest.current; setPreview(null); setBusy(id); setNotice('');
     try {
-      const next = await previewActionRebind(captured.workspace, id, captured.source);
+      const next = await previewActionRebind(captured.workspace, id, captured.source, captured.source.channel_settings ?? null);
       if (ticket !== request.current) return;
       if (latest.current.workspace !== captured.workspace || latest.current.source !== captured.source) { setNotice(ui.changedDuringPreview); return; }
       setPreview(next);

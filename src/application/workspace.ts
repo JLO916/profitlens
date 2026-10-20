@@ -5,6 +5,7 @@ import { aggregatePeriod } from "../domain/aggregation";
 import { analyzeDataset, analyzeProducts } from "../domain/analysis";
 import { dayCount } from "../domain/date";
 import type { AnalysisFilters, Count, Dataset, DatasetInput, Metrics, Period, SourceRef } from "../domain/types";
+import { snapshotChannelFields, type ChannelNames, type ChannelSettings, type ResolvedChannelGroup } from "./channel-settings";
 
 export interface WeeklyRow {
   label: string;
@@ -42,6 +43,12 @@ export interface WorkspaceSnapshot {
   filter_hash: string;
   metric_version: "contribution-v1";
   data_as_of: string;
+  /**
+   * V42-1a（D-V42-14）：通路設定解析後的顯示名稱（代碼 → 名稱）與群組（id、名稱、成員代碼）；只在 createSnapshot 收到設定且設定與預設有差時才有這兩個鍵，
+   * 沒有設定的快照與 v4.1.2 相同。不進 filter_hash（仍只由 report.scope 算）、不進備份的 active.filters。
+   */
+  channel_names?: ChannelNames;
+  channel_groups?: ResolvedChannelGroup[];
 }
 
 function canonical(value: unknown): unknown {
@@ -64,7 +71,7 @@ export async function hashInput(input: DatasetInput): Promise<string> {
 }
 
 /** Framework-free view data: every money/ratio/diagnosis comes from M1. */
-export async function createSnapshot(dataset: Dataset, filters: AnalysisFilters, datasetHash: string): Promise<WorkspaceSnapshot> {
+export async function createSnapshot(dataset: Dataset, filters: AnalysisFilters, datasetHash: string, settings?: ChannelSettings | null): Promise<WorkspaceSnapshot> {
   assertSupportedAnalysisChannels(filters.channels ?? dataset.manifest.channels);
   assertSupportedAnalysisPeriods(
     filters.previous_period ?? dataset.manifest.previous_period,
@@ -77,9 +84,11 @@ export async function createSnapshot(dataset: Dataset, filters: AnalysisFilters,
     // V3-9a 收尾：週欄標題改從 labels 取（只在管理損益表的週欄、格子的可及名稱與抽屜標題顯示）。
     weeks.push(...weeklyRows(dataset, report[period].period, report.scope.channels, period, n => fill(labels.overview.pnlV3.weekLabel[period], { n })));
   }
+  const channelFields = snapshotChannelFields(settings, dataset.manifest.dataset_id, dataset.manifest.channels);
   return {
     report, products, weeks, yoy: yoySummary(dataset, report), dataset_hash: datasetHash,
     filter_hash: await digest(report.scope), metric_version: report.metric_version, data_as_of: report.data_as_of,
+    ...(channelFields ?? {}),
   };
 }
 

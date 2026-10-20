@@ -5,7 +5,7 @@ import { createSnapshot } from '@/application/workspace';
 import { createDecisionSession, decisionSignature, type DecisionWorkspaceState } from '@/application/decision';
 import { acknowledgeScenarioAssumptions, copyHistoricalScenario, ensureScenarioContext, scenarioContextDecision, scenarioContextId, scenarioSelectionRef, updateScenarioContext, type ScenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from '@/application/scenario-workspace';
 import { formatAmountL1 } from '@/application/presentation';
-import { channelLabel, channelsLabel, demoAlias } from '@/application/copy';
+import { channelLabel, channelsLabel, snapshotResolver } from '@/application/copy';
 import { fill, labels } from '@/i18n';
 import { DecisionWorkbench, HelpPopover, ScenarioPageActions, technicalPlanLine } from './decision-workbench';
 import type { EvidenceSelection } from './evidence-drawer';
@@ -37,7 +37,8 @@ export function MultiScenarioWorkbench({ source, state, setState, onEvidence, on
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const [choice, setChoice] = useState<{ scope: string; channel: string } | null>(null);
   const idBase = useId();
-  const alias = demoAlias(source.dataset.manifest.dataset_id);
+  // V42-1a：通路名稱讀快照的 channel_names（沒有設定時是示範別名的隱含預設）。
+  const alias = snapshotResolver(source.snapshot);
   const channels = source.dataset.manifest.channels;
   const scope = source.snapshot.report.scope;
   // 全站通路範圍改變時，本頁回到新的預設通路：範圍一變就丟掉本頁的選擇（A→B→A 不會讓 A 時期的選擇復活）。
@@ -53,7 +54,7 @@ export function MultiScenarioWorkbench({ source, state, setState, onEvidence, on
   useEffect(() => {
     if (!channel || direct) return;
     let cancelled = false;
-    void createSnapshot(source.dataset, { ...source.snapshot.report.scope, channels: [channel] }, source.snapshot.dataset_hash).then(snapshot => {
+    void createSnapshot(source.dataset, { ...source.snapshot.report.scope, channels: [channel] }, source.snapshot.dataset_hash, source.channel_settings ?? null).then(snapshot => {
       if (cancelled) return;
       const singleSource = { ...source, snapshot };
       const session = createDecisionSession(source.dataset, snapshot, source.revision, source.filenames);

@@ -15,7 +15,8 @@ import type { ExcelMeeting } from "@/application/excel-export";
 import { downloadText } from "@/application/download";
 import { track } from "@/application/analytics";
 import { deltaTone, formatAmountL1, formatAmountL2, formatDateL1, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
-import { channelLabel, channelsLabel, demoAlias } from "@/application/copy";
+import { channelLabel, channelsLabel, demoAlias, snapshotResolver } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import { scenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewActionReferences, REVIEW_DECISION_LABELS, reviewScenarioId, selectReviewScenario, syncReviewPins, updateReviewSession, validateReviewSession, type ReviewDecisionState, type ReviewSession } from "@/application/review-session";
@@ -86,18 +87,20 @@ function useReviewSource(review: ReviewSession | null, source: ScenarioSource): 
   const [loaded, setLoaded] = useState<ReviewSource | null>(null);
   const [failedKey, setFailedKey] = useState<string | null>(null);
   const sourceInput = review?.source_input, filters = review?.meeting_filters, datasetHash = review?.dataset_hash, filterHash = review?.filter_hash, asOf = review?.data_as_of, metricVersion = review?.metric_version;
+  // V42-1a：重算會議來源時帶 Active 的通路設定，讓會議頁與總覽顯示同一組名稱。
+  const settings = source.channel_settings ?? null;
   useEffect(() => {
     if (direct || !sourceInput || !filters) return;
     let cancelled = false;
     void (async () => {
       const result = validateDataset(sourceInput);
       if (!result.dataset || result.classification === "blocking" || await hashInput(sourceInput) !== datasetHash) throw new Error("REVIEW_SOURCE_MISMATCH");
-      const snapshot = await createSnapshot(result.dataset, filters, datasetHash);
+      const snapshot = await createSnapshot(result.dataset, filters, datasetHash, settings);
       if (snapshot.filter_hash !== filterHash || snapshot.data_as_of !== asOf || snapshot.metric_version !== metricVersion) throw new Error("REVIEW_SOURCE_MISMATCH");
       if (!cancelled) { setLoaded({ key, snapshot, dataset: result.dataset }); setFailedKey(null); }
     })().catch(() => { if (!cancelled) setFailedKey(key); });
     return () => { cancelled = true; };
-  }, [direct, sourceInput, filters, datasetHash, filterHash, asOf, metricVersion, key]);
+  }, [direct, sourceInput, filters, datasetHash, filterHash, asOf, metricVersion, key, settings]);
   if (!review) return { ready: null, failed: false };
   if (current) return { ready: current, failed: false };
   return { ready: loaded?.key === key ? loaded : null, failed: failedKey === key };
@@ -171,12 +174,14 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
   // §6.3 #43a、C10 頁面型空狀態：還沒有會議稿（例如還原沒有會議稿的舊備份）；按鈕文字與行為同 v2，是全頁唯一的主要按鈕。
   if (!review) return <section className="meeting-page" data-testid="meeting-page">{status}<div className="ui-empty-page meeting-empty" data-testid="review-workbench"><h2>{pageV3.emptyTitle}</h2><p>{copy.createIntro}</p><button type="button" className="ui-btn ui-btn-primary" data-testid="meeting-create" onClick={() => onChange(syncReviewPins(createReviewSession(source, scenarioWorkspace.active_epoch), actionWorkspace))}>{copy.createButton}</button></div>{historySection}</section>;
 
-  const context = buildReviewDecisionContext(review, scenarioWorkspace, actionWorkspace);
+  // 會議的通路名稱看會議固定的來源快照（golden 不套示範別名；有設定時是它的 channel_names）；來源還沒重建好時用該資料集的隱含預設。「目前看的」才用目前檢視的快照。
+  const alias = ready ? snapshotResolver(ready.snapshot) : makeResolver(undefined, reviewDatasetId(review)), viewAlias = snapshotResolver(source.snapshot);
+  // 過渡期：方案圖（meeting/scenarios-chart.tsx）仍收 boolean 的示範別名，整合名稱解析器後改傳 alias。
+  const chartAlias = demoAlias(reviewDatasetId(review));
+  const context = buildReviewDecisionContext(review, scenarioWorkspace, actionWorkspace, alias);
   const actions = actionDocuments(actionWorkspace);
   const date = review.meeting_date ?? taipeiToday();
   const scope = review.meeting_filters;
-  // 會議的通路別名看會議固定的來源（golden 不套示範別名）；「目前看的」才用目前檢視的資料。
-  const alias = demoAlias(reviewDatasetId(review)), viewAlias = demoAlias(source.snapshot.report.dataset_id);
   const viewDiffers = source.snapshot.dataset_hash !== review.dataset_hash || source.snapshot.filter_hash !== review.filter_hash;
   const options = scenarioWorkspace.contexts.filter(row => row.status === "current" && row.epoch === review.epoch && row.session.dataset_hash === review.dataset_hash && decisionSignature({ previous: row.session.scope.previous_period, current: row.session.scope.current_period, mode: row.session.scope.comparison_mode }) === decisionSignature({ previous: scope.previous_period, current: scope.current_period, mode: scope.comparison_mode }));
   const historical = review.status === "historical";
@@ -345,7 +350,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
             <AgendaItem n={5} title={record.agenda.scenarios}>
               <p className="meeting-agenda-note">{page.scenariosNote}</p>
               {/* V4-6 代理 B：G15 會議實例（chart-meeting-scenarios，h4、inline）在每通路選入列之前；V4-6 整合（審查 R1-V46-S1）：一律渲染，沒有選入方案時是等高空狀態（下方的區段型空狀態維持 v3、DOM 不變）。 */}
-              <MeetingScenariosChart scenarios={context.scenarios} references={review.selected_scenarios} channels={scope.channels} alias={alias} period={formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: review.data_as_of })} />
+              <MeetingScenariosChart scenarios={context.scenarios} references={review.selected_scenarios} channels={scope.channels} alias={chartAlias} period={formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: review.data_as_of })} />
               {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<div className="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingNoScenarioTitle}</p><p>{labels.empty.stateV3.meetingNoScenarioBody}</p>{onGoToScenarios && <button type="button" className="ui-btn ui-btn-text" data-testid="meeting-go-scenarios" onClick={onGoToScenarios}>{labels.empty.stateV3.meetingGoToScenarios}</button>}</div></div>}
               {alertFor("scenarios")}
             </AgendaItem>

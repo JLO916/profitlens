@@ -4,6 +4,7 @@ import { validateDataset } from '@/domain/validation';
 import { createDecisionSession, decisionSignature, validateActionContent, validateActionEvidence, type ActionCard, type ActionCardInput, type ColumnMappings, type DecisionSession } from './decision';
 import type { FilenameMap } from './export';
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from './workspace';
+import type { ChannelSettings } from './channel-settings';
 
 export const MAX_PINNED_ACTIONS = 3;
 export const ACTION_EXECUTION_STATUSES = ['not_started', 'in_progress', 'blocked', 'completed'] as const;
@@ -23,7 +24,8 @@ export interface BoundAction {
   ad_decision?: AdDecision;
 }
 export interface ActionWorkspace { contexts: ActionContext[]; items: BoundAction[]; active_dataset_hash?: string }
-export interface ActionSource { dataset: Dataset; input: DatasetInput; snapshot: WorkspaceSnapshot; revision: number; filenames?: FilenameMap; mappings?: ColumnMappings }
+/** V42-1a：channel_settings 是 Active 的通路設定（選填），重新綁定預覽重算快照時傳給 createSnapshot。 */
+export interface ActionSource { dataset: Dataset; input: DatasetInput; snapshot: WorkspaceSnapshot; revision: number; filenames?: FilenameMap; mappings?: ColumnMappings; channel_settings?: ChannelSettings | null }
 export interface ActionRebindPreview {
   action_id: string; original_binding: string; target_dataset_hash: string; target_revision: number;
   target_context: ActionContext; fact_ids: string[]; facts: { before: Fact; after: Fact }[];
@@ -134,13 +136,13 @@ export function confirmBoundAction(workspace: ActionWorkspace, id: string): Acti
 }
 function semanticFactKey(fact: Fact): string { return decisionSignature({ metric: fact.metric, period: fact.period, scope: fact.scope }); }
 /** Preview is local and inert. Rebuild the original periods/scope on the target source, never infer a new scope. */
-export async function previewActionRebind(workspace: ActionWorkspace, id: string, source: ActionSource): Promise<ActionRebindPreview> {
+export async function previewActionRebind(workspace: ActionWorkspace, id: string, source: ActionSource, settings?: ChannelSettings | null): Promise<ActionRebindPreview> {
   const item = workspace.items.find(entry => entry.card.id === id); if (!item) throw new Error('UNKNOWN_ACTION');
   const original = contextFor(workspace, item); validEvidence(original, item, true);
   const datasetHash = await hashInput(source.input);
   if (datasetHash !== source.snapshot.dataset_hash) throw new Error('ACTION_REBIND_PREVIEW_STALE');
   const validation = validateDataset(source.input); if (!validation.dataset || validation.classification === 'blocking') throw new Error('ACTION_REBIND_DATA_INVALID');
-  const snapshot = await createSnapshot(validation.dataset, original.session.scope, datasetHash);
+  const snapshot = await createSnapshot(validation.dataset, original.session.scope, datasetHash, settings ?? null);
   let target = captureContext({ ...source, dataset: validation.dataset, snapshot });
   const existing = workspace.contexts.find(context => context.id === target.id);
   if (existing) {

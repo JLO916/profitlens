@@ -21,7 +21,8 @@ import { downloadText } from "@/application/download";
 import { buildManagerSummary, exportManagerSummaryMarkdown } from "@/application/manager-summary";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { fill, labels } from "@/i18n";
-import { channelLabel, channelsLabel, demoAlias, ruleCopy } from "@/application/copy";
+import { channelLabel, channelsLabel, ruleCopy, snapshotResolver } from "@/application/copy";
+import type { ChannelSettings } from "@/application/channel-settings";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
 import { MeetingEntry, currentViewDecisionContext, downloadMeetingMarkdown } from "./meeting-entry";
@@ -55,7 +56,9 @@ import { ErrorState, FirstRunState, LoadingState, PanelErrorState, PanelLoadingS
 
 type Panel = "overview" | "diagnosis" | "products" | "data" | "scenarios" | "actions" | "meeting" | "validation";
 type Status = "empty" | "loading" | "error" | "partial" | "ready";
-type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile; targets?: TargetSet | null; events?: EventSet | null };
+type Active = { input: DatasetInput; dataset: Dataset; snapshot: WorkspaceSnapshot; id: string; revision: number; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; raw_values?: RawValuesByFile; targets?: TargetSet | null; events?: EventSet | null;
+  /** V42-1a（D-V42-14）：通路設定（顯示名稱、群組、順序）。只在記憶體與備份；本批沒有 UI 寫入它（編輯器在 V42-1b）。 */
+  channel_settings?: ChannelSettings | null };
 // R2：導覽、資料集名稱與決議標籤都從 labels 取字；id／value 維持機器值。
 const panelIds: Panel[] = ["overview", "diagnosis", "products", "scenarios", "actions", "meeting", "data", "validation"];
 const panels: { id: Panel; label: string; description: string }[] = panelIds.map(id => ({ id, label: labels.shell.nav[id].headline, description: labels.shell.nav[id].explain }));
@@ -274,7 +277,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       if (ticket !== requestId.current) return;
       const validation = validateDataset(input);
       if (!validation.dataset) { setIssues(validation.issues); throw new Error(labels.shell.state.errors.validationFailed); }
-      const snapshot = await createSnapshot(validation.dataset, {}, await hashInput(input));
+      const snapshot = await createSnapshot(validation.dataset, {}, await hashInput(input), null);
       if (ticket !== requestId.current) return;
       // V4-7c：匯入時間跟著 active 一起換；載入失敗（「返回」回到上一份資料）時保留上一份資料的匯入時間。
       activate({ input, dataset: validation.dataset, snapshot, id, revision: ++revision.current }); setImportedAt(null); setIssues(validation.issues); setYoyHintRequested(false);
@@ -338,7 +341,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     try {
       await afterPaint();
       const dataset = prepared.validation.dataset;
-      const snapshot = await createSnapshot(dataset, {}, await hashInput(prepared.input));
+      const snapshot = await createSnapshot(dataset, {}, await hashInput(prepared.input), null);
       if (ticket !== requestId.current) return;
       activate({ input: prepared.input, dataset, snapshot, id: `import-${snapshot.dataset_hash}`, revision: ++revision.current, mappings: prepared.columnMappings, filenames: { ...prepared.originalNames, ...(manifestName ? { "manifest.json": manifestName } : {}) }, conversion: prepared.conversion, raw_values: prepared.raw_values });
       setComparisonMode(snapshot.report.scope.comparison_mode); markChanged();
@@ -359,7 +362,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     setFilterError(""); setEvidence(null); setStatus("loading"); setRefiltering(true);
     try {
       await afterPaint();
-      const snapshot = await createSnapshot(active.dataset, filters, active.snapshot.dataset_hash);
+      const snapshot = await createSnapshot(active.dataset, filters, active.snapshot.dataset_hash, active.channel_settings ?? null);
       if (ticket !== requestId.current) return;
       setRefiltering(false);
       const oldScope = active.snapshot.report.scope, newScope = snapshot.report.scope;
@@ -423,7 +426,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     // V4-3c：切到待辦還在等 chunk 時再按不重複新增（V4-8b 起與 v3 一樣按下就切頁、按鈕隨即消失；守門保留）。
     if (!active || pendingPanel.current === "actions") return;
     // R5：待辦卡的「問題／具體動作」預設用 R2 的規則文案（與健檢列同一句），不用 domain 的舊標題。
-    const rule = ruleCopy(active.snapshot, diagnostic, demoAlias(active.snapshot.report.dataset_id));
+    const rule = ruleCopy(active.snapshot, diagnostic, snapshotResolver(active.snapshot));
     setActionWorkspace(addActionDraft(actionWorkspace, active, crypto.randomUUID(), diagnostic.id, { problem: rule.headline, action: rule.nextStep }));
     setPanel("actions"); setEvidence(null);
   }
@@ -470,9 +473,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
       if (latest) downloadMeetingMarkdown(latest, latest.source_fixed.dataset_hash === active.snapshot.dataset_hash ? activeDatasetName(active) : undefined);
       else if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active), undefined, { datasetName: activeDatasetName(active) }), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       else {
-        const snapshot = await rebuildReviewSnapshot(review), same = active.snapshot.dataset_hash === review.dataset_hash;
+        const snapshot = await rebuildReviewSnapshot(review, active.channel_settings ?? null), same = active.snapshot.dataset_hash === review.dataset_hash;
         const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold, conversion: same ? active.conversion : null, targets: same ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : undefined });
-        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current), same ? { datasetName: activeDatasetName(active) } : {}), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current, snapshotResolver(snapshot)), same ? { datasetName: activeDatasetName(active) } : {}), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       }
       track("export_markdown");
       setMenuExport({ busy: null, error: null });
@@ -495,9 +498,9 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     if (!active || pendingPanel.current === "actions") return;
     const ticket = requestId.current;
     try {
-      const snapshot = await rebuildReviewSnapshot(review), dataset = validateDataset(review.source_input).dataset;
+      const snapshot = await rebuildReviewSnapshot(review, active.channel_settings ?? null), dataset = validateDataset(review.source_input).dataset;
       if (!dataset || ticket !== requestId.current || reviewRef.current?.id !== review.id || reviewRef.current.revision !== review.revision) return;
-      const rule = ruleCopy(snapshot, diagnostic, demoAlias(snapshot.report.dataset_id));
+      const rule = ruleCopy(snapshot, diagnostic, snapshotResolver(snapshot));
       const next = addActionDraft(actionRef.current, { input: review.source_input, dataset, snapshot, revision: review.revision, filenames: review.filenames, mappings: review.source_mappings }, crypto.randomUUID(), diagnostic.id, { problem: rule.headline, action: rule.nextStep });
       setActionWorkspace(refreshActionWorkspace(next, active.snapshot, active.revision));
       setPanel("actions"); setEvidence(null);
@@ -516,7 +519,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   async function finalizeCurrentMeeting(): Promise<void> {
     const current = active, review = reviewRef.current, ticket = requestId.current;
     if (!current || !review) throw new Error("NO_MEETING");
-    const snapshot = await rebuildReviewSnapshot(review);
+    const snapshot = await rebuildReviewSnapshot(review, current.channel_settings ?? null);
     if (ticket !== requestId.current || reviewRef.current !== review) throw new Error("MEETING_CHANGED");
     const scenarios = scenarioRef.current, actions = actionRef.current, history = meetingHistoryRef.current;
     const fixed = refreshReviewScenarioReferences(review, scenarios);
@@ -562,7 +565,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   // R4：第五個快捷「去年同期」以表單目前的兩期為準（本期不變、上期各減一年）；日期還沒填完整時顯示不可用，不拋錯。
   const presets = active ? periodPresets(active.dataset.manifest, { previous: { start: dates.previousStart, end: dates.previousEnd }, current: { start: dates.currentStart, end: dates.currentEnd }, comparison_mode: comparisonMode }) : [];
   const presetMatches = (preset: PeriodPreset) => preset.status === "ready" && preset.comparison_mode === comparisonMode && preset.previous.start === dates.previousStart && preset.previous.end === dates.previousEnd && preset.current.start === dates.currentStart && preset.current.end === dates.currentEnd;
-  const alias = active ? demoAlias(active.dataset.manifest.dataset_id) : false;
+  // V42-1a：期間列的通路名稱讀快照的 channel_names（沒有設定時是示範別名的隱含預設）；沒有資料時不會用到。
+  const alias = active ? snapshotResolver(active.snapshot) : false;
   // 會議頁的目標（同一份資料才帶進摘要）；固定物件身分，避免每次 render 重算會議摘要。
   const meetingTargets = useMemo(() => active ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : null, [active]);
   // V3-2a：「資料就緒」改為「資料到 {date}」（§8.3 #26）；資料到的日期已在狀態文字內，旁邊只留資料集名稱。
