@@ -13,6 +13,7 @@ import { finalizeMeeting } from "@/application/meeting";
 import { parseTargets } from "@/application/targets";
 import { parseEvents } from "@/application/events";
 import { exportWorkspaceBackup, WORKSPACE_V4 } from "@/application/workspace-backup";
+import type { ChannelSettings } from "@/application/channel-settings";
 
 /*
  * 備份欄位清單測試共用（V3-0 backup-schema-v4、V3-9a backup-schema-v5；PRD §6.3 #59／#60、§11.8）。
@@ -41,16 +42,18 @@ export async function resign(value: Record<string, unknown>): Promise<string> {
   return JSON.stringify({ ...body, checksum: Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2, "0")).join("") });
 }
 
-/** 把目前版本（v5）的備份改寫成 R4–V3-8 真正寫出的 v4 檔：拿掉 items[].ad_decision 與 V4-7c 的 active.imported_at、schema_version 改 v4、重算 checksum。 */
+/** 把目前版本（v5）的備份改寫成 R4–V3-8 真正寫出的 v4 檔：拿掉 items[].ad_decision、V4-7c 的 active.imported_at 與 V42-1a 的 payload.channel_settings、schema_version 改 v4、重算 checksum。 */
 export async function asV4(text: string): Promise<string> {
   const body = JSON.parse(text);
   for (const item of body.payload.action_workspace.items as Record<string, unknown>[]) delete item.ad_decision;
   delete body.payload.active.imported_at;
+  delete body.payload.channel_settings;
   body.schema_version = WORKSPACE_V4;
   return resign(body);
 }
 
-export async function fullBackup(options: { adDecision?: AdDecision; importedAt?: string } = {}): Promise<string> {
+/** V42-1a：channelSettings 有值時另帶通路設定（v5 的 payload.channel_settings）；inclusive_tax 只有一個通路代碼「官網」。 */
+export async function fullBackup(options: { adDecision?: AdDecision; importedAt?: string; channelSettings?: ChannelSettings } = {}): Promise<string> {
   const dir = resolve("tests/fixtures/inclusive_tax");
   let state = initialWizardState();
   for (const role of ["sales_daily.csv", "channel_costs_daily.csv", "ad_spend_daily.csv"] as FileName[]) {
@@ -87,5 +90,7 @@ export async function fullBackup(options: { adDecision?: AdDecision; importedAt?
     preprocessing: { conversion: prepared.conversion!, raw_values: prepared.raw_values }, targets, events, meeting_history: [meeting], ui_prefs: { last_preset: "last28", view: "list" },
     // V4-7c：匯入時間（選填）；沒給就不帶這個欄位，匯出與 V4-7b 逐位元組相同（tests/fixtures/backup-bytes-v4-7b.json）。
     ...(options.importedAt !== undefined ? { imported_at: options.importedAt } : {}),
+    // V42-1a：通路設定（選填）；沒給就不帶這個欄位，匯出仍與 V4-7b 逐位元組相同。
+    ...(options.channelSettings !== undefined ? { channel_settings: options.channelSettings } : {}),
   });
 }

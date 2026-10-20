@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { blankScenarioInputs, createDecisionSession, decisionSignature, emptyDecisionWorkspace, saveAction, saveScenario } from "@/application/decision";
 import { exportWorkspaceBackup, MAX_RAW_VALUE_LINES, MAX_WORKSPACE_BYTES, restoreWorkspaceBackup, WORKSPACE_VERSION, type RestoredWorkspace, type WorkspaceBackupSource } from "@/application/workspace-backup";
 import { addActionDraft, emptyActionWorkspace, pinAction } from "@/application/action-workspace";
+import { CHANNEL_SETTINGS_VERSION, type ChannelSettings } from "@/application/channel-settings";
 import { acknowledgeScenarioAssumptions, activateScenarioEpoch, copyHistoricalScenario, emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext } from "@/application/scenario-workspace";
 import { createReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession } from "@/application/review-session";
 import type { TargetSet } from "@/application/targets";
@@ -367,4 +368,28 @@ describe("V3-6 remembered scenario disclaimer (assumptions_acknowledged_at)", ()
     const plain = copyHistoricalScenario(moved, source, historical.id, "plan", "copy");
     expect(plain.contexts.find(context => context.status === "current")!.plans.map(plan => plan.inputs.assumptions_accepted)).toEqual([false]);
   });
+});
+
+// V42-1a（D-V42-9＝A）：v5 的 payload.channel_settings（選填）。完整矩陣、位元組基準、v1–v4 拒收與形狀檢查在 tests/backup-schema-v5.test.ts 與 backup-restore-matrix.test.ts；這裡只看寫出位置與 round trip。
+describe("V42-1a workspace backup carries channel settings (payload.channel_settings, optional)", () => {
+  const settings: ChannelSettings = { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "DTC", label: "官網", group: "g1", order: 1 }, { code: "MARKETPLACE", group: "g1", order: 0 }], groups: [{ id: "g1", label: "全部平台", order: 0 }] };
+  it("writes validated, normalized settings as the last payload key; restore reads them back and a re-export keeps them; no key without settings", async () => {
+    const base = await source();
+    const parsed = JSON.parse(await exportWorkspaceBackup({ ...base, channel_settings: settings }));
+    expect(parsed.payload.channel_settings).toEqual(settings);
+    expect(Object.keys(parsed.payload).at(-1)).toBe("channel_settings");
+    const restored = await restoreWorkspaceBackup(JSON.stringify(parsed));
+    expect(restored.channel_settings).toEqual(settings);
+    expect(restored.dropped_channel_codes).toEqual([]);
+    expect(restored.snapshot.channel_names).toEqual({ DTC: "官網" });
+    expect(restored.snapshot.channel_groups).toEqual([{ id: "g1", label: "全部平台", members: ["DTC", "MARKETPLACE"] }]);
+    expect(restored.snapshot.report.scope.channels).toEqual(["DTC"]);
+    const twice = JSON.parse(await exportWorkspaceBackup(again(restored)));
+    expect(twice.payload.channel_settings).toEqual(settings);
+    // Settings that differ in nothing (code only) or carry unknown codes only: no key, restore gives null.
+    const plain = JSON.parse(await exportWorkspaceBackup({ ...base, channel_settings: { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "DTC" }, { code: "NOT_A_CHANNEL", label: "x" }], groups: [] } }));
+    expect(plain.payload).not.toHaveProperty("channel_settings");
+    expect((await restoreWorkspaceBackup(JSON.stringify(plain))).channel_settings).toBeNull();
+    expect(JSON.parse(await exportWorkspaceBackup(base)).payload).not.toHaveProperty("channel_settings");
+  }, 60_000);
 });

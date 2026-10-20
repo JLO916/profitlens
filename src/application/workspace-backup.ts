@@ -16,8 +16,10 @@ import { MAX_EVENT_ROWS, eventRowIssues, type EventSet } from "./events";
 import { convertInclusiveAmount } from "./tax-basis";
 import { formatCents } from "@/domain/money";
 import { importedAtMinute } from "./imported-at";
+import { CHANNEL_SETTINGS_VERSION, defaultChannelSettings, normalizeChannelSettings, validateChannelSettings, type ChannelSettings } from "./channel-settings";
 
-/** V3-9a（PRD §10.1 F13、§6.3 #60、§11.8）：目前寫出 v5＝v4＋待辦的選填 ad_decision；v1–v4 仍可還原（舊檔沒有此欄位＝不標）。V4-7c（D-V3-30＝A）在 v5 加選填 active.imported_at，版本字串不變。 */
+/** V3-9a（PRD §10.1 F13、§6.3 #60、§11.8）：目前寫出 v5＝v4＋待辦的選填 ad_decision；v1–v4 仍可還原（舊檔沒有此欄位＝不標）。V4-7c（D-V3-30＝A）在 v5 加選填 active.imported_at，版本字串不變。
+ * V42-1a（D-V42-9＝A）在 v5 加選填 payload.channel_settings（通路設定；與預設沒有差時不寫鍵），版本字串仍不變。 */
 export const WORKSPACE_VERSION = "profitlens-workspace-v5";
 /** R4–V3-8 寫出的版本；V3-9a 起是歷史版本，只讀。 */
 export const WORKSPACE_V4 = "profitlens-workspace-v4";
@@ -43,6 +45,8 @@ export interface WorkspaceBackupSource {
   meeting_history?: readonly Meeting[];
   /** V4-7c（D-V3-30＝A）：匯入精靈套用的時間；importedAtMinute 正規化到分（UTC）後寫進 payload.active.imported_at，沒有值（示範、golden、舊備份）就不寫這個鍵。 */
   imported_at?: string | null;
+  /** V42-1a（D-V42-9＝A）：Active.channel_settings。寫出前先對 manifest.channels 驗證、再與該資料集的預設比對（示範別名是隱含預設，永遠不寫）；沒有差就不寫 payload.channel_settings，示範、golden 與沒改設定的備份位元組與 v4.1.2 相同。 */
+  channel_settings?: ChannelSettings | null;
 }
 export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"> {
   action_workspace: ActionWorkspace;
@@ -57,6 +61,10 @@ export interface RestoredWorkspace extends Omit<WorkspaceBackupSource, "filters"
   restored_schema_version?: string;
   /** V4-7c：v5 有 active.imported_at 就原樣讀回（"YYYY-MM-DDTHH:MMZ"）；v5 沒有此欄位與 v1–v4 一律 null。 */
   imported_at: string | null;
+  /** V42-1a：v5 的 payload.channel_settings 對還原後的 manifest.channels 驗證、與預設正規化後讀回（沒有差＝null）；v5 沒有此欄位與 v1–v4 一律 null。dashboard 把它放進 Active.channel_settings。 */
+  channel_settings: ChannelSettings | null;
+  /** V42-1a：還原時不在資料集裡、被略過的通路代碼（依備份裡的順序；一律丟棄並提示，字串 storage.v42.droppedChannels）；沒有就是 []。 */
+  dropped_channel_codes: string[];
 }
 const name = z.string().min(1).max(500);
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -181,7 +189,16 @@ const referencedActionWorkspaceV5 = referencedActionWorkspaceV4.extend({ items: 
 // V4-7c（D-V3-30＝A）v5 加法：匯入時間 active.imported_at（選填，只在 v5 信封；UTC 到分 "YYYY-MM-DDTHH:MMZ"，precision −1 不接受秒、毫秒與時區位移，日期要存在）；
 // v5 沒有 → 讀回 null；v1–v4 信封帶此欄位一律 INVALID_WORKSPACE_FORMAT（v1–v4 的 active 仍是 strict）。
 const importedAt = z.iso.datetime({ precision: -1 });
-const v5CorePayload = v4CorePayload.extend({ active: v3PayloadShape.active.extend({ imported_at: importedAt.optional() }), action_workspace: referencedActionWorkspaceV5 });
+// V42-1a（D-V42-9＝A）v5 加法：通路設定 payload.channel_settings（選填，只在 v5 信封；PRD §3.1 的形狀：version 固定 channel-settings-v1、channels[] { code, label?, group?, order? }、groups[] { id, label, order }）。
+// schema 只守形狀與上限；代碼是否在資料集裡、名稱的四條規則與不重複在 restoreV3 以 validateChannelSettings 對還原後的 manifest.channels 檢查（未知代碼丟棄並提示，不整份拒收）。
+// 與預設沒有差時匯出不寫這個鍵（示範別名永遠不寫）；v5 沒有 → 讀回 null；v1–v4 信封帶此欄位一律 INVALID_WORKSPACE_FORMAT（v1–v4 的 payload 仍是 strict）。
+const channelDisplayName = z.string().max(200);
+const channelSettings = z.strictObject({
+  version: z.literal(CHANNEL_SETTINGS_VERSION),
+  channels: z.array(z.strictObject({ code: name, label: channelDisplayName.optional(), group: name.optional(), order: z.number().int().optional() })).max(1000),
+  groups: z.array(z.strictObject({ id: name, label: channelDisplayName, order: z.number().int() })).max(1000),
+});
+const v5CorePayload = v4CorePayload.extend({ active: v3PayloadShape.active.extend({ imported_at: importedAt.optional() }), action_workspace: referencedActionWorkspaceV5, channel_settings: channelSettings.optional() });
 /** restoreV3 讀的 payload：v5 核心（v3／v4 是它的子集，只是沒有 R5、V3-9a 的選填欄位）。 */
 type CorePayload = z.infer<typeof v5CorePayload>;
 /** restoreDecision 讀的方案：v1–v3 沒有 sensitivity（型別上是選填，讀取時仍以 "sensitivity" in plan 守衛）。 */
@@ -239,11 +256,18 @@ function assertSafeStructure(value: unknown): void {
     }
   }
 }
-async function rebuild(input: DatasetInput, filters: AnalysisFilters) {
+async function rebuild(input: DatasetInput, filters: AnalysisFilters, settings: ChannelSettings | null = null) {
   const validation = validateDataset(input);
   if (!validation.dataset || validation.classification === "blocking") throw new Error("WORKSPACE_DATA_INVALID");
-  const snapshot = await createSnapshot(validation.dataset, filters, await hashInput(input));
+  // V42-1a：createSnapshot 第 4 個參數（設定對這份資料的 manifest 重新驗證與正規化；沒有差的快照與 v4.1.2 相同）。
+  const snapshot = await createSnapshot(validation.dataset, filters, await hashInput(input), settings);
   return { validation, dataset: validation.dataset, snapshot };
+}
+/** V42-1a：備份要寫出（或還原後要交給 Active）的通路設定：先對 manifest.channels 驗證（未知代碼丟棄），再與該資料集的預設比對、去掉等於預設的欄位；什麼都不剩就是 null＝不寫鍵。 */
+function portableChannelSettings(settings: ChannelSettings | null | undefined, manifest: Dataset["manifest"]): { settings: ChannelSettings | null; droppedCodes: string[] } {
+  if (!settings) return { settings: null, droppedCodes: [] };
+  const validated = validateChannelSettings(settings, manifest.channels);
+  return { settings: normalizeChannelSettings(validated.settings, defaultChannelSettings(manifest.dataset_id, manifest.channels)), droppedCodes: validated.droppedCodes };
 }
 async function restoreDecision(saved: SavedDecision | null, activeSnapshot: WorkspaceSnapshot, activeRevision: number, rebuilt?: Awaited<ReturnType<typeof rebuild>>): Promise<DecisionWorkspaceState> {
   if (!saved) return emptyDecisionWorkspace();
@@ -269,7 +293,7 @@ async function restoreDecision(saved: SavedDecision | null, activeSnapshot: Work
 /** Builds an inert portable backup; no financial result or AI state is serialized. */
 export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Promise<string> {
   const activeInput = portableInput(source.input);
-  const { snapshot } = await rebuild(activeInput, source.filters);
+  const { dataset, snapshot } = await rebuild(activeInput, source.filters, source.channel_settings ?? null);
   const sources: Record<string, DatasetInput> = {};
   async function register(value: DatasetInput): Promise<string> {
     const portable = portableInput(value), key = await hashInput(portable);
@@ -297,7 +321,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
   let actionState = normalizeActionWorkspace(source.action_workspace ?? emptyActionWorkspace());
   // Legacy callers may still provide action cards on DecisionWorkspaceState.
   if (!source.action_workspace && current && source.decision.source_input && source.decision.actions.length) {
-    const historical = await rebuild(source.decision.source_input, current.scope);
+    const historical = await rebuild(source.decision.source_input, current.scope, source.channel_settings ?? null);
     const captured = refreshDecisionSession(current, snapshot, source.revision), id = actionContextId(captured);
     actionState = normalizeActionWorkspace({ contexts: [{ id, session: captured, diagnostics: historical.snapshot.report.diagnostics, source_input: source.decision.source_input, source_mappings: source.decision.source_mappings }], items: source.decision.actions.map((card, index) => ({ card, context_id: id, scope: { kind: "all", channels: captured.scope.channels }, pinned: index < 3 })) });
   }
@@ -331,6 +355,9 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
     ...(source.ui_prefs?.last_preset !== undefined ? { last_preset: source.ui_prefs.last_preset } : {}),
     ...(source.ui_prefs?.view !== undefined ? { view: source.ui_prefs.view } : {}),
   };
+  // V42-1a（D-V42-9＝A）：通路設定先驗證再與預設正規化；正規化不出值（沒有設定、只剩代碼、或與示範別名相同）就不寫這個鍵，寫時放 payload 的最後一個鍵，
+  // 示範、golden 與沒改設定的備份位元組與 v4.1.2（＝V4-7b 基準 tests/fixtures/backup-bytes-v4-7b.json）相同。
+  const channelSettings = portableChannelSettings(source.channel_settings, dataset.manifest).settings;
   const body = {
     schema_version: WORKSPACE_VERSION, metric_version: "contribution-v1", scenario_version: SCENARIO_VERSION, saved_at: new Date().toISOString(),
     payload: {
@@ -338,6 +365,7 @@ export async function exportWorkspaceBackup(source: WorkspaceBackupSource): Prom
       preprocessing: source.preprocessing ? { conversion: plain(source.preprocessing.conversion), raw_values: plain(source.preprocessing.raw_values) } : null,
       targets: source.targets ? plain(source.targets) : null, events: source.events ? plain(source.events) : null,
       meeting_history: plain(source.meeting_history ?? []), ui_prefs: uiPrefs,
+      ...(channelSettings ? { channel_settings: channelSettings } : {}),
     },
   };
   const text = JSON.stringify({ ...body, checksum: await checksum(body) });
@@ -370,6 +398,7 @@ export async function restoreWorkspaceBackup(text: string): Promise<RestoredWork
   if (actual !== expected) throw new Error("WORKSPACE_CHECKSUM_MISMATCH");
   // v5 與 v4 走同一條還原路徑（v5 只多 items[].ad_decision 與 V4-7c 的 active.imported_at）；v4 檔沒有這兩個欄位，讀回 undefined（不標）與 null。
   const restored_schema_version = body.schema_version;
+  // V42-1a：v5 的 payload.channel_settings 只在 restoreV4 → restoreV3 讀；v3 與 v1／v2 沒有這個鍵（帶了就是 INVALID_WORKSPACE_FORMAT），一律 null、沒有略過的代碼。
   if (body.schema_version === WORKSPACE_VERSION || body.schema_version === WORKSPACE_V4) return { ...await restoreV4((body as Omit<z.infer<typeof envelopeSchema>, "checksum">).payload), restored_schema_version };
   if (body.schema_version === WORKSPACE_V3) return { ...await restoreV3((body as Omit<z.infer<typeof v3EnvelopeSchema>, "checksum">).payload), ...EMPTY_V4_FIELDS(), imported_at: null, restored_schema_version };
   return { ...await restoreLegacy(body as Omit<z.infer<typeof legacyEnvelopeSchema>, "checksum">), ...EMPTY_V4_FIELDS(), imported_at: null, restored_schema_version };
@@ -380,15 +409,16 @@ const EMPTY_V4_FIELDS = (): V4Fields => ({ preprocessing: null, targets: null, e
 
 /** v4 與 v5 的 payload（v5 只多 items[].ad_decision 與 active.imported_at，都是選填）。 */
 async function restoreV4(wire: z.infer<typeof envelopeSchema>["payload"]): Promise<RestoredWorkspace> {
-  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, ...payload } = wire;
+  // V42-1a：先讀出 payload.channel_settings（v4 檔沒有 → undefined），交給 restoreV3 對還原後的 manifest.channels 驗證後才建快照；順序不可反（PRD §3.4）。
+  const { preprocessing: savedPreprocessing, targets: savedTargets, events: savedEvents, ui_prefs: savedPrefs, meeting_history: savedMeetings, channel_settings: savedChannelSettings, ...payload } = wire;
   // 會議紀錄逐筆語意檢查、id 不可重複；來源還在備份裡的會議另在 restoreV3 之後重算核對金額（verifyMeetingHistory）。
   const meetingHistory = savedMeetings.map(saved => {
     try { validateMeeting(saved); } catch { throw new Error("INVALID_WORKSPACE_FORMAT"); }
     return freezeMeeting(saved);
   });
   if (new Set(meetingHistory.map(meeting => meeting.id)).size !== meetingHistory.length) throw new Error("INVALID_WORKSPACE_FORMAT");
-  const restored = await restoreV3(payload);
-  await verifyMeetingHistory(meetingHistory, payload.sources);
+  const restored = await restoreV3(payload, savedChannelSettings);
+  await verifyMeetingHistory(meetingHistory, payload.sources, restored.channel_settings);
   // 還原不信任序列化結果：目標／檔期依 CSV 規則重驗（通路要在資料集裡），含稅原值要能換算回資料集裡的同一格。
   if (savedTargets && targetRowIssues(savedTargets.rows, restored.dataset.manifest.channels).length) throw new Error("INVALID_WORKSPACE_FORMAT");
   if (savedEvents && eventRowIssues(savedEvents.rows).length) throw new Error("INVALID_WORKSPACE_FORMAT");
@@ -424,7 +454,7 @@ async function restoreV4(wire: z.infer<typeof envelopeSchema>["payload"]): Promi
  * 三件事比規則與影響金額（標題、範圍、下一步是當時的文案，不逐字比對，避免文案改版讓舊備份無法還原）。
  * 來源不在備份裡的會議是自足的只讀紀錄，不核對。sources 的雜湊與 CSV 規則已在 restoreV3 驗過。
  */
-async function verifyMeetingHistory(meetings: readonly Meeting[], sources: CorePayload["sources"]): Promise<void> {
+async function verifyMeetingHistory(meetings: readonly Meeting[], sources: CorePayload["sources"], settings: ChannelSettings | null): Promise<void> {
   const datasets = new Map<string, Dataset>();
   const snapshots = new Map<string, Promise<WorkspaceSnapshot>>();
   const agendas = new Map<string, ReturnType<typeof meetingAgendaFromSnapshot>>();
@@ -443,7 +473,8 @@ async function verifyMeetingHistory(meetings: readonly Meeting[], sources: CoreP
       const filters: AnalysisFilters = { channels: [...fixed.channels], previous_period: { ...fixed.periods.previous }, current_period: { ...fixed.periods.current }, comparison_mode: fixed.periods.comparison_mode };
       const scopeKey = decisionSignature({ key, filters });
       let pending = snapshots.get(scopeKey);
-      if (!pending) { pending = createSnapshot(dataset, filters, key); snapshots.set(scopeKey, pending); }
+      // V42-1a：還原時讀出的設定一併傳入（名稱不進 filter_hash、議程金額，核對結果不受影響）。
+      if (!pending) { pending = createSnapshot(dataset, filters, key, settings); snapshots.set(scopeKey, pending); }
       const snapshot = await pending;
       const agendaKey = decisionSignature({ scopeKey, threshold: meeting.thresholds.importance });
       let agenda = agendas.get(agendaKey);
@@ -481,10 +512,10 @@ async function restoreLegacy(body: Omit<z.infer<typeof legacyEnvelopeSchema>, "c
   }
   actionWorkspace = normalizeActionWorkspace({ ...actionWorkspace, active_dataset_hash: snapshot.dataset_hash });
   const scenarioWorkspace = migrateLegacyDecisionWorkspace(decision, snapshot, active.revision, `legacy-${active.revision}-${snapshot.dataset_hash}`);
-  return { action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: null, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
+  return { action_workspace: actionWorkspace, scenario_workspace: scenarioWorkspace, review_session: null, input: active.input, dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial", channel_settings: null, dropped_channel_codes: [] };
 }
 
-async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, keyof V4Fields | "imported_at">> {
+async function restoreV3(payload: CorePayload, savedSettings?: ChannelSettings | null): Promise<Omit<RestoredWorkspace, keyof V4Fields | "imported_at">> {
   // Every saved source, including retained history, passes the same CSV boundary.
   // Cache validated datasets once; each context still rebuilds its own scope.
   const validated = new Map<string, { input: z.infer<typeof input>; validation: ValidationResult; dataset: Dataset }>();
@@ -499,18 +530,21 @@ async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, 
     if (!value) throw new Error("WORKSPACE_SOURCE_MISSING");
     return value;
   };
+  const active = payload.active, activeSource = resolve(active.source_hash);
+  // V42-1a（D-V42-9＝A）：設定先對還原後的 manifest.channels 驗證（不在清單的代碼丟棄並回報 dropped_channel_codes）、再與該資料集的預設正規化，
+  // 之後每個快照（目前範圍、待辦與試算的歷史脈絡、會議稿）都帶同一份設定；名稱不進 filter_hash，綁定核對不受影響。
+  const channelSettings = portableChannelSettings(savedSettings, activeSource.dataset.manifest);
   const contexts = new Map<string, Promise<{ dataset: Dataset; snapshot: WorkspaceSnapshot; validation: ValidationResult }>>();
   const scoped = (key: string, requested: AnalysisFilters) => {
     const cacheKey = decisionSignature({ key, requested });
     let result = contexts.get(cacheKey);
     if (!result) {
       const source = resolve(key);
-      result = createSnapshot(source.dataset, requested, key).then(snapshot => ({ dataset: source.dataset, snapshot, validation: source.validation }));
+      result = createSnapshot(source.dataset, requested, key, channelSettings.settings).then(snapshot => ({ dataset: source.dataset, snapshot, validation: source.validation }));
       contexts.set(cacheKey, result);
     }
     return result;
   };
-  const active = payload.active, activeSource = resolve(active.source_hash);
   const { dataset, snapshot, validation } = await scoped(active.source_hash, active.filters);
   const samePeriods = (scope: WorkspaceSnapshot["report"]["scope"]) => decisionSignature({ previous: scope.previous_period, current: scope.current_period, mode: scope.comparison_mode }) === decisionSignature({ previous: snapshot.report.scope.previous_period, current: snapshot.report.scope.current_period, mode: snapshot.report.scope.comparison_mode });
   const decision = payload.decision ? await restoreDecision({ ...payload.decision, source_input: resolve(payload.decision.source_hash).input }, snapshot, active.revision, await scoped(payload.decision.source_hash, payload.decision.filters)) : emptyDecisionWorkspace();
@@ -555,5 +589,5 @@ async function restoreV3(payload: CorePayload): Promise<Omit<RestoredWorkspace, 
     if (reviewSession.status === "current" && (reviewSession.epoch !== scenarioWorkspace.active_epoch || sourceHash !== snapshot.dataset_hash || !samePeriods(reviewSession.meeting_filters))) throw new Error("REVIEW_ACTIVE_CONTEXT_MISMATCH");
     validateReviewSession(reviewSession, scenarioWorkspace);
   }
-  return { action_workspace: normalizedActions, scenario_workspace: scenarioWorkspace, review_session: reviewSession, input: structuredClone(activeSource.input), dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial" };
+  return { action_workspace: normalizedActions, scenario_workspace: scenarioWorkspace, review_session: reviewSession, input: structuredClone(activeSource.input), dataset, snapshot, id: active.id, revision: active.revision, filenames: active.filenames, mappings: active.mappings, decision, issues: validation.issues, classification: validation.classification as "valid" | "partial", channel_settings: channelSettings.settings, dropped_channel_codes: channelSettings.droppedCodes };
 }

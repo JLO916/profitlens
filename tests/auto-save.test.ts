@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AUTO_SAVE_DELAY_MS, createAutoSaver, formatSavedDateTime, formatSavedTime, type AutoSaverOptions } from "@/application/auto-save";
+import { CHANNEL_SETTINGS_VERSION, type ChannelSettings } from "@/application/channel-settings";
 import { createDecisionSession, emptyDecisionWorkspace } from "@/application/decision";
-import { exportWorkspaceBackup } from "@/application/workspace-backup";
+import { exportWorkspaceBackup, restoreWorkspaceBackup } from "@/application/workspace-backup";
 import { createSnapshot, hashInput } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
 import { fixture } from "./helpers/fixtures";
@@ -346,12 +347,14 @@ function fakeIndexedDb(initial?: Record<string, Record<string, unknown>>) {
   const factory = { open, deleteDatabase: vi.fn(), databases: vi.fn(async () => exists ? [{ name: DATABASE_NAME }] : []) };
   return { factory, stores, writes, open };
 }
-async function validBackup(): Promise<string> {
+/** V42-1a：channelSettings 有值時備份另帶 payload.channel_settings（自動保存存的是整份備份文字，設定跟著走，不另存 key）。 */
+async function validBackup(channelSettings?: ChannelSettings): Promise<string> {
   const input = fixture(); const dataset = validateDataset(input).dataset!;
-  const snapshot = await createSnapshot(dataset, { channels: ["DTC"] }, await hashInput(input));
+  const snapshot = await createSnapshot(dataset, { channels: ["DTC"] }, await hashInput(input), channelSettings);
   const session = createDecisionSession(dataset, snapshot, 1);
-  return exportWorkspaceBackup({ input, filters: snapshot.report.scope, id: "golden", revision: 1, decision: { ...emptyDecisionWorkspace(), captured: session, source_input: input } });
+  return exportWorkspaceBackup({ input, filters: snapshot.report.scope, id: "golden", revision: 1, decision: { ...emptyDecisionWorkspace(), captured: session, source_input: input }, ...(channelSettings ? { channel_settings: channelSettings } : {}) });
 }
+const CHANNEL_SETTINGS: ChannelSettings = { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "DTC", label: "官網", group: "g1", order: 1 }, { code: "MARKETPLACE", group: "g1", order: 0 }], groups: [{ id: "g1", label: "全部平台", order: 0 }] };
 
 describe("R6-6 local-store：保存時間另存一個 key，讀取時不建立資料庫", () => {
   afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); vi.resetModules(); });
@@ -389,6 +392,25 @@ describe("R6-6 local-store：保存時間另存一個 key，讀取時不建立�
     expect(formatSavedDateTime(new Date((await localWorkspaceSavedAt())!))).toBe("2026-10-03 14:32");
     // 讀取保存時間不寫入任何東西。
     expect(fake.writes).toHaveLength(2);
+  });
+
+  it("V42-1a：帶通路設定的備份原樣保存（同一筆交易、同兩個 key，不另存設定），讀回後還原的 channel_settings 與匯入相同；沒有設定的備份文字不含 channel_settings", async () => {
+    const text = await validBackup(CHANNEL_SETTINGS);
+    expect(JSON.parse(text).payload.channel_settings).toEqual(CHANNEL_SETTINGS);
+    expect(JSON.parse(await validBackup()).payload).not.toHaveProperty("channel_settings");
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(AT);
+    const fake = fakeIndexedDb();
+    vi.stubGlobal("indexedDB", fake.factory);
+    const { saveLocalWorkspace, loadLocalWorkspace } = await import("@/application/local-store");
+    await saveLocalWorkspace(text);
+    expect(fake.writes.map(write => write.key)).toEqual(["explicitly-saved-at", "explicitly-saved"]);
+    const loaded = await loadLocalWorkspace();
+    expect(loaded).toBe(text);
+    const restored = await restoreWorkspaceBackup(loaded!);
+    expect(restored.channel_settings).toEqual(CHANNEL_SETTINGS);
+    expect(restored.dropped_channel_codes).toEqual([]);
+    expect(restored.snapshot.channel_names).toEqual({ DTC: "官網" });
   });
 
   it("R6 以前存的副本（沒有保存時間）回傳 null", async () => {
