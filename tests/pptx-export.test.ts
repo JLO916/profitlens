@@ -2,7 +2,7 @@ import Decimal from "decimal.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as XLSX from "xlsx";
 import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, type ActionSource } from "@/application/action-workspace";
-import { channelsLabel, ruleCopy } from "@/application/copy";
+import { channelsLabel, ruleCopy, snapshotResolver } from "@/application/copy";
 import { buildManagerSummary, type ManagerSummary } from "@/application/manager-summary";
 import {
   buildPptxOnePager, estimatedLines, exportPptx, fitLine, pptxChannelRows, pptxKpiRuns, pptxText, pptxTitleSize, pptxWaterfallChart, writePptx,
@@ -86,7 +86,7 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     expect(model.title).toBe(REPORT_TITLE);
     expect(model.header).toEqual(["golden-v1", PERIOD_UNIT_LINE, VERSION_LINE]);
     // 檔案屬性（主旨）沿用 V3-2b 的副標：版頭期間用匯出格式「YYYY-MM-DD 至 YYYY-MM-DD（天數）」。
-    expect(model.subtitle).toBe(fill(copy.subtitle, { asOf: "2026-08-03", previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], false) }));
+    expect(model.subtitle).toBe(fill(copy.subtitle, { asOf: "2026-08-03", previous: formatPeriodExport("2026-08-01", "2026-08-01"), current: formatPeriodExport("2026-08-02", "2026-08-02"), channels: channelsLabel(["DTC", "MARKETPLACE"], snapshotResolver(snapshot)) }));
     expect(formatPeriodExport("2026-08-01", "2026-08-01")).toBe(fill(labels.format.units.exportRange, { start: "2026-08-01", end: "2026-08-01", days: 1 }));
     // 手算：淨營收 上期 2500−200−50＝2250、本期 3100−450−180＝2470，差 +220；扣廣告後貢獻 570 → 255，差 −315（fixtures/golden/expected.json）。
     // V3-2b §3.3：PPT 關鍵差額卡是 L1（< 1 萬寫「元」、≥ 1 萬寫「萬」；U+2212 負號、正差額加「+」）。
@@ -98,7 +98,7 @@ describe("R6-5 PPT 一頁式：資料層（buildPptxOnePager）", () => {
     expect(model.key_deltas.map(row => [row.previous, row.current, row.change])).toEqual(summary.headlines.map(row => [formatAmountL1(row.previous.value), formatAmountL1(row.current.value), formatSignedDelta(row.change.value, "L1")]));
     // 三件事：標題與下一步來自 ruleCopy；影響金額手算——貢獻 −315；折扣 200 → 450 多 250（影響 −250）；廣告 300 → 450 多 150（影響 −150）。
     expect(model.priorities.length).toBeLessThanOrEqual(3);
-    expect(model.priorities.map(row => row.headline)).toEqual(summary.priorities.map(item => ruleCopy(snapshot, item.primary, false).headline));
+    expect(model.priorities.map(row => row.headline)).toEqual(summary.priorities.map(item => ruleCopy(snapshot, item.primary, snapshotResolver(snapshot)).headline));
     expect(model.priorities[0].headline).toBe(fill(labels.rules.REV_UP_CM_DOWN.headline, { dNet: fill(labels.format.units.yuan, { value: "220" }), dCM: fill(labels.format.units.yuan, { value: "315" }) }));
     expect(model.priorities.map(row => row.impact)).toEqual(["-315.00", "-250.00", "-150.00"].map(value => formatSignedDelta(value, "L1")));
     expect(model.priorities.map(row => row.next_step)).toEqual([labels.rules.REV_UP_CM_DOWN.explain.nextStep, labels.rules.DISCOUNT_BURDEN_UP.explain.nextStep, labels.rules.MARKETING_BURDEN_UP.explain.nextStep]);

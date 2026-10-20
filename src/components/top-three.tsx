@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { contributionImpact, priorityEvidence } from "@/application/manager-summary";
 import { diagnosisGroups, parseImportanceThreshold, TOP_PRIORITY_COUNT, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
-import { channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
+import { channelsLabel, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
 import { overlapping, type EventSet } from "@/application/events";
 import { deltaTone, deltaToneLabel, formatAmountL3, formatSignedDelta, metricDefinitions, type DeltaTone, type Layer } from "@/application/presentation";
 import { formatCents, parseCents } from "@/domain/money";
@@ -16,16 +16,16 @@ import { ShellIcon } from "./shell/shell-icon";
 const BURDEN = new Set<Diagnostic["code"]>(["DISCOUNT_BURDEN_UP", "REFUND_BURDEN_UP", "FULFILLMENT_BURDEN_UP", "MARKETING_BURDEN_UP"]);
 
 /** 以「對貢獻影響」開啟抽屜：費用類規則把排序金額取負並說明，來源列與前後期事實不變。標題與通路名稱只做呈現（示範資料套 alias）。 */
-export function impactEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic: Diagnostic): EvidenceSelection | null {
+export function impactEvidence(snapshot: Pick<WorkspaceSnapshot, "report" | "channel_names">, diagnostic: Diagnostic): EvidenceSelection | null {
   const impact = contributionImpact(diagnostic);
   if (!impact) return null;
-  const alias = demoAlias(snapshot.report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const base = priorityEvidence(snapshot, diagnostic);
   const values = { impact: labels.overview.sections.impact, metric: metricDefinitions[base.name].label };
   const formula = BURDEN.has(diagnostic.code) ? fill(labels.overview.notes.impactFormulaBurden, values) : base.formula ?? fill(labels.overview.notes.impactFormulaDefault, values);
   // V3-2a：抽屜標題只留結論句；影響金額與範圍放副標（抽屜的範圍行，§8.8 #15）。
-  const title = fill(labels.overview.topThree.impactEvidenceTitle, { title: ruleCopy(snapshot, diagnostic, alias).headline });
-  return { ...base, title, scopeLabel: fill(labels.overview.topThree.impactEvidenceSubtitle, { impact: labels.overview.sections.impact, scope: scopeLabel(diagnostic.scope, alias) }), metric: impact, formula };
+  const title = fill(labels.overview.topThree.impactEvidenceTitle, { title: ruleCopy(snapshot, diagnostic, resolver).headline });
+  return { ...base, title, scopeLabel: fill(labels.overview.topThree.impactEvidenceSubtitle, { impact: labels.overview.sections.impact, scope: scopeLabel(diagnostic.scope, resolver) }), metric: impact, formula };
 }
 
 /** 紅＝不利、綠＝有利；零與未知為中性（以分為單位比較，不看字串正負號）。V3-2b 起本檔與總覽、健檢改用 toneClass(deltaTone(...))；會議頁仍沿用。 */
@@ -122,13 +122,13 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, onOpenDiagnosis
   useDismiss(thresholdOpen, closeThreshold, thresholdRef, thresholdSummaryRef);
   useDismiss(helpOpen, closeHelp, helpRef, helpButtonRef);
   const summary = useMemo(() => diagnosisGroups(snapshot, { importanceThreshold: threshold }), [snapshot, threshold]);
-  const alias = demoAlias(snapshot.report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const count = summary.priorities.length;
   const title = count > 0 && count < TOP_PRIORITY_COUNT ? fill(alerts.titleCount, { n: count }) : labels.overview.sections.topThree;
   // R4 檔期提示：本期與檔期重疊時，列內展開內容多一行「檔期」；不改任何數字。
   const eventNames = [...new Set(overlapping(events, snapshot.report.current.period).map(row => row.label))];
   const eventText = eventNames.length ? fill(alerts.eventValue, { label: eventNames.join(labels.events.joiner) }) : "";
-  const member = (row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.overview.topThree.memberRow, { scope: scopeLabel(row.scope, alias), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} layer="L2" /></li>;
+  const member = (row: DiagnosisScope) => <li key={row.diagnostic.id}>{fill(labels.overview.topThree.memberRow, { scope: scopeLabel(row.scope, resolver), amount: "" })}<ImpactAmount snapshot={snapshot} diagnostic={row.diagnostic} onEvidence={onEvidence} layer="L2" /></li>;
   const row = (item: DiagnosisGroup) => {
     const status = alertStatus(item);
     return <li key={item.rule} className="alert-row" data-testid={`overview-priority-${item.rule}`}>
@@ -146,7 +146,7 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, onOpenDiagnosis
   };
   return <section className="top-three" aria-labelledby="top-three-title" data-testid="top-three">
     <div className="sec-head">
-      <div className="sec-title"><h2 id="top-three-title">{title}</h2><span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, alias)}</span></div>
+      <div className="sec-title"><h2 id="top-three-title">{title}</h2><span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, resolver)}</span></div>
       <div className="sec-tools">
         <span className="sort-legend" ref={helpRef}>{labels.overview.sections.impactLegend}<button ref={helpButtonRef} type="button" className="ui-help-trigger" title={labels.overview.sections.impactLegendHelp} aria-label={alerts.sortHelpAria} aria-expanded={helpOpen} aria-controls="top-three-sort-help" onClick={() => setHelpOpen(open => !open)}><ShellIcon name="help" size={16} /></button><span id="top-three-sort-help" className="sort-help ui-popover ui-help-content" hidden={!helpOpen}>{labels.overview.sections.impactLegendHelp}</span></span>
         <details ref={thresholdRef} className="threshold-popover" onToggle={event => setThresholdOpen(event.currentTarget.open)}><summary ref={thresholdSummaryRef} className="ui-btn ui-btn-text">{labels.overview.sections.adjustThreshold}</summary>

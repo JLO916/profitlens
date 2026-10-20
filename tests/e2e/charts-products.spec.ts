@@ -8,7 +8,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { PRODUCT_PARETO_LIMIT, productPareto } from "../../src/application/chart-pareto";
 import { chartColors } from "../../src/application/chart-theme";
-import { channelLabel, demoAlias, formatHeadlineAmount } from "../../src/application/copy";
+import { channelLabel, formatHeadlineAmount, snapshotResolver } from "../../src/application/copy";
+import type { NameResolver } from "../../src/application/channel-settings";
 import { evidenceFilterText } from "../../src/application/evidence-filter";
 import { formatAmountL1, formatAmountL2, formatCount, formatRateL1, formatRateL2, metricDefinitions } from "../../src/application/presentation";
 import { productHighlights } from "../../src/application/product-highlights";
@@ -38,10 +39,10 @@ async function expectations(input: DatasetInput) {
   const dataset = validateDataset(input).dataset!;
   const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
   const comparison = compareProducts(dataset, snapshot.report.scope);
-  const alias = demoAlias(dataset.manifest.dataset_id);
-  return { snapshot, alias, rows: comparison.rows, top: productHighlights(comparison.rows), all: productHighlights(comparison.rows, comparison.rows.length), pareto: productPareto(comparison.rows, "gross_profit", PRODUCT_PARETO_LIMIT) };
+  const resolver = snapshotResolver(snapshot);
+  return { snapshot, resolver, rows: comparison.rows, top: productHighlights(comparison.rows), all: productHighlights(comparison.rows, comparison.rows.length), pareto: productPareto(comparison.rows, "gross_profit", PRODUCT_PARETO_LIMIT) };
 }
-const product = (row: { sku: string; channel: string }, alias: boolean) => fill(copy.product, { sku: row.sku, channel: channelLabel(row.channel, alias) });
+const product = (row: { sku: string; channel: string }, resolver: NameResolver) => fill(copy.product, { sku: row.sku, channel: channelLabel(row.channel, resolver) });
 async function closeDrawer(page: Page) {
   await page.keyboard.press("Escape");
   await expect(evidenceDrawer(page)).toHaveCount(0);
@@ -79,7 +80,7 @@ test.describe("V4-4 商品 G13、G14", () => {
     await expect(varianceSection(page).getByTestId("product-best")).toBeVisible();
     // 標題：減少最多的一列（SKU-020 · 平台 · MARKETPLACE，−30,198.96）。
     const lead = expected.top.worstChange[0];
-    await expect(varianceSection(page).locator("#products-variance-title")).toHaveText(fill(copy.variance.title.decrease, { product: product(lead, true), metric: METRIC, amount: formatHeadlineAmount(lead.changes.gross_profit.value) }));
+    await expect(varianceSection(page).locator("#products-variance-title")).toHaveText(fill(copy.variance.title.decrease, { product: product(lead, expected.resolver), metric: METRIC, amount: formatHeadlineAmount(lead.changes.gross_profit.value) }));
     const decreaseRows = Math.min(BLOCK_ROWS, expected.top.worstChange.length), increaseRows = Math.min(BLOCK_ROWS, expected.top.bestChange.length);
     await expect(varianceBars(page)).toHaveCount(decreaseRows + increaseRows);
     await expect(varianceBlock(page, "decrease").locator("[data-testid^='chart-products-variance-bar-']")).toHaveCount(decreaseRows);
@@ -90,7 +91,7 @@ test.describe("V4-4 商品 G13、G14", () => {
     await page.getByTestId(`chart-products-variance-bar-${lead.channel}-${lead.sku}`).click();
     await expect(evidenceDrawer(page)).toBeVisible();
     await expect(drawerHeading(page)).toHaveText(drawerTitle(fill(labels.products.comparison.deltaEvidenceTitle, { sku: lead.sku, label: `${METRIC}${labels.exports.csv.suffix.change}` })));
-    const phrase = evidenceFilterText({ channel: lead.channel, sku: lead.sku }, { alias: true, anchor: expected.snapshot.data_as_of })!;
+    const phrase = evidenceFilterText({ channel: lead.channel, sku: lead.sku }, { resolver: expected.resolver, anchor: expected.snapshot.data_as_of })!;
     await expect(drawerFilter(page)).toHaveText(phrase);
     expect(phrase).toContain(fill(labels.evidence.chartsV4.filter.sku, { sku: lead.sku }));
     expect(await analyticsCount(page, "chart_clicked")).toBe(before + 1);
@@ -132,14 +133,14 @@ test.describe("V4-4 商品 G13、G14", () => {
     const first = pareto.rows[0].row;
     await page.getByTestId(`chart-products-pareto-bar-${first.channel}-${first.sku}`).click();
     await expect(evidenceDrawer(page)).toBeVisible();
-    await expect(drawerFilter(page)).toHaveText(evidenceFilterText({ channel: first.channel, sku: first.sku }, { alias: false, anchor: expected.snapshot.data_as_of })!);
+    await expect(drawerFilter(page)).toHaveText(evidenceFilterText({ channel: first.channel, sku: first.sku }, { resolver: expected.resolver, anchor: expected.snapshot.data_as_of })!);
     await closeDrawer(page);
     // 資料表：全部負值列；最後一列累計＝負值合計、累計佔比＝ratioMetric(取反後的負值合計, 取反後的負值合計) 的 L2 字（100%）。
     await openDataTable(paretoSection(page));
     const rows = paretoTable(page).locator("tbody tr");
     await expect(rows).toHaveCount(pareto.count);
     const last = rows.last();
-    await expect(last.locator("th")).toHaveText(product(pareto.allRows.at(-1)!.row, false));
+    await expect(last.locator("th")).toHaveText(product(pareto.allRows.at(-1)!.row, expected.resolver));
     await expect(last.locator("td")).toHaveText([formatAmountL2(pareto.allRows.at(-1)!.value.value), formatAmountL2(pareto.total.value), formatRateL2(pareto.allRows.at(-1)!.share.value)]);
     expect(formatRateL2(pareto.allRows.at(-1)!.share.value)).toBe(formatRateL2("1.000000000000"));
     // 累計格：抽屜大數字是負值合計（L1），不帶「+」。
@@ -244,7 +245,7 @@ test.describe("V4-10 商品 G24", () => {
       await clickSymbol(page, index);
       await expect(evidenceDrawer(page)).toBeVisible();
       await expect(drawerHeading(page)).toHaveText(drawerTitle(fill(labels.products.comparison.evidenceTitle, { sku: row.sku, period: labels.shell.periods.current, label: metricDefinitions.gross_margin.shortLabel })));
-      await expect(drawerFilter(page)).toHaveText(evidenceFilterText({ channel: row.channel, sku: row.sku }, { alias: true, anchor: expected.snapshot.data_as_of })!);
+      await expect(drawerFilter(page)).toHaveText(evidenceFilterText({ channel: row.channel, sku: row.sku }, { resolver: expected.resolver, anchor: expected.snapshot.data_as_of })!);
       expect(await analyticsCount(page, "chart_clicked")).toBe(before + 1);
       await closeDrawer(page);
     }

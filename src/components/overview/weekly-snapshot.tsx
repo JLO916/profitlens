@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { track } from "@/application/analytics";
-import { channelsLabel, demoAlias } from "@/application/copy";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
 import { formatPeriodL1 } from "@/application/presentation";
 import { buildWeeklySummary, snapshotSentence, type WeeklySummaryInput } from "@/application/weekly-summary";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -48,7 +48,7 @@ export function snapshotMeta(snapshot: WorkspaceSnapshot, allChannels?: readonly
   const { report } = snapshot;
   const channels = report.scope.channels, all = allChannels ?? channels;
   const everyChannel = all.length > 0 && all.every(channel => channels.includes(channel));
-  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(channels, demoAlias(report.dataset_id));
+  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(channels, snapshotResolver(snapshot));
   return fill(ui.meta, { period: formatPeriodL1(report.current.period.start, report.current.period.end, { days: false, anchor: snapshot.data_as_of }), channels: channelsText });
 }
 

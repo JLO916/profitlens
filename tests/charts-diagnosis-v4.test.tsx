@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { CHANNEL_WEEKS_VERSION } from "@/application/chart-channel-weeks";
 import { DAILY_HEATMAP_MAX_CHANNELS, DAILY_HEATMAP_MAX_DAYS, DAILY_HEATMAP_VERSION, DAILY_HEATMAP_WORST, dailyHeatmap, type DailyHeatmap, type HeatValueCell } from "@/application/chart-heatmap";
 import { chartHeights } from "@/application/chart-theme";
-import { channelLabel } from "@/application/copy";
+import { channelLabel, snapshotResolver } from "@/application/copy";
 import { formatAmountL1, formatAmountL2, formatDateL1, formatHeatCell, formatPeriodL1, metricDefinitions } from "@/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { heatMove, heatPositions, type HeatPosition, type HeatTableSpec } from "@/components/charts/heat-table";
@@ -93,8 +93,8 @@ describe("G11 熱表：ChartFrame mode=\"table\" 的結構（示範資料）", (
     const snapshot = await snapshotOf(fixture("demo"));
     const section = byTestId(renderDiagnosis(snapshot), HEAT);
     const anchor = snapshot.data_as_of;
-    expect(textOf(element(section, 'id="heat-title"')!)).toBe(fill(copy.title.loss, { channel: channelLabel("MARKETPLACE", true), n: 32, date: formatDateL1("2026-08-22", { anchor }), amount: formatAmountL1("-4510.74") }));
-    expect(captions(section)).toEqual(["MARKETPLACE", "DTC"].map(channel => fill(copy.caption, { channel: channelLabel(channel, true) })));
+    expect(textOf(element(section, 'id="heat-title"')!)).toBe(fill(copy.title.loss, { channel: channelLabel("MARKETPLACE", snapshotResolver(snapshot)), n: 32, date: formatDateL1("2026-08-22", { anchor }), amount: formatAmountL1("-4510.74") }));
+    expect(captions(section)).toEqual(["MARKETPLACE", "DTC"].map(channel => fill(copy.caption, { channel: channelLabel(channel, snapshotResolver(snapshot)) })));
     const head = element(section, "<thead>")!;
     expect([...head.matchAll(/<th scope="col">([^<]*)<\/th>/g)].map(match => match[1])).toEqual([copy.weekHead, ...(["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const).map(day => copy.weekdays[day])]);
     const period = snapshot.report.current.period;
@@ -113,7 +113,7 @@ describe("G11 熱表：ChartFrame mode=\"table\" 的結構（示範資料）", (
     const worst = cellOf(section, "MARKETPLACE", "2026-08-22");
     expect(openTag(worst, "<td")).toBe(`<td data-tier="2" data-testid="${heatCellTestId("MARKETPLACE", "2026-08-22")}">`);
     expect(textOf(worst)).toBe(formatHeatCell("-4510.74"));
-    const aria = fill(copy.cellAria, { channel: channelLabel("MARKETPLACE", true), date: formatDateL1("2026-08-22", { anchor: snapshot.data_as_of }), metric: METRIC_LABEL, cell: formatHeatCell("-4510.74"), value: formatAmountL2("-4510.74") });
+    const aria = fill(copy.cellAria, { channel: channelLabel("MARKETPLACE", snapshotResolver(snapshot)), date: formatDateL1("2026-08-22", { anchor: snapshot.data_as_of }), metric: METRIC_LABEL, cell: formatHeatCell("-4510.74"), value: formatAmountL2("-4510.74") });
     expect(worst).toContain(`aria-label="${aria}"`);
     expect(aria).toContain(formatHeatCell("-4510.74"));
     for (const date of ["2026-07-19", "2026-08-16"]) expect(cellOf(section, "MARKETPLACE", date)).toContain('data-tier="2"');

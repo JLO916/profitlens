@@ -3,7 +3,8 @@
 import { useMemo, useState, type MouseEvent } from "react";
 import type { ManagerSummary as SummaryData, SummaryEvidence } from "@/application/manager-summary";
 import { CHANNEL_WEEKS_MAX_CHANNELS, CHANNEL_WEEKS_VERSION, channelWeeks, channelWeeksAvailable, recentChannelWeeks, type ChannelWeek, type ChannelWeeks, type ChannelWeekSeries, type ChannelWeekValue } from "@/application/chart-channel-weeks";
-import { channelLabel, demoAlias } from "@/application/copy";
+import { channelLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { deltaTone, deltaWord, formatAmountL2, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { parseCents } from "@/domain/money";
@@ -31,11 +32,11 @@ interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: E
  */
 export function ChannelWideTable({ summary, onEvidence, ariaLabel, caption, variant = "default", snapshot }: ChannelWideTableProps) {
   if (variant === "diagnosis") return <DiagnosisChannelTable summary={summary} onEvidence={onEvidence} ariaLabel={ariaLabel} caption={caption} snapshot={snapshot} />;
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshot && snapshot.report.dataset_id === summary.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, summary.dataset_id);
   const columnHeaders = (["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.shell.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.shell.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.exports.csv.suffix.change}`]);
   // V3-10 收尾：可及名稱含可見數字（Lighthouse label-content-name-mismatch；抽屜標題 evidence.title 不變）。
   const amount = (evidence: SummaryEvidence, signed = false) => { const shown = evidence.metric.value === null ? labels.shell.status.missing : signed ? formatSignedDelta(evidence.metric.value, "L2") : formatAmountL2(evidence.metric.value); return <button type="button" className="number-link" onClick={() => onEvidence(evidence)} aria-label={fill(labels.overview.channelsV3.wideAmountAria, { title: evidence.title, value: shown })}>{shown}</button>; };
-  return <div className="table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}><table><caption>{fill(labels.overview.channelTable.unitCaption, { caption })}</caption><thead><tr><th scope="col">{labels.overview.channelTable.channelHeader}</th>{columnHeaders.map(header => <th key={header} scope="col">{header}</th>)}</tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, alias)}{row.contribution.transition === "turned_negative" && <span className={styles.transition}>{labels.overview.channelTable.turnedNegative}</span>}{row.contribution.transition === "turned_positive" && <span className={styles.transition}>{labels.overview.channelTable.turnedPositive}</span>}</th>{([row.revenue, row.contribution]).flatMap((metric) => (["previous", "current", "change"] as const).map(period => <td key={`${metric.metric}-${period}`} className={period === "change" ? metric.evidence.change.metric.value === null ? "neutral" : toneClass(deltaTone(metric.metric, metric.evidence.change.metric.value, "L2")) : ""}>{amount(metric.evidence[period], period === "change")}</td>))}</tr>)}</tbody></table></div>;
+  return <div className="table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}><table><caption>{fill(labels.overview.channelTable.unitCaption, { caption })}</caption><thead><tr><th scope="col">{labels.overview.channelTable.channelHeader}</th>{columnHeaders.map(header => <th key={header} scope="col">{header}</th>)}</tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, resolver)}{row.contribution.transition === "turned_negative" && <span className={styles.transition}>{labels.overview.channelTable.turnedNegative}</span>}{row.contribution.transition === "turned_positive" && <span className={styles.transition}>{labels.overview.channelTable.turnedPositive}</span>}</th>{([row.revenue, row.contribution]).flatMap((metric) => (["previous", "current", "change"] as const).map(period => <td key={`${metric.metric}-${period}`} className={period === "change" ? metric.evidence.change.metric.value === null ? "neutral" : toneClass(deltaTone(metric.metric, metric.evidence.change.metric.value, "L2")) : ""}>{amount(metric.evidence[period], period === "change")}</td>))}</tr>)}</tbody></table></div>;
 }
 
 type ChannelRow = SummaryData["channels"][number];
@@ -140,9 +141,9 @@ export function ChannelSparkCell({ data, channel, current }: { data: ChannelWeek
 type WeeksRow = { series: ChannelWeekSeries; label: string };
 
 /** 「各通路每週」（C33）：列＝通路，欄＝近 {n} 週（週名＋起訖；未滿 7 天的週欄頭加「未滿 7 天」），格＝扣廣告後貢獻 L2 number-link；V4-8a（D-V4-45＝B）不利（deltaTone L2）時帶 unfavorable。 */
-export function ChannelWeeksDetails({ data, channels, alias, anchor, onEvidence }: { data: ChannelWeeks; channels: readonly string[]; alias: boolean; anchor: string; onEvidence: (evidence: EvidenceSelection) => void }) {
+export function ChannelWeeksDetails({ data, channels, resolver, anchor, onEvidence }: { data: ChannelWeeks; channels: readonly string[]; resolver: NameResolver; anchor: string; onEvidence: (evidence: EvidenceSelection) => void }) {
   const metric = metricDefinitions[CHANNEL_METRIC].label;
-  const rows: WeeksRow[] = channels.flatMap(channel => { const series = data.channels.find(item => item.channel === channel); return series ? [{ series, label: channelLabel(channel, alias) }] : []; });
+  const rows: WeeksRow[] = channels.flatMap(channel => { const series = data.channels.find(item => item.channel === channel); return series ? [{ series, label: channelLabel(channel, resolver) }] : []; });
   const columns: ChartDataColumn<number>[] = data.weeks.map((week, index) => ({
     key: week.period.start, label: week.label, unit: "money", layer: "L2", data: index,
     notes: [formatPeriodL1(week.period.start, week.period.end, { anchor, days: false }), ...(week.full ? [] : [labels.overview.trendV3.incompleteShort])],
@@ -169,7 +170,7 @@ export function ChannelWeeksDetails({ data, channels, alias, anchor, onEvidence 
 
 function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapshot }: Omit<ChannelWideTableProps, "variant">) {
   const [sort, setSort] = useState<ChannelSort>(DEFAULT_CHANNEL_SORT);
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshot && snapshot.report.dataset_id === summary.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, summary.dataset_id);
   const rows = sortChannelRows(summary.channels, sort);
   // V4-3a G7b：只依快照的報表與週列計算（排序切換不重算）；沒傳快照時（既有呼叫端）不多任何欄。
   const report = snapshot?.report, weeks = snapshot?.weeks;
@@ -202,13 +203,13 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapsh
         const turned = deltaWord("contribution_after_marketing", row.contribution.change.value, { previous: row.contribution.previous.value });
         const group = channelDiagnosis(summary, row.channel);
         return <tr key={row.channel} role="row">
-          <th role="rowheader" scope="row" className="channel-cell" data-label={labels.overview.channelTable.channelHeader} data-list-role="primary">{channelLabel(row.channel, alias)}</th>
+          <th role="rowheader" scope="row" className="channel-cell" data-label={labels.overview.channelTable.channelHeader} data-list-role="primary">{channelLabel(row.channel, resolver)}</th>
           {GROUPS.flatMap(name => PERIODS.map(period => {
             const metric = metricOf(row, name);
             const value = metric.evidence[period].metric.value;
             const tone = period !== "change" ? "" : value === null ? " neutral" : ` ${toneClass(deltaTone(name, value, "L2"))}`;
             const listRole = period === "previous" ? "secondary" : name === "contribution_after_marketing" ? "labeled" : "secondary";
-            return <td key={`${name}-${period}`} role="cell" className={`num${period === "previous" ? " prev" : ""}${tone}`} data-label={columnLabel(name, period, true)} data-list-role={listRole}>{amount(metric.evidence[period], period === "change", channelLabel(row.channel, alias), columnLabel(name, period, false))}</td>;
+            return <td key={`${name}-${period}`} role="cell" className={`num${period === "previous" ? " prev" : ""}${tone}`} data-label={columnLabel(name, period, true)} data-list-role={listRole}>{amount(metric.evidence[period], period === "change", channelLabel(row.channel, resolver), columnLabel(name, period, false))}</td>;
           }))}
           {g7b.status === "ready" && <td role="cell" className="spark-cell" data-label={sparkHead ?? undefined} data-list-role="spark"><ChannelSparkCell data={g7b.data} channel={row.channel} current={row.contribution.current.value} /></td>}
           <td role="cell" className="note-cell" data-label={tableV3.note} data-list-role="secondary">{turned === labels.format.turnedLoss && <span className="ui-lozenge" data-tone="unfavorable">{labels.overview.channelsV3.turnedNegative}</span>}{turned === labels.format.turnedPositive && <span className="ui-lozenge">{labels.overview.channelsV3.turnedPositive}</span>}{group && <a className="note-link" href={`#diagnosis-row-${group.rule}`} onClick={event => jumpToRow(event, group.rule)}>{group.headline}</a>}</td>
@@ -216,7 +217,7 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapsh
       })}</tbody>
     </table>
   </div>
-  {g7b.status === "ready" && snapshot && <ChannelWeeksDetails data={g7b.data} channels={rows.map(row => row.channel)} alias={alias} anchor={snapshot.data_as_of} onEvidence={onEvidence} />}
+  {g7b.status === "ready" && snapshot && <ChannelWeeksDetails data={g7b.data} channels={rows.map(row => row.channel)} resolver={resolver} anchor={snapshot.data_as_of} onEvidence={onEvidence} />}
   {g7b.status === "tooMany" && <p className="note channel-weeks-note" data-testid={CHANNEL_WEEKS_TOO_MANY_TESTID}>{fill(spark.tooMany, { max: CHANNEL_WEEKS_MAX_CHANNELS })}</p>}
   </>;
 }

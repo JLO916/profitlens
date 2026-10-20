@@ -12,7 +12,8 @@ import { fill, labels } from "../../src/i18n";
 import { chartColors, chartHeights, chartRowHeights } from "../../src/application/chart-theme";
 import { CHANNEL_STRUCTURE_VERSION } from "../../src/application/chart-structure";
 import { CHANNEL_WEEKS_VERSION, channelWeeks, recentChannelWeeks } from "../../src/application/chart-channel-weeks";
-import { channelLabel, channelsLabel, demoAlias } from "../../src/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "../../src/application/copy";
+import type { NameResolver } from "../../src/application/channel-settings";
 import { evidenceFilterText } from "../../src/application/evidence-filter";
 import { buildManagerSummary } from "../../src/application/manager-summary";
 import { buildPnlTable } from "../../src/application/pnl-table";
@@ -168,7 +169,7 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
     await expect(section).toHaveAttribute("aria-describedby", "share-sub");
     await expect(section.locator("#share-title")).toHaveText(model.title);
     expect(model.titleKind, "示範資料有虧損通路").toBe("loss");
-    expect(model.title).toBe(fill(share.title.loss, { channel: channelLabel("MARKETPLACE", demoAlias(snapshot.report.dataset_id)), n: model.rows.find(row => row.channel === "MARKETPLACE")!.perHundred!.replace("-", "") }));
+    expect(model.title).toBe(fill(share.title.loss, { channel: channelLabel("MARKETPLACE", snapshotResolver(snapshot)), n: model.rows.find(row => row.channel === "MARKETPLACE")!.perHundred!.replace("-", "") }));
     await expect(section.locator("#share-sub")).toHaveText(model.subtitle);
     await expect(section.locator(".legend > span")).toHaveText([metricDefinitions.cogs_net.label, share.feesTitle, metricDefinitions.ad_spend.shortLabel, share.segments.remain]);
     await expect(section.locator(".legend svg.legend-mark[data-shape='rect'] rect"), "剩餘的圖例是空心框（與圖內形狀相同）").toHaveAttribute("fill", "none");
@@ -204,7 +205,7 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
     expect(await shareValues(page)).toEqual(expectedValues(model));
     expect(await shareStatuses(page)).toEqual([]);
     const total = model.rows.find(row => row.total)!;
-    expect(total.perHundred, "合計的每 100 元＝profitWaterfall(all).perHundred").toBe(profitWaterfall(snapshot, "all", { alias: true }).perHundred);
+    expect(total.perHundred, "合計的每 100 元＝profitWaterfall(all).perHundred").toBe(profitWaterfall(snapshot, "all", { resolver: snapshotResolver(snapshot) }).perHundred);
     expect(total.perHundred, "示範資料合計剩 16.2（06 驗收重點）").toBe("16.2");
     await expect(svg.locator("text.share-value.is-unfavorable"), "虧的標值用不利色").toHaveText([sharePerHundredText(model.rows.find(row => row.channel === "MARKETPLACE")!.perHundred)!]);
 
@@ -255,8 +256,8 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
   test("點段開抽屜並記 chart_clicked，與資料表同欄 number-link 同一個抽屜：商品成本（篩到該通路）、通路費用合計（不帶「+」、channel-structure-v1、不出現 platform_fees 的公式與定義）、超過 100 與合計剩餘（扣廣告後貢獻）；每 100 元格是百分比（扣廣告後貢獻率，有算式與兩個組成）", async ({ page }, testInfo) => {
     const snapshot = await datasetSnapshot("demo");
     const model = shareSectionModel(snapshot);
-    const alias = demoAlias(snapshot.report.dataset_id);
-    const label = (channel: string) => channelLabel(channel, alias);
+    const resolver = snapshotResolver(snapshot);
+    const label = (channel: string) => channelLabel(channel, resolver);
     const current = snapshot.report.current;
     await stubAnalytics(page);
     await openDiagnosis(page);
@@ -268,7 +269,7 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
       await expect(evidenceDrawer(page)).toBeVisible();
       await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: `點 ${key}-${segment} 記 chart_clicked` }).toBe(clicks);
     };
-    const filterText = (channel: string) => evidenceFilterText({ channel }, { alias, anchor: DEMO_AS_OF })!;
+    const filterText = (channel: string) => evidenceFilterText({ channel }, { resolver, anchor: DEMO_AS_OF })!;
 
     // 1. DTC 商品成本段：channelEvidence（帶 filter.channel），大數字不帶號；資料表同欄格開同一個抽屜。
     const dtcCogs = yuan(current.channels.DTC.metrics.cogs_net.value!);
@@ -356,7 +357,7 @@ test.describe("V4-3a 健檢 G10 每 100 元淨營收去向", () => {
     expect(model.notApplicable, "合成資料的不適用通路").toEqual(["SOCIAL"]);
     await expect(section.locator("#share-title")).toHaveText(model.title);
     await expect(section.locator("#share-sub")).toHaveText(model.subtitle);
-    expect(model.subtitle.endsWith(fill(share.subtitleNote, { subtitle: "", channels: channelsLabel(model.notApplicable, demoAlias(snapshot.report.dataset_id)) })), "副標末尾是不適用通路的說明句").toBe(true);
+    expect(model.subtitle.endsWith(fill(share.subtitleNote, { subtitle: "", channels: channelsLabel(model.notApplicable, snapshotResolver(snapshot)) })), "副標末尾是不適用通路的說明句").toBe(true);
     await expect(frameBox(section)).toHaveClass(/(^|\s)sm(\s|$)/);
     expect(Number(await section.locator("svg.chart-share-stack").getAttribute("height"))).toBe((snapshot.report.scope.channels.length + 2) * chartRowHeights.row24);
     for (const channel of ["SOCIAL", "LIVE"]) await expect(section.locator(`[data-testid^='chart-diagnosis-share-seg-${channel}-']`), `${channel} 沒有段`).toHaveCount(0);
@@ -437,7 +438,7 @@ test.describe("V4-3a 健檢 G7b 通路寬表「近 {n} 週」與「各通路每�
 
   test("「各通路每週」收合時已掛載；展開記 chart_table_opened；列序同寬表、6 週、每格 number-link；格的抽屜：扣廣告後貢獻、篩選片語含週名與通路名、metric_version contribution-v1 之後另列 channel-weeks-v1、不畫階梯", async ({ page }, testInfo) => {
     const snapshot = await datasetSnapshot("demo");
-    const alias = demoAlias(snapshot.report.dataset_id);
+    const resolver = snapshotResolver(snapshot);
     const data = recentChannelWeeks(channelWeeks(snapshot)!);
     await stubAnalytics(page);
     await openDiagnosis(page);
@@ -457,27 +458,27 @@ test.describe("V4-3a 健檢 G7b 通路寬表「近 {n} 週」與「各通路每�
     await expect(table.locator("thead th")).toHaveCount(1 + DEMO_WEEKS);
     // 列序同寬表目前的排序（示範資料每列都有 sparkline，以寬表 sparkline 的 DOM 順序讀出通路代碼）。
     const wideOrder = await channelSparks(page).evaluateAll(nodes => nodes.map(node => node.getAttribute("data-testid")!.replace("chart-diagnosis-channels-spark-", "")));
-    await expect(table.locator("tbody th"), "列序同寬表目前的排序").toHaveText(wideOrder.map(channel => channelLabel(channel, alias)));
+    await expect(table.locator("tbody th"), "列序同寬表目前的排序").toHaveText(wideOrder.map(channel => channelLabel(channel, resolver)));
     await expect(table.locator("tbody tr")).toHaveCount(snapshot.report.scope.channels.length);
     await expect(table.locator("tbody button.number-link")).toHaveCount(snapshot.report.scope.channels.length * DEMO_WEEKS);
     // V4-8a（D-V4-45＝B）：示範資料 MARKETPLACE 每週都不利、帶 C33 unfavorable；其他通路不上色。
     await expect(table.locator("tbody button.number-link.negative"), "示範資料 G7b 不利色：MARKETPLACE 每週").toHaveCount(DEMO_WEEKS);
-    await expect(table.locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: channelLabel("MARKETPLACE", alias), exact: true }) }).locator("button.number-link.negative")).toHaveCount(DEMO_WEEKS);
+    await expect(table.locator("tbody tr").filter({ has: page.getByRole("rowheader", { name: channelLabel("MARKETPLACE", resolver), exact: true }) }).locator("button.number-link.negative")).toHaveCount(DEMO_WEEKS);
 
     // 第一列第一格（示範資料預設排序：本期扣廣告後貢獻由低到高，MARKETPLACE 在前）。
     const firstRowChannel = wideOrder[0];
     const week = data.weeks[0];
     const value = data.channels.find(series => series.channel === firstRowChannel)!.values[0];
     const cell = table.locator("tbody tr").first().locator("button.number-link").first();
-    await expect(cell).toHaveAccessibleName(fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(firstRowChannel, alias), metric: fill(labels.diagnosis.tableV3.cellLabel, { period: week.label, metric }), value: (await cell.textContent())!.trim() }));
+    await expect(cell).toHaveAccessibleName(fill(labels.overview.channelsV3.amountAria, { channel: channelLabel(firstRowChannel, resolver), metric: fill(labels.diagnosis.tableV3.cellLabel, { period: week.label, metric }), value: (await cell.textContent())!.trim() }));
     await cell.click();
     const drawer = evidenceDrawer(page);
     await expect(drawerHeading(page)).toHaveText(drawerTitle(metric));
     await expect(preciseValue(page)).toHaveText(yuan(value.metric.value!));
-    const filter = evidenceFilterText({ week: { start: week.period.start, end: week.period.end, label: week.label }, channel: firstRowChannel }, { alias, anchor: DEMO_AS_OF })!;
+    const filter = evidenceFilterText({ week: { start: week.period.start, end: week.period.end, label: week.label }, channel: firstRowChannel }, { resolver, anchor: DEMO_AS_OF })!;
     await expect(drawer.getByTestId("evidence-filter").locator("span")).toHaveText(filter);
     expect(filter).toContain(week.label);
-    expect(filter).toContain(channelLabel(firstRowChannel, alias));
+    expect(filter).toContain(channelLabel(firstRowChannel, resolver));
     await expect(drawer.locator(".ladder-table"), "單一通路的週證據不畫全通路階梯").toHaveCount(0);
     const rows = await evidenceTechnicalRows(drawer);
     const version = rows.findIndex(row => row.dt === "metric_version");
@@ -586,15 +587,15 @@ function expectedSourceTabs(cell: HeatValueCell): string[] {
   return (Object.keys(SOURCE_TAB_FILES) as (keyof typeof SOURCE_TAB_FILES)[]).map(tab => ({ tab, n: unique.filter(source => source.file === SOURCE_TAB_FILES[tab]).length })).filter(item => item.n > 0).map(item => fill(labels.evidence.drawer.tabWithCount, { tab: labels.evidence.sourceTabs[item.tab], n: item.n }));
 }
 /** 單日格的抽屜：標題、精確值、篩選片語（含日期與通路名）、技術細節的版本；原始明細每段每列的日期都等於該日（資料集設定那段寫「整體資料集」）。 */
-async function expectDayDrawer(page: Page, channel: string, cell: HeatValueCell, alias: boolean, anchor: string) {
+async function expectDayDrawer(page: Page, channel: string, cell: HeatValueCell, resolver: NameResolver, anchor: string) {
   const drawer = evidenceDrawer(page);
   await expect(drawer).toBeVisible();
   await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions.contribution_after_marketing.label));
   await expect(preciseValue(page)).toHaveText(yuan(cell.metric.value!));
-  const phrase = evidenceFilterText({ channel, date: cell.key }, { alias, anchor })!;
+  const phrase = evidenceFilterText({ channel, date: cell.key }, { resolver, anchor })!;
   await expect(drawer.getByTestId("evidence-filter").locator("span")).toHaveText(phrase);
   expect(phrase, "篩選片語含該日期").toContain(fill(labels.evidence.chartsV4.filter.date, { date: formatDateL1(cell.key, { anchor }) }));
-  expect(phrase, "篩選片語含通路名").toContain(channelLabel(channel, alias));
+  expect(phrase, "篩選片語含通路名").toContain(channelLabel(channel, resolver));
   const tabs = await sourceDatesByTab(page);
   expect(tabs.map(item => item.tab), "分段與筆數＝該格自己的來源列（篩選後）").toEqual(expectedSourceTabs(cell));
   for (const item of tabs) {
@@ -624,7 +625,7 @@ test.describe("V4-3b 健檢 G11 日 × 通路月曆熱表", () => {
     await expect(section).toHaveAttribute("aria-labelledby", "heat-title");
     await expect(section).toHaveAttribute("aria-describedby", "heat-sub");
     await expect(section.locator("#heat-title")).toHaveText(model.title);
-    expect(model.title).toBe(fill(heatCopy.title.loss, { channel: channelLabel("MARKETPLACE", demoAlias(snapshot.report.dataset_id)), n: heatmap.headline!.losing, date: formatDateL1(heatmap.headline!.key, { anchor: snapshot.data_as_of }), amount: formatAmountL1(heatmap.headline!.value) }));
+    expect(model.title).toBe(fill(heatCopy.title.loss, { channel: channelLabel("MARKETPLACE", snapshotResolver(snapshot)), n: heatmap.headline!.losing, date: formatDateL1(heatmap.headline!.key, { anchor: snapshot.data_as_of }), amount: formatAmountL1(heatmap.headline!.value) }));
     const sub = await section.locator("#heat-sub").evaluate(node => [...node.childNodes].filter(child => !(child instanceof Element && child.classList.contains("heat-scroll-note"))).map(child => child.textContent ?? "").join(""));
     expect(sub, "副標（不含捲動說明）").toBe(model.subtitle);
 
@@ -714,7 +715,7 @@ test.describe("V4-3b 健檢 G11 日 × 通路月曆熱表", () => {
     const snapshot = await datasetSnapshot("demo");
     const model = heatSectionModel(snapshot);
     const values = modelValueCells(model);
-    const alias = demoAlias(snapshot.report.dataset_id);
+    const resolver = snapshotResolver(snapshot);
     const ids = modelCells(model).map(cell => cell.testId!);
     const first = ids[0];
     await stubAnalytics(page);
@@ -739,7 +740,7 @@ test.describe("V4-3b 健檢 G11 日 × 通路月曆熱表", () => {
     await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: "Enter 開抽屜記 chart_clicked" }).toBe(1);
     await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions.contribution_after_marketing.label));
     await expect(preciseValue(page)).toHaveText(yuan(target.cell.metric.value!));
-    await expect(evidenceDrawer(page).getByTestId("evidence-filter").locator("span")).toHaveText(evidenceFilterText({ channel: "MARKETPLACE", date: target.cell.key }, { alias, anchor: snapshot.data_as_of })!);
+    await expect(evidenceDrawer(page).getByTestId("evidence-filter").locator("span")).toHaveText(evidenceFilterText({ channel: "MARKETPLACE", date: target.cell.key }, { resolver, anchor: snapshot.data_as_of })!);
     await closeDrawer(page);
     await expect(heatLink(page, "MARKETPLACE", "2026-07-14"), "Esc 回到開抽屜的格").toBeFocused();
     // 經過熱表：前一個停留點（G10 資料表 summary）按 Tab 進熱表、再按 Tab 就到熱表後的第一個停留點（G12 的 summary）——2 個 Tab（≤ 3）。
@@ -755,7 +756,7 @@ test.describe("V4-3b 健檢 G11 日 × 通路月曆熱表", () => {
     const snapshot = await datasetSnapshot("demo");
     const model = heatSectionModel(snapshot);
     const values = modelValueCells(model);
-    const alias = demoAlias(snapshot.report.dataset_id);
+    const resolver = snapshotResolver(snapshot);
     const heatmap = model.result.heatmap!;
     const dtc = heatmap.channels.find(channel => channel.channel === "DTC")!;
     const dtcFirst = dtc.rows.flatMap(row => row.cells).find((cell): cell is HeatValueCell => cell.kind === "value" && cell.metric.value !== null)!;
@@ -767,7 +768,7 @@ test.describe("V4-3b 健檢 G11 日 × 通路月曆熱表", () => {
       await link.click();
       clicks++;
       await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: `點 ${channel} ${key} 記 chart_clicked` }).toBe(clicks);
-      await expectDayDrawer(page, channel, values.get(heatCellTestId(channel, key))!.cell, alias, snapshot.data_as_of);
+      await expectDayDrawer(page, channel, values.get(heatCellTestId(channel, key))!.cell, resolver, snapshot.data_as_of);
       await closeDrawer(page);
       await expect(link).toHaveAttribute("tabindex", "0");
       await expect(heatTabStop(page)).toHaveCount(1);
@@ -864,7 +865,7 @@ test.describe("V4-3b 健檢 G12 五項比率每週走勢", () => {
   test("點子圖上的週點（記 chart_clicked）與資料表同一格開同一個抽屜（帶週篩選）；資料表收合時掛載、展開記 chart_table_opened，列＝上期＋本期各週、欄＝起訖日＋五項比率", async ({ page }) => {
     const snapshot = await datasetSnapshot("demo");
     const model = ratesModel(snapshot);
-    const alias = demoAlias(snapshot.report.dataset_id);
+    const resolver = snapshotResolver(snapshot);
     await stubAnalytics(page);
     await openDiagnosis(page);
     await openRates(page);
@@ -876,7 +877,7 @@ test.describe("V4-3b 健檢 G12 五項比率每週走勢", () => {
     await expect(evidenceDrawer(page)).toBeVisible();
     await expect.poll(() => analyticsCount(page, "chart_clicked"), { message: "點週點記 chart_clicked" }).toBe(1);
     await expect(drawerHeading(page)).toHaveText(drawerTitle(metricDefinitions[rate].label));
-    const filter = evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { alias, anchor: snapshot.data_as_of })!;
+    const filter = evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { resolver, anchor: snapshot.data_as_of })!;
     await expect(evidenceDrawer(page).getByTestId("evidence-filter").locator("span")).toHaveText(filter);
     const fromPoint = (await preciseValue(page).textContent())!.trim();
     await closeDrawer(page);

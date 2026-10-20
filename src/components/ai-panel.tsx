@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { observationCatalog } from "@/ai/grounding";
 import { prepareAiSnapshot } from "@/application/ai-snapshot";
 import { aiReasonMessage, createAiConsentBinding, createAiRequestBody, getAiCapability, sendAiRequest, type AiCapability, type AiClientResult } from "@/application/ai-client";
-import { channelLabel, demoAlias } from "@/application/copy";
+import { channelLabel, snapshotResolver } from "@/application/copy";
 import { metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { fill, labels } from "@/i18n";
@@ -27,7 +27,7 @@ function BoundAiPanel({ snapshot, revision, onEvidence, capability: sharedCapabi
       return { ...preview, catalog: observationCatalog(preview.payload) };
     } catch { return null; }
   }, [snapshot, revision]);
-  const alias = demoAlias(snapshot.report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const [localCapability, setLocalCapability] = useState<AiCapability | null>(null);
   const capability = sharedCapability === undefined ? localCapability : sharedCapability;
   const [consentBinding, setConsentBinding] = useState<string | null>(null);
@@ -101,7 +101,7 @@ function BoundAiPanel({ snapshot, revision, onEvidence, capability: sharedCapabi
       <details className="ai-preview"><summary>{copy.payloadSummary}</summary><pre tabIndex={0} role="region" aria-label={copy.payloadAria} data-testid="ai-payload-preview">{JSON.stringify({ snapshot: prepared.payload, observation_catalog: prepared.catalog }, null, 2)}</pre></details>
       <details className="ai-preview"><summary>{copy.requestSummary}</summary><p className="note">{copy.requestNote}</p><pre tabIndex={0} aria-label={copy.requestAria} data-testid="ai-request-preview">{JSON.stringify(createAiRequestBody(prepared.payload), null, 2)}</pre></details>
       <details className="ai-local-mapping" data-testid="ai-local-mapping"><summary>{copy.localMappingSummary}</summary>
-        <dl>{Object.entries(prepared.localChannels).map(([channelAlias, name]) => <div key={channelAlias}><dt>{channelAlias}</dt><dd>{channelLabel(name, alias)}</dd></div>)}</dl>
+        <dl>{Object.entries(prepared.localChannels).map(([channelAlias, name]) => <div key={channelAlias}><dt>{channelAlias}</dt><dd>{channelLabel(name, resolver)}</dd></div>)}</dl>
         <div className="ai-fact-mapping">{Object.entries(prepared.localFacts).map(([factAlias, fact]) => <button key={factAlias} className="text-button" onClick={() => evidence(factAlias)}>{factAlias} · {metricDefinitions[fact.metric].label} · {fact.period.start}—{fact.period.end}<span>{fact.id}</span></button>)}</div>
       </details>
       </details>

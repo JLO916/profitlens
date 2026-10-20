@@ -1,4 +1,5 @@
-import { channelsLabel, csvHeader, demoAlias, scopeLabel } from "./copy";
+import { channelsLabel, csvHeader, scopeLabel } from "./copy";
+import { makeResolver } from "./channel-settings";
 import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario, type ScenarioReason } from "../domain/scenarios";
 import { analyzeScenarioSensitivity, type ScenarioSensitivityAnalysis } from "../domain/scenario-sensitivity";
 import type { MetricName, Period } from "../domain/types";
@@ -191,7 +192,7 @@ function mdSensitivity(sensitivity: SensitivityExport): string[] {
 export interface DecisionMarkdownOptions { generatedAt?: Date; datasetName?: string; amountBasis?: "exclusive" | "inclusive" }
 export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = [], options: DecisionMarkdownOptions = {}): string {
   const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
-  const alias = demoAlias(session.dataset_id);
+  const resolver = makeResolver(undefined, session.dataset_id);
   const periodText = (period: Period) => `${period.start}～${period.end}`;
   const comparisonMode = session.comparison.mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行（兩期取這份試算建立時的範圍），其後各段順序與數值不變。
@@ -201,7 +202,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
     scope: { previous: session.scope.previous_period, current: session.scope.current_period, previousDays: session.comparison.previous_days, currentDays: session.comparison.current_days },
   });
   const lines = [`# ${copy.title}`, "", ...markdownExportHeader(header), "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
-    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: channelsLabel(session.scope.channels, alias), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
+    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: channelsLabel(session.scope.channels, resolver), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
     "", ...mdTechnical(mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, comparison: session.comparison, sources: session.sources, stale_reasons: session.stale_reasons }, false)),
     "", `## ${labels.scenarios.sections.scenarioBaseline}`, "", labels.exports.common.amountUnitNote, "", ...mdFields(amountFields(session.baseline.amounts)), "", ...mdFields(rateFields({ ...session.baseline.rates })),
     "", ...mdTechnical([...mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }, false), "", ...mdFields(amountFields(session.baseline.amounts, "L3"), false)]),
@@ -228,7 +229,7 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   }
   lines.push(`## ${copy.sectionFacts}`, "");
   // 引用的數字是依據（L3）：到分、比率兩位小數。
-  for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value === null ? null : formatMetric(fact.metric, fact, "L3"), reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, alias), sources: fact.sources }), "");
+  for (const fact of session.facts) lines.push(...mdFields({ fact_id: fact.id, metric: metricLabel(fact.metric) ?? fact.metric, value: fact.value === null ? null : formatMetric(fact.metric, fact, "L3"), reason_codes: fact.reason_codes, period: periodText(fact.period), scope: scopeLabel(fact.scope, resolver), sources: fact.sources }), "");
   lines.push(`## ${labels.diagnosis.sections.caution}`, "", `${labels.diagnosis.sections.caution}：${md(CAUTION)}`, "");
   lines.push(...mdTechnical([...mdFields(document.formulas, false), "", md(document.rounding), "", ...document.limitations.slice(1).map(limitation => `- ${md(limitation)}`)], copy.sectionFormulas), "");
   return lines.join("\n");

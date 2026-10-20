@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { contributionImpact, diagnosisGroups, diagnosisScopeLabel, impactMagnitude, parseImportanceThreshold, summaryScopes, SUMMARY_SCOPE_LIMIT, TOP_PRIORITY_COUNT, type DiagnosisGroup } from "../src/application/diagnosis-group";
 import { buildManagerSummary, contributionImpact as summaryContributionImpact, exportManagerSummaryMarkdown } from "../src/application/manager-summary";
-import { ruleCopy } from "../src/application/copy";
+import { ruleCopy, snapshotResolver } from "../src/application/copy";
+import { makeResolver } from "../src/application/channel-settings";
 import { formatSignedDelta, MINUS } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
@@ -60,7 +61,7 @@ describe("diagnosisGroups merges all/channel signals into one row per rule", () 
   it("keeps the presentation fields from ruleCopy and the technical ranking amount of the primary", async () => {
     const base = await snapshot();
     const group = find(diagnosisGroups(base).groups, "DISCOUNT_BURDEN_UP");
-    const copy = ruleCopy(base, group.primary, false);
+    const copy = ruleCopy(base, group.primary, snapshotResolver(base));
     expect([group.headline, group.cause, group.next_step, group.caution]).toEqual([copy.headline, copy.cause, copy.nextStep, copy.caution]);
     // 折扣率 200/2500=8.00% → 450/3100=14.52%（golden 手算），V3-2a 起寫在 cause。
     expect(group.cause).toBe(fill(labels.rules.DISCOUNT_BURDEN_UP.explain.cause, { prevRate: "8.00%", curRate: "14.52%" }));
@@ -225,10 +226,11 @@ describe("threshold, priorities and omitted count", () => {
   });
 
   it("diagnosisScopeLabel: 合計 / channel / 通路／SKU, with the demo alias only on the demo dataset", () => {
-    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC"] }, false)).toBe(labels.overview.sections.total);
-    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, false)).toBe("DTC");
-    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, true)).toBe(labels.data.demoChannelAlias.DTC);
-    expect(diagnosisScopeLabel({ kind: "sku", channels: ["MARKETPLACE"], sku: "B" }, false)).toBe(fill(labels.meeting.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "B" }));
+    const plain = makeResolver({}, "golden"), demoNames = makeResolver(undefined, "synthetic-demo");
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC"] }, plain)).toBe(labels.overview.sections.total);
+    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, plain)).toBe("DTC");
+    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, demoNames)).toBe(labels.data.demoChannelAlias.DTC);
+    expect(diagnosisScopeLabel({ kind: "sku", channels: ["MARKETPLACE"], sku: "B" }, plain)).toBe(fill(labels.meeting.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "B" }));
   });
 });
 

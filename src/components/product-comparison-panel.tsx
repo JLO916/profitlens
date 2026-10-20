@@ -4,7 +4,8 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExtern
 import { createPortal } from "react-dom";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import { PRODUCT_PARETO_LIMIT, productPareto } from "@/application/chart-pareto";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
+import { makeResolver } from "@/application/channel-settings";
 import { downloadText } from "@/application/download";
 import { exportProductsCsv } from "@/application/export";
 import { exportProductComparisonCsv } from "@/application/product-comparison-export";
@@ -126,7 +127,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   const idBase = useId();
   const ids = { comparisonHint: `${idBase}-comparison-hint`, productsHint: `${idBase}-products-hint`, moreHint: `${idBase}-more-hint`, density: `${idBase}-density` };
 
-  const alias = demoAlias(dataset.manifest.dataset_id);
+  const resolver = useMemo(() => snapshot.report.dataset_id === dataset.manifest.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, dataset.manifest.dataset_id), [snapshot, dataset.manifest.dataset_id]);
   const comparison = useMemo(() => compareProducts(dataset, snapshot.report.scope), [dataset, snapshot.report.scope]);
   /** 兩張小表看整個分析範圍（期間＋通路），不跟著下方品類／搜尋篩選變動。V4-4：G13 的減少段取 worstChange（同樣只挑列）。 */
   const { worstCurrent, bestChange, worstChange } = useMemo(() => productHighlights(comparison.rows), [comparison.rows]);
@@ -141,23 +142,23 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   const unavailable = comparison.rows.filter(row => row.changes.gross_profit.value === null).length;
   const filtered = activeCategory !== "" || query.trim() !== "" || negativeOnly;
   const { previous_period: previous, current_period: current } = comparison.scope;
-  const categoryText = (value: string) => productCategoryText(value, alias);
+  const categoryText = (value: string) => productCategoryText(value, resolver);
   /** V4-4：商品抽屜 builder（src/components/product-evidence.ts）的頁面範圍；圖、前 10 名表與完整表共用。 */
-  const evidenceContext: ProductEvidenceContext = { previous, current, alias };
+  const evidenceContext: ProductEvidenceContext = { previous, current, resolver };
   /**
    * 範圍副標：目前範圍涵蓋資料集全部通路時寫「全部通路」（同 overview/weekly-snapshot.tsx 的 snapshotMeta）。
    * V4-4：兩期起訖與通路範圍字和 G13、G14 共用（chartScope：抽屜 builder 的 ctx＋副標用字），product-scope 那一行由它組成，輸出不變。
    */
   const chartScope = useMemo((): ProductChartScope => {
-    const scoped = comparison.scope, every = allChannels ?? dataset.manifest.channels, alias = demoAlias(dataset.manifest.dataset_id);
+    const scoped = comparison.scope, every = allChannels ?? dataset.manifest.channels;
     const everyChannel = every.length > 0 && every.every(channel => scoped.channels.includes(channel));
     return {
-      ctx: { previous: scoped.previous_period, current: scoped.current_period, alias },
+      ctx: { previous: scoped.previous_period, current: scoped.current_period, resolver },
       current: formatPeriodL1(scoped.current_period.start, scoped.current_period.end, { days: false, anchor: snapshot.data_as_of }),
       previous: formatPeriodL1(scoped.previous_period.start, scoped.previous_period.end, { days: false, anchor: snapshot.data_as_of }),
-      channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scoped.channels, alias),
+      channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scoped.channels, resolver),
     };
-  }, [comparison.scope, allChannels, dataset.manifest.channels, dataset.manifest.dataset_id, snapshot.data_as_of]);
+  }, [comparison.scope, allChannels, dataset.manifest.channels, resolver, snapshot.data_as_of]);
   const scopeText = fill(page.scope, { current: chartScope.current, previous: chartScope.previous, channels: chartScope.channels });
   const paretoModel = useMemo(() => paretoSectionModel(pareto, chartScope), [pareto, chartScope]);
   /** V4-4：G13、G14 的柱與資料表內容延後一拍（390 切到商品毛利的 TBT；同 G11、G12 的 useDeferredMount），前 10 名兩表不延後。 */
@@ -181,7 +182,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     const value = row[period];
     const metric = value.metrics[name];
     return <><button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined}
-      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: display(name, metric) })}
+      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, resolver), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: display(name, metric) })}
       onClick={() => onEvidence(productEvidence(row, period, name, label, evidenceContext))}>
       {display(name, metric)}</button>{metric.value === null && !notApplicable(name, metric) && <small className="note">{metric.reason_codes.includes("MISSING_COGS") ? copy.costMissing : copy.notComputable}</small>}</>;
   };
@@ -191,7 +192,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     const metric = value.metrics.units_sold;
     const label = labels.assist.items.units_sold.label;
     return <button type="button" className="number-link" title={metric.reason_codes.join("、") || undefined}
-      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: unitsText(metric) })}
+      aria-label={fill(copy.evidenceAria, { channel: channelLabel(row.channel, resolver), sku: row.sku, period: period === "previous" ? labels.shell.periods.previous : "", label, value: unitsText(metric) })}
       onClick={() => onEvidence({ sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: labels.shell.periods[period], label }), name: "net_revenue", unitOverride: "count", metric, period: period === "previous" ? previous : current, channels: [row.channel], sources: value.sources, formula: labels.assist.items.units_sold.formula, formulaTechnical: labels.assist.items.units_sold.formulaTechnical, metricVersion: ASSIST_KPI_VERSION, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: categoryText(row.category), presence: productPresenceLabels[value.presence] }) })}>
       {unitsText(metric)}</button>;
   };
@@ -202,7 +203,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     const value = formatSignedDelta(metric.value, "L2");
     const tone = toneClass(deltaTone(name, metric.value, "L2"));
     return <><button type="button" className={tone === "neutral" ? "number-link" : `number-link ${tone}`} title={metric.reason_codes.join("、") || undefined}
-      aria-label={fill(copy.deltaEvidenceAria, { channel: channelLabel(row.channel, alias), sku: row.sku, label, value })}
+      aria-label={fill(copy.deltaEvidenceAria, { channel: channelLabel(row.channel, resolver), sku: row.sku, label, value })}
       onClick={() => onEvidence(productDeltaEvidence(row, name, evidenceContext))}>{value}</button>{metric.value === null && <small className="note">{copy.deltaMissing}</small>}</>;
   };
 
@@ -217,7 +218,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   /** 前 10 名兩表（C3，列高跟著本頁密度）：排名｜商品（SKU · 通路，通路 12px 次要色）｜本期商品毛利（元）｜差額（元）。 */
   const rankColumns: Column[] = [
     { key: "rank", header: page.columns.rank, num: false, listRole: "secondary", className: "rank", render: (_row, index) => formatCount(index + 1, "L2") },
-    { key: "product", header: page.columns.product, num: false, listRole: "primary", render: row => <>{row.sku}<span className="product-channel"><span aria-hidden="true"> · </span>{channelLabel(row.channel, alias)}</span></> },
+    { key: "product", header: page.columns.product, num: false, listRole: "primary", render: row => <>{row.sku}<span className="product-channel"><span aria-hidden="true"> · </span>{channelLabel(row.channel, resolver)}</span></> },
     { key: "current-gross_profit", header: withUnit("gross_profit", periodMetric("current", metricDefinitions.gross_profit.shortLabel)), num: true, listRole: "primary", render: row => metricLink(row, "current", "gross_profit", metricDefinitions.gross_profit.shortLabel) },
     { key: "change-gross_profit", header: withUnit("gross_profit", page.columns.change), num: true, listRole: "secondary", render: row => deltaLink(row, "gross_profit") },
   ];
@@ -236,9 +237,9 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
 
   /** 完整表：欄序同 v2（通路｜SKU｜品類｜本期件數｜本期淨營收｜本期商品毛利｜本期毛利率｜商品毛利差額｜淨營收差額｜上期淨營收｜上期商品毛利｜資料狀態），「更多欄位」接在後面。 */
   const fullColumns: Column[] = [
-    { key: "channel", header: labels.exports.csv.columns.channel, num: false, listRole: "primary", render: row => channelLabel(row.channel, alias) },
+    { key: "channel", header: labels.exports.csv.columns.channel, num: false, listRole: "primary", render: row => channelLabel(row.channel, resolver) },
     { key: "sku", header: "SKU", num: false, listRole: "primary", render: row => row.sku },
-    { key: "category", header: labels.exports.csv.columns.category, num: false, listRole: "labeled", render: row => row.category.trim() ? categoryLabel(row.category, alias) : copy.blankCategory },
+    { key: "category", header: labels.exports.csv.columns.category, num: false, listRole: "labeled", render: row => row.category.trim() ? categoryLabel(row.category, resolver) : copy.blankCategory },
     { key: "current-units_sold", header: periodMetric("current", labels.assist.items.units_sold.label), num: true, listRole: "secondary", render: row => unitsLink(row, "current") },
     ...(["net_revenue", "gross_profit", "gross_margin"] as const).map((name): Column => ({ key: `current-${name}`, header: withUnit(name, periodMetric("current", metricDefinitions[name].shortLabel)), num: true, listRole: name === "gross_profit" ? "primary" : name === "gross_margin" ? "secondary" : "labeled", render: row => metricLink(row, "current", name, metricDefinitions[name].shortLabel) })),
     { key: "change-gross_profit", header: withUnit("gross_profit", productChangeLabel("gross_profit")), num: true, listRole: "secondary", className: "list-lead", render: row => deltaLink(row, "gross_profit") },
@@ -271,7 +272,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
     <section className="product-full" aria-labelledby="product-full-heading">
       <h3 className="product-full-heading" id="product-full-heading">{highlight.fullTable}</h3>
       <div className="ui-toolbar product-toolbar" data-testid="product-toolbar">
-        <select className="ui-field-control" aria-label={labels.exports.csv.columns.category} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{copy.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, alias)}</option>)}</select>
+        <select className="ui-field-control" aria-label={labels.exports.csv.columns.category} id="product-category" value={activeCategory} onChange={event => setCategory(event.target.value)}><option value="">{copy.allCategories}</option>{categories.map(value => <option key={value} value={value}>{categoryLabel(value, resolver)}</option>)}</select>
         <input ref={searchRef} className="ui-field-control" aria-label={copy.searchSku} id="product-search" type="search" placeholder={copy.searchPlaceholder} value={query} onChange={event => setQuery(event.target.value)} />
         <select className="ui-field-control" aria-label={page.sortLabel} id="product-sort" value={sortValue} onChange={event => chooseSort(event.target.value)}>{PRODUCT_SORT_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
         <button type="button" className="ui-btn ui-btn-secondary product-toggle" aria-pressed={negativeOnly} onClick={() => setNegativeOnly(value => !value)}>{copy.negativeOnly}</button>

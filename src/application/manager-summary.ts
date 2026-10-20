@@ -3,7 +3,8 @@ import { compareMoney } from "../domain/metrics";
 import { formatCents, parseCents } from "../domain/money";
 import { AMOUNT_FIELDS, type AmountField, type Diagnostic, type Fact, type Metric, type MetricName, type Period, type RuleCode, type Scope, type SourceRef } from "../domain/types";
 import { fill, labels } from "../i18n";
-import { channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, ruleCopy, scopeLabel } from "./copy";
+import { channelLabel, channelsLabel, conversionSentence, csvHeader, ruleCopy, scopeLabel, snapshotResolver } from "./copy";
+import { makeResolver, type NameResolver } from "./channel-settings";
 import type { TaxConversion } from "./tax-basis";
 import { assistKpis, ASSIST_KPI_VERSION, type AssistKpi } from "./assist-kpi";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
@@ -83,8 +84,8 @@ const LIMITATIONS: string[] = [...labels.glossary.basis.items];
 const copy = labels.meeting.managerSummary;
 /** 會議決議狀態的顯示文字；未知的原始值原樣顯示。 */
 const decisionLabel = (state: string | undefined): string => (labels.meeting.form.decisions as Record<string, string>)[state ?? "draft"] ?? state ?? labels.meeting.form.decisions.draft;
-export function summaryScopeLabel(scope: Scope, alias = false): string {
-  return scopeLabel(scope, alias);
+export function summaryScopeLabel(scope: Scope, resolver: NameResolver): string {
+  return scopeLabel(scope, resolver);
 }
 /**
  * 兩期比較（整體或單一通路）：上期、本期、差額（domain compareMoney 的 absolute_change）與三份抽屜內容。
@@ -92,11 +93,11 @@ export function summaryScopeLabel(scope: Scope, alias = false): string {
  */
 export function metricComparison(snapshot: WorkspaceSnapshot, name: SummaryMetric["metric"], channel?: string): SummaryMetric {
   const { report } = snapshot;
-  const alias = demoAlias(report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const previous = channel ? report.previous.channels[channel] : report.previous;
   const current = channel ? report.current.channels[channel] : report.current;
   const channels = channel ? [channel] : report.scope.channels;
-  const scope = channel ? channelLabel(channel, alias) : `${labels.overview.sections.total}（${channelsLabel(channels, alias)}）`;
+  const scope = channel ? channelLabel(channel, resolver) : `${labels.overview.sections.total}（${channelsLabel(channels, resolver)}）`;
   const metric = metricDefinitions[name].label;
   const comparison = compareMoney(previous.metrics[name], current.metrics[name]);
   return {
@@ -116,11 +117,11 @@ const rankingMetric: Record<RuleCode, MetricName> = {
   DISCOUNT_BURDEN_UP: "discounts", REFUND_BURDEN_UP: "refunds", FULFILLMENT_BURDEN_UP: "fulfillment_costs",
   MARKETING_BURDEN_UP: "ad_spend", SKU_NEGATIVE_GP: "gross_profit", MISSING_CRITICAL_DATA: "cogs_net",
 };
-export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, diagnostic: Diagnostic): SummaryEvidence {
+export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report" | "channel_names">, diagnostic: Diagnostic): SummaryEvidence {
   const { report } = snapshot;
-  const alias = demoAlias(report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const facts = report.facts.filter(fact => diagnostic.fact_ids.includes(fact.id));
-  const scopeLabel = summaryScopeLabel(diagnostic.scope, alias);
+  const scopeLabel = summaryScopeLabel(diagnostic.scope, resolver);
   if (diagnostic.code === "MISSING_CRITICAL_DATA") {
     const unknown = facts.find(fact => fact.value === null)!;
     return { title: fill(copy.evidenceMissing, { scope: scopeLabel }), name: unknown.metric, metric: unknown, period: unknown.period, channels: diagnostic.scope.channels, scopeLabel, sources: unknown.sources };
@@ -129,7 +130,7 @@ export function priorityEvidence(snapshot: Pick<WorkspaceSnapshot, "report">, di
   const metricFacts = facts.filter(fact => fact.metric === name);
   const isCurrent = diagnostic.code === "NEGATIVE_CHANNEL_CM" || diagnostic.code === "SKU_NEGATIVE_GP";
   return {
-    title: fill(copy.evidencePriority, { scope: scopeLabel, title: ruleCopy(snapshot, diagnostic, alias).headline }), name, metric: diagnostic.ranking_amount!, sku: diagnostic.scope.sku,
+    title: fill(copy.evidencePriority, { scope: scopeLabel, title: ruleCopy(snapshot, diagnostic, resolver).headline }), name, metric: diagnostic.ranking_amount!, sku: diagnostic.scope.sku,
     period: isCurrent ? report.current.period : { start: report.previous.period.start, end: report.current.period.end },
     channels: diagnostic.scope.channels, scopeLabel, sources: uniqueSources(metricFacts.flatMap(fact => fact.sources)),
     ...(isCurrent ? {} : {
@@ -221,17 +222,17 @@ export function summaryExportHeader(summary: ManagerSummary, options: MarkdownEx
 }
 export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: SummaryDecisionContext, options: MarkdownExportOptions = {}): string {
   const decisions = summaryDecisionState(summary, context);
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = makeResolver(undefined, summary.dataset_id);
   const contributionShort = metricDefinitions.contribution_after_marketing.shortLabel;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行，其後的資料範圍、期間、門檻與各段順序、數值都不變。
-  const lines = [fill(copy.mdTitle, { brand: labels.brand.name, decision: md(decisionLabel(context?.decisionState)) }), "", ...markdownExportHeader(summaryExportHeader(summary, options)), "", fill(copy.mdMeta, { asOf: summary.data_as_of, channels: md(channelsLabel(summary.scope.channels, alias)) }),
+  const lines = [fill(copy.mdTitle, { brand: labels.brand.name, decision: md(decisionLabel(context?.decisionState)) }), "", ...markdownExportHeader(summaryExportHeader(summary, options)), "", fill(copy.mdMeta, { asOf: summary.data_as_of, channels: md(channelsLabel(summary.scope.channels, resolver)) }),
     fill(copy.mdPeriod, { period: labels.shell.periods.previous, range: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end) }),
     fill(copy.mdPeriod, { period: labels.shell.periods.current, range: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end) }),
     // 門檻是使用者設定的精確值，取到分（L3）。
     fill(copy.mdComparison, { mode: summary.scope.comparison_mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays, threshold: formatAmount(summary.importance_threshold, "L3") }), "", copy.mdHeadlines, "", labels.exports.common.amountUnitNote, ""];
   for (const row of summary.headlines) lines.push(fill(copy.mdHeadlineRow, { metric: metricDefinitions[row.metric].label, previous: amount(row.previous), current: amount(row.current), change: amount(row.change, true) }));
   lines.push("", `| ${labels.exports.csv.columns.channel} | ${moneyColumn(`${labels.shell.periods.previous}${contributionShort}`)} | ${moneyColumn(`${labels.shell.periods.current}${contributionShort}`)} | ${moneyColumn(labels.exports.csv.suffix.change)} |`, "| --- | ---: | ---: | ---: |");
-  for (const row of summary.channels) lines.push(`| ${md(channelLabel(row.channel, alias))} | ${amount(row.contribution.previous)} | ${amount(row.contribution.current)} | ${amount(row.contribution.change, true)} |`);
+  for (const row of summary.channels) lines.push(`| ${md(channelLabel(row.channel, resolver))} | ${amount(row.contribution.previous)} | ${amount(row.contribution.current)} | ${amount(row.contribution.change, true)} |`);
   // V4-9b（D-V4-12＝A，CHART_CATALOG G1 匯出）：九項差額表（項目、差額（元）；L2 帶號、U+2212，列名同總覽橋接表）。Markdown 沒有版本之分，選哪一版都一樣。
   const bridge = summary.bridge;
   if (bridge) lines.push("", `## ${labels.overview.sections.bridge}`, "", `| ${labels.overview.bridgeV3.table.item} | ${moneyColumn(labels.exports.csv.suffix.change)} |`, "| --- | ---: |",
@@ -247,8 +248,8 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   lines.push("", `## ${labels.overview.sections.topThree}`, "");
   if (!summary.priorities.length) lines.push(labels.overview.notes.noPriorities);
   for (const [index, item] of summary.priorities.entries()) {
-    lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(item.title), scope: md(summaryScopeLabel(item.primary.scope, alias)), amount: amount(item.impact ?? item.ranking_amount, true) }), `   ${labels.diagnosis.sections.nextStep}：${md(item.recommendation)}`);
-    if (item.members.length > 1) lines.push(fill(copy.mdRelatedScopes, { scopes: item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope, alias))).join("、"), more: item.members.length > 4 ? `等（${labels.evidence.sections.technicalDetails}）` : "" }));
+    lines.push(fill(copy.mdPriorityRow, { n: index + 1, headline: md(item.title), scope: md(summaryScopeLabel(item.primary.scope, resolver)), amount: amount(item.impact ?? item.ranking_amount, true) }), `   ${labels.diagnosis.sections.nextStep}：${md(item.recommendation)}`);
+    if (item.members.length > 1) lines.push(fill(copy.mdRelatedScopes, { scopes: item.members.slice(1, 4).map(member => md(summaryScopeLabel(member.scope, resolver))).join("、"), more: item.members.length > 4 ? `等（${labels.evidence.sections.technicalDetails}）` : "" }));
   }
   lines.push("", copy.mdDecisions, "");
   if (decisions.selectedScenarios.length) {
@@ -267,7 +268,7 @@ export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: 
   if (decisions.appendixActions.length) lines.push(copy.otherActions, ...decisions.appendixActions.map(action => actionRow(action, actionStatusLabel(action.status))), "");
   for (const group of summary.groups) {
     lines.push(`### ${group.code}`, fill(copy.techThresholdAmount, { amount: group.importance_amount === null ? labels.shell.status.missing : plainAmount(group.importance_amount, false, "L3") }));
-    for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope, alias))}：${member.ranking_amount ? amount(member.ranking_amount, false, "L3") : labels.shell.status.missing}；${md(JSON.stringify(member.fact_ids))}`);
+    for (const member of group.members) lines.push(`- ${md(summaryScopeLabel(member.scope, resolver))}：${member.ranking_amount ? amount(member.ranking_amount, false, "L3") : labels.shell.status.missing}；${md(JSON.stringify(member.fact_ids))}`);
   }
   const ids = new Set([
     ...summary.groups.flatMap(group => group.fact_ids),

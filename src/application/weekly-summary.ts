@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { channelsLabel, demoAlias, formatHeadlineAmount } from "@/application/copy";
+import { channelsLabel, formatHeadlineAmount, snapshotResolver } from "@/application/copy";
 import { diagnosisGroups, type DiagnosisGroup } from "@/application/diagnosis-group";
 import { deltaTone, deltaWord, formatAmountL1, formatDateL1, formatGrowth, formatMetric, formatPeriodL1, formatRatePoints, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -109,11 +109,11 @@ export function buildWeeklySummary(input: WeeklySummaryInput): WeeklySummary {
   const groups = priorities(snapshot, input.importanceThreshold);
   const topHeading = groups.length > 0 && groups.length < 3 ? fill(weekly.topThreeFew, { n: groups.length }) : labels.overview.sections.topThree;
   const footer = fill(weekly.footer, { date: formatDateL1(anchor, { anchor }), brand: labels.brand.name });
-  const alias = demoAlias(report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   // 範圍：目前通路涵蓋資料集全部通路時寫「全部通路」（PRD §10.2 範例），否則列出通路名稱。
   const scopeChannels = report.scope.channels;
   const everyChannel = !!input.allChannels && input.allChannels.length > 0 && input.allChannels.every(channel => scopeChannels.includes(channel));
-  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scopeChannels, alias);
+  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scopeChannels, resolver);
 
   /** 依輸出格式處理使用者文字後組出各段；數字由格式化函式產生，不需要跳脫。 */
   const parts = (text: (value: string) => string) => {

@@ -1,5 +1,6 @@
 import { fill, labels } from "@/i18n";
 import { channelLabel } from "./copy";
+import type { NameResolver } from "./channel-settings";
 import { formatDateL1, formatPeriodL1, type EvidenceRow } from "./presentation";
 
 // V3-9b F10 圖表點擊下鑽（PRD §10.1 F10、§9.5「互動 P1：週與通路點擊後開抽屜，並篩到該週或該通路」）。
@@ -66,14 +67,14 @@ export function scopedEvidenceFilter(evidence: { sku?: string; filter?: Evidence
  * F10 抽屜的篩選片語：「篩選：本期第 2 週（7/20–7/26） · 直營官網」；沒有篩選條件時回傳 null。日期用主層期間（與資料到的年份不同時寫年份）。
  * V4-3b：依週、單日（「日期 8/22」）、通路、商品（「商品 SKU-020」）的順序以「 · 」相接。
  */
-export function evidenceFilterText(filter: EvidenceFilter | null | undefined, options: { alias: boolean; anchor?: string }): string | null {
+export function evidenceFilterText(filter: EvidenceFilter | null | undefined, options: { resolver: NameResolver; anchor?: string }): string | null {
   if (!hasEvidenceFilter(filter)) return null;
   const copy = labels.overview.trendYoyV3.filter;
   const v4 = labels.evidence.chartsV4.filter;
   const parts: string[] = [];
   if (filter.week !== undefined) parts.push(fill(copy.week, { label: filter.week.label, range: formatPeriodL1(filter.week.start, filter.week.end, { anchor: options.anchor, days: false }) }));
   if (filter.date !== undefined) parts.push(fill(v4.date, { date: formatDateL1(filter.date, { anchor: options.anchor }) }));
-  if (filter.channel !== undefined) parts.push(channelLabel(filter.channel, options.alias));
+  if (filter.channel !== undefined) parts.push(channelLabel(filter.channel, options.resolver));
   if (filter.sku !== undefined) parts.push(fill(v4.sku, { sku: filter.sku }));
   return fill(copy.phrase, { scope: parts.join(copy.joiner) });
 }

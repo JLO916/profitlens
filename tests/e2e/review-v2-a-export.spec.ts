@@ -3,6 +3,7 @@ import { decisionExportButton } from "./actions-helpers-v3";
 import { meetingExportButton, openThreshold } from "./review-helpers-v3";
 import { GOLDEN_BREAKEVEN, markdownAssistSection, markdownBreakevenRow, markdownBreakevenVersion } from "./breakeven-helpers-v39";
 import { channelsLabel } from "../../src/application/copy";
+import { makeResolver } from "../../src/application/channel-settings";
 import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatPeriodExport, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { readFileSync } from "node:fs";
@@ -123,7 +124,7 @@ async function checkPrint(page: Page, info: TestInfo, pinned: boolean, meeting: 
   await expect(header.getByTestId("print-header-period").locator(":scope > span")).toHaveText([headerPeriod, headerV3.unitExclusive]);
   await expect(header.getByTestId("print-header-version")).toHaveText(headerVersion);
   await expect(header.getByTestId("print-header-meeting")).toHaveText(fill(labels.meeting.page.printHeader, meeting));
-  await expect(header.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], false), mode: labels.shell.periods.sameDays }));
+  await expect(header.getByTestId("print-header-scope")).toHaveText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(["DTC", "MARKETPLACE"], makeResolver(undefined, "golden-v1")), mode: labels.shell.periods.sameDays }));
   // 門檻是使用者輸入的設定值，列印版沿用到分（L3）。
   await expect(print).toContainText(fill(summaryCopy.printThresholdLine, { amount: formatAmountL3("1000.00") }));
   await expect(print).toContainText(printHeadline("570.00", "255.00", "-315.00"));

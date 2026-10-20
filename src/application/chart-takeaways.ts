@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
-import { channelLabel, demoAlias, formatHeadlineAmount } from "@/application/copy";
+import { channelLabel, formatHeadlineAmount, snapshotResolver } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import { deltaTone, formatAmountL1, formatEmpty, formatMetric, formatPeriodL1, periodDays } from "@/application/presentation";
 import type { WeeklyRow, WorkspaceSnapshot } from "@/application/workspace";
 import type { Metric, SourceRef } from "@/domain/types";
@@ -85,10 +86,10 @@ function yoyTakeaway(snapshot: WorkspaceSnapshot): TrendTakeaways["yoy"] {
 }
 
 /** 各通路扣廣告後貢獻的結論標題（PRD §7.1 第 8 點）：有虧損的通路時寫虧最多的一個，否則寫最高的一個。 */
-export function channelConclusion(snapshot: WorkspaceSnapshot, options: { alias?: boolean } = {}): ChannelConclusion {
+export function channelConclusion(snapshot: WorkspaceSnapshot, options: { resolver?: NameResolver } = {}): ChannelConclusion {
   const { report } = snapshot;
   const copy = labels.overview.channelsV3;
-  const alias = options.alias ?? demoAlias(report.dataset_id);
+  const resolver = options.resolver ?? snapshotResolver(snapshot);
   const metricsOf = (period: "previous" | "current", channel: string) => Object.hasOwn(report[period].channels, channel) ? report[period].channels[channel].metrics : null;
   const rows: ChannelConclusionRow[] = report.scope.channels.map(channel => {
     const current = metricsOf("current", channel)?.contribution_after_marketing ?? MISSING_METRIC;
@@ -96,7 +97,7 @@ export function channelConclusion(snapshot: WorkspaceSnapshot, options: { alias?
     const margin = metricsOf("current", channel)?.contribution_margin ?? MISSING_METRIC;
     const now = exact(current.value), before = exact(previous.value);
     const turned = now === null || before === null ? null : before.gt(0) && now.lt(0) ? "negative" : before.lte(0) && now.gt(0) ? "positive" : null;
-    return { channel, label: channelLabel(channel, alias), current, previous, margin, turned };
+    return { channel, label: channelLabel(channel, resolver), current, previous, margin, turned };
   });
 
   // 「虧」只在 L1 取位後仍為負時成立（與畫面上的金額一致，不會寫出「虧 0 元」）；同值時取 report.scope.channels 中較前面的通路。

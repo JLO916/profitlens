@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Period } from "@/domain/types";
-import { channelsLabel, demoAlias } from "@/application/copy";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
 import { periodDays } from "@/application/presentation";
 import type { ReviewSession } from "@/application/review-session";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -70,7 +70,7 @@ export function presentPeriodText(snapshot: WorkspaceSnapshot, review: Pick<Revi
   const filters = review?.meeting_filters ?? null;
   const selected = filters ? filters.channels : report.scope.channels;
   const everyChannel = allChannels.length > 0 && allChannels.every(channel => selected.includes(channel));
-  const channels = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(selected, demoAlias(report.dataset_id));
+  const channels = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(selected, snapshotResolver(snapshot));
   const { text } = periodSummary(filters && review
     ? { previous: filters.previous_period, current: filters.current_period, previousDays: days(filters.previous_period), currentDays: days(filters.current_period), comparisonMode: filters.comparison_mode, channelsText: channels, dataAsOf: review.data_as_of }
     : { previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channels, dataAsOf: snapshot.data_as_of });

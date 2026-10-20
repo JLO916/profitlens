@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { channelConclusion, trendTakeaways } from "../src/application/chart-takeaways";
-import { channelLabel, demoAlias, formatHeadlineAmount } from "../src/application/copy";
+import { channelLabel, formatHeadlineAmount, snapshotResolver } from "../src/application/copy";
+import { makeResolver } from "../src/application/channel-settings";
 import { formatAmountL1, formatEmpty, formatMetric, formatPeriodL1, periodDays } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import type { Metric } from "../src/domain/types";
@@ -85,10 +86,10 @@ describe("trendTakeaways：每週趨勢的 takeaway 列", () => {
 describe("channelConclusion：各通路扣廣告後貢獻的結論標題", () => {
   it("demo：平台通路扣完廣告虧（轉負），標題寫虧最多的通路與絕對值；列依 report.scope.channels 順序", () => {
     const result = channelConclusion(demo);
-    const alias = demoAlias(demo.report.dataset_id);
+    const resolver = snapshotResolver(demo);
     const { current, previous } = demo.report;
     expect(result.rows.map(row => row.channel)).toEqual(demo.report.scope.channels);
-    expect(result.rows.map(row => row.label)).toEqual(demo.report.scope.channels.map(channel => channelLabel(channel, alias)));
+    expect(result.rows.map(row => row.label)).toEqual(demo.report.scope.channels.map(channel => channelLabel(channel, resolver)));
     for (const row of result.rows) {
       expect(row.current).toBe(current.channels[row.channel].metrics.contribution_after_marketing);
       expect(row.previous).toBe(previous.channels[row.channel].metrics.contribution_after_marketing);
@@ -97,9 +98,9 @@ describe("channelConclusion：各通路扣廣告後貢獻的結論標題", () =>
     expect(result.rows.map(row => row.turned)).toEqual([null, "negative"]);
     expect(result.worst).toBe("MARKETPLACE");
     expect(result.best).toBe("DTC");
-    expect(result.title).toBe(fill(channelCopy.title.negative, { channel: channelLabel("MARKETPLACE", alias), amount: formatHeadlineAmount(current.channels.MARKETPLACE.metrics.contribution_after_marketing.value) }));
+    expect(result.title).toBe(fill(channelCopy.title.negative, { channel: channelLabel("MARKETPLACE", resolver), amount: formatHeadlineAmount(current.channels.MARKETPLACE.metrics.contribution_after_marketing.value) }));
     expect(result.subtitle).toBe(fill(channelCopy.subtitle, { section: labels.overview.sections.channelMix, period: span(demo, demo.report.current.period) }));
-    expect(channelConclusion(demo, { alias: false }).rows.map(row => row.label)).toEqual(demo.report.scope.channels);
+    expect(channelConclusion(demo, { resolver: makeResolver({}, demo.report.dataset_id) }).rows.map(row => row.label)).toEqual(demo.report.scope.channels);
   });
 
   it("golden：不套 alias，MARKETPLACE 由 170.00 轉為 −15.00", () => {

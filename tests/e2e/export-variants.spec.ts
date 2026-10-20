@@ -6,6 +6,7 @@ import { fill, labels } from "../../src/i18n";
 import { formatAmountL1, formatAmountL3, formatSignedDelta, metricDefinitions } from "../../src/application/presentation";
 import { PNL_ROWS } from "../../src/application/pnl-table";
 import { channelsLabel } from "../../src/application/copy";
+import { makeResolver } from "../../src/application/channel-settings";
 import { VARIANT_KPI_METRICS } from "../../src/application/export-variants";
 import { closeDownloads, openDownloads, openMeeting } from "./replacement-helpers";
 import { exportVersionLineRe, meetingExportItem } from "./meeting-helpers-v3";
@@ -412,7 +413,7 @@ test("e. 會議頁「匯出會議」一律是標準版：頂欄選了老闆一�
   // V3-9b 收尾：會議範圍的列印維持 V3-7 版面、不加每週管理損益表附錄（PRD §7.6 會議 PDF 頁數不增加）。
   await expect(print.getByTestId("print-appendix-pnl")).toHaveCount(0);
   await expect(printHeading(print, labels.evidence.sections.technicalDetails)).toHaveCount(1);
-  await expect(print).toContainText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(GOLDEN_CHANNELS, false), mode: labels.shell.periods.sameDays }));
+  await expect(print).toContainText(fill(headerV3.printScopeMeeting, { state: labels.meeting.form.decisions.draft, channels: channelsLabel(GOLDEN_CHANNELS, makeResolver(undefined, "golden-v1")), mode: labels.shell.periods.sameDays }));
   await endPrint(page);
 
   // 頂欄的選擇沒有被會議頁改掉：仍是老闆一頁版。

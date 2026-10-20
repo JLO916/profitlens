@@ -1,5 +1,6 @@
 import { PRODUCT_PARETO_VERSION, type ProductPareto, type ProductParetoEntry } from "@/application/chart-pareto";
 import { categoryLabel } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import type { EvidenceFilter } from "@/application/evidence-filter";
 import { metricDefinitions } from "@/application/presentation";
 import { uniqueSources } from "@/domain/aggregation";
@@ -27,13 +28,13 @@ export const productPresenceLabels: Record<ProductComparisonRow["previous"]["pre
 /** 「淨營收差額」「商品毛利差額」：指標名＋差額後綴，與 CSV 標題同源。 */
 export const productChangeLabel = (name: ProductMoneyMetric) => `${metricDefinitions[name].label}${labels.exports.csv.suffix.change}`;
 /** 抽屜範圍行的品類：空品類寫「未填」，示範資料套品類別名。 */
-export const productCategoryText = (value: string, alias: boolean) => value ? categoryLabel(value, alias) : copy.blankCategoryShort;
+export const productCategoryText = (value: string, resolver: NameResolver) => value ? categoryLabel(value, resolver) : copy.blankCategoryShort;
 
-/** builder 需要的頁面範圍：商品比較的兩期（compareProducts(...).scope 的 previous_period、current_period）與示範別名（demoAlias(dataset_id)）。 */
+/** builder 需要的頁面範圍：商品比較的兩期（compareProducts(...).scope 的 previous_period、current_period）與通路名稱解析器（snapshotResolver(snapshot)）。 */
 export interface ProductEvidenceContext {
   previous: Period;
   current: Period;
-  alias: boolean;
+  resolver: NameResolver;
 }
 export interface ProductEvidenceOptions {
   /** 圖上的點擊（G13 條、G14 條與商品毛利格）：加 filter { channel, sku }。既有表格的 number-link 不傳。 */
@@ -48,7 +49,7 @@ export function productEvidence(row: ProductComparisonRow, period: "previous" | 
   const value = row[period];
   const metric = value.metrics[name];
   const periodLabel = labels.shell.periods[period];
-  return { sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: periodLabel, label }), name, metric, period: period === "previous" ? ctx.previous : ctx.current, channels: [row.channel], sources: value.sources, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: productCategoryText(row.category, ctx.alias), presence: productPresenceLabels[value.presence] }), ...drill(row, options) };
+  return { sku: row.sku, title: fill(copy.evidenceTitle, { sku: row.sku, period: periodLabel, label }), name, metric, period: period === "previous" ? ctx.previous : ctx.current, channels: [row.channel], sources: value.sources, scopeLabel: fill(copy.scopeLabel, { sku: row.sku, category: productCategoryText(row.category, ctx.resolver), presence: productPresenceLabels[value.presence] }), ...drill(row, options) };
 }
 
 /** 兩期差額格（淨營收差額、商品毛利差額）的「計算與來源」：原 deltaLink 的 onEvidence payload（組成項目是上期、本期兩項）。 */
@@ -58,7 +59,7 @@ export function productDeltaEvidence(row: ProductComparisonRow, name: "net_reven
   const { previous, current } = ctx;
   return { sku: row.sku, title: fill(copy.deltaEvidenceTitle, { sku: row.sku, label }), name, metric, period: { start: previous.start, end: current.end }, channels: [row.channel],
     sources: uniqueSources([...row.previous.sources, ...row.current.sources]),
-    scopeLabel: fill(copy.deltaScopeLabel, { sku: row.sku, category: productCategoryText(row.category, ctx.alias), previousStart: previous.start, previousEnd: previous.end, previousPresence: productPresenceLabels[row.previous.presence], currentStart: current.start, currentEnd: current.end, currentPresence: productPresenceLabels[row.current.presence] }),
+    scopeLabel: fill(copy.deltaScopeLabel, { sku: row.sku, category: productCategoryText(row.category, ctx.resolver), previousStart: previous.start, previousEnd: previous.end, previousPresence: productPresenceLabels[row.previous.presence], currentStart: current.start, currentEnd: current.end, currentPresence: productPresenceLabels[row.current.presence] }),
     formula: fill(copy.deltaFormula, { label, metric: metricDefinitions[name].label, formula: metricDefinitions[name].formula }),
     components: [{ label: fill(copy.periodRange, { period: labels.shell.periods.previous, start: previous.start, end: previous.end }), metric: row.previous.metrics[name] }, { label: fill(copy.periodRange, { period: labels.shell.periods.current, start: current.start, end: current.end }), metric: row.current.metrics[name] }],
     ...drill(row, options),

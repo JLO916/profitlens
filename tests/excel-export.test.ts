@@ -19,7 +19,7 @@ import { channelConclusion } from "@/application/chart-takeaways";
 import type { ExportVariant } from "@/application/export-variants";
 import { productHighlights } from "@/application/product-highlights";
 import { bridgeWaterfall, profitWaterfall } from "@/application/waterfall";
-import { channelLabel, conversionSentence, demoAlias, scopeLabel } from "@/application/copy";
+import { channelLabel, conversionSentence, scopeLabel, snapshotResolver } from "@/application/copy";
 import { heatSectionModel } from "@/components/diagnosis/heat-section";
 import { RATE_METRICS, ratesModel, RATES_TABLE_COLUMNS } from "@/components/diagnosis/rates-section";
 import { sharePerHundredText, shareSectionModel, shareTableCell, SHARE_TABLE_COLUMNS } from "@/components/diagnosis/share-section";
@@ -57,7 +57,7 @@ async function golden(): Promise<ExcelExportInput & { diagnosticFacts: number; d
   actions = pinAction(actions, "B", true);
   return {
     summary: buildManagerSummary(snapshot), snapshot, dataset, actions, products: compareProducts(dataset, snapshot.report.scope).rows,
-    diagnosticFacts: diagnostic.fact_ids.length, diagnosticScope: scopeLabel(diagnostic.scope, false), diagnosticStep: diagnostic.recommendation,
+    diagnosticFacts: diagnostic.fact_ids.length, diagnosticScope: scopeLabel(diagnostic.scope, snapshotResolver(snapshot)), diagnosticStep: diagnostic.recommendation,
   };
 }
 const value = (cell: ExcelCell) => cell.kind === "null" ? null : cell.value;
@@ -330,7 +330,7 @@ async function chartInput(name: string): Promise<ExcelExportInput> {
   return { summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace(), products: compareProducts(dataset, snapshot.report.scope).rows };
 }
 /** G13、G14 的標題不用副標的期間與通路字，這裡只給抽屜 ctx（同商品頁的 alias）。 */
-const productScope = (input: ExcelExportInput): ProductChartScope => ({ ctx: { previous: input.snapshot.report.scope.previous_period, current: input.snapshot.report.scope.current_period, alias: demoAlias(input.dataset.manifest.dataset_id) }, current: "", previous: "", channels: "" });
+const productScope = (input: ExcelExportInput): ProductChartScope => ({ ctx: { previous: input.snapshot.report.scope.previous_period, current: input.snapshot.report.scope.current_period, resolver: snapshotResolver(input.snapshot) }, current: "", previous: "", channels: "" });
 
 describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，每張圖一段", () => {
   it("工作表數：老闆一頁版 2、標準版 8、客戶報告版 8；「圖表資料」在管理損益表之前，老闆一頁版沒有", async () => {
@@ -405,9 +405,9 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
   it("欄名＝該圖資料表的欄（金額欄帶「（元）」）；數值＝畫面同一個函式的值（golden、demo）", async () => {
     for (const name of ["golden", "demo"]) {
       const input = await chartInput(name);
-      const { snapshot, dataset } = input;
+      const { snapshot } = input;
       const { report } = snapshot;
-      const alias = demoAlias(dataset.manifest.dataset_id);
+      const resolver = snapshotResolver(snapshot);
       const blocks = new Map(chartBlocks(chartSheet(buildExcelWorkbook(input))!).map(block => [block.section, block]));
       const block = (key: ChartKey) => blocks.get(CHART_SECTION[key])!;
       const money = (label: string) => moneyHeader(label);
@@ -438,7 +438,7 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
 
       const weekly = recentChannelWeeks(channelWeeks(snapshot)!);
       expect(block("G7b").header, name).toEqual([labels.overview.channelTable.channelHeader, ...weekly.weeks.map(item => money(week(item.label, item.period)))]);
-      expect(block("G7b").rows, name).toEqual(weekly.channels.map(series => [channelLabel(series.channel, alias), ...series.values.map(item => num(item.metric.value))]));
+      expect(block("G7b").rows, name).toEqual(weekly.channels.map(series => [channelLabel(series.channel, resolver), ...series.values.map(item => num(item.metric.value))]));
 
       const share = shareSectionModel(snapshot);
       expect(block("G10").header, name).toEqual([labels.overview.channelsV3.table.channel, ...SHARE_TABLE_COLUMNS.map(column => column.label)]);
@@ -448,7 +448,7 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
       // G11：日 × 通路，格＝report.current.daily 的扣廣告後貢獻（L3）；列數＝本期天數。
       const heatmap = heatSectionModel(snapshot).result.heatmap!;
       const daily = new Map(report.current.daily.map(row => [`${row.channel}|${row.date}`, row.metrics.contribution_after_marketing.value]));
-      expect(block("G11").header, name).toEqual([labels.exports.csv.columns.date, ...heatmap.channels.map(channel => money(channelLabel(channel.channel, alias)))]);
+      expect(block("G11").header, name).toEqual([labels.exports.csv.columns.date, ...heatmap.channels.map(channel => money(channelLabel(channel.channel, resolver)))]);
       expect(block("G11").rows.map(row => row[0]), name).toEqual(report.current.daily.map(row => row.date).filter((date, index, dates) => dates.indexOf(date) === index).sort());
       for (const row of block("G11").rows) expect(row.slice(1), `${name} ${row[0]}`).toEqual(heatmap.channels.map(channel => num(daily.get(`${channel.channel}|${row[0]}`) ?? null)));
 
@@ -459,7 +459,7 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
       const products = input.products!;
       const all = productHighlights(products, products.length);
       expect(block("G13").header, name).toEqual([copy.columns.products.sku, copy.columns.products.channel, ...VARIANCE_TABLE_COLUMNS.map(column => column.label)]);
-      expect(block("G13").rows, name).toEqual([...all.worstChange, ...all.bestChange].map(row => [row.sku, channelLabel(row.channel, alias), num(row.previous.metrics.gross_profit.value), num(row.current.metrics.gross_profit.value), num(row.changes.gross_profit.value)]));
+      expect(block("G13").rows, name).toEqual([...all.worstChange, ...all.bestChange].map(row => [row.sku, channelLabel(row.channel, resolver), num(row.previous.metrics.gross_profit.value), num(row.current.metrics.gross_profit.value), num(row.changes.gross_profit.value)]));
     }
   });
 
@@ -520,7 +520,7 @@ describe("V4-9b C34「圖表資料」工作表：標準與客戶版各一張，�
       return book.Sheets[chartCopy.sheet][XLSX.utils.encode_cell({ r, c: column })] as XLSX.CellObject;
     };
     expect([at(CHART_SECTION.G1, metricDefinitions.discounts.label, 4).z, at(CHART_SECTION.G1, metricDefinitions.discounts.label, 4).w]).toEqual([EXCEL_NUMBER_FORMATS.money, `${MINUS}250.00`]);
-    expect([at(CHART_SECTION.G4, channelLabel("MARKETPLACE", false), 4).z, at(CHART_SECTION.G4, channelLabel("MARKETPLACE", false), 4).w]).toEqual([EXCEL_NUMBER_FORMATS.money_l2, `${MINUS}185`]);
+    expect([at(CHART_SECTION.G4, channelLabel("MARKETPLACE", snapshotResolver(input.snapshot)), 4).z, at(CHART_SECTION.G4, channelLabel("MARKETPLACE", snapshotResolver(input.snapshot)), 4).w]).toEqual([EXCEL_NUMBER_FORMATS.money_l2, `${MINUS}185`]);
   });
 });
 

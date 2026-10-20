@@ -18,7 +18,8 @@ import { CHANNEL_STRUCTURE_VERSION } from "./chart-structure";
 import { channelConclusion } from "./chart-takeaways";
 import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExcelSheetKey, type ExportVariant, type ExportVariantSpec } from "./export-variants";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, demoAlias, scopeLabel } from "./copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, scopeLabel, snapshotResolver } from "./copy";
+import { makeResolver, type NameResolver } from "./channel-settings";
 import { downloadBinary } from "./download";
 import { buildExportHeader } from "./export-header";
 import { argb, EXPORT_THEME } from "./export-theme";
@@ -141,7 +142,7 @@ const EXECUTION_STATUS: Record<ActionExecutionStatus, string> = {
 
 function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSheet {
   const { summary, dataset, meeting } = input;
-  const alias = demoAlias(summary.dataset_id);
+  const resolver = snapshotResolver(input.snapshot);
   const s = copy.summary;
   const info = (section: string, item: string, detail: string) => ({ section: text(section), item: text(item), detail: text(detail) });
   // 版頭的期間用匯出格式「2026-07-13 至 2026-08-23（42 天）」（§8.6；天數含頭尾，與 domain 的 previous_days／current_days 相同）。
@@ -158,7 +159,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   });
   // V3-9b F14：客戶報告版在版頭第 1 行之後多一列客戶行（variantHeaderLines）；標準版與老闆一頁版是原本四列。
   const records: SheetRecord<typeof copy.columns.summary>[] = variantHeaderLines(header, spec).map(line => ({ section: text(labels.exports.headerV3.excelSection), detail: text(line) }));
-  const total = scopeLabel({ kind: "all", channels: summary.scope.channels }, alias);
+  const total = scopeLabel({ kind: "all", channels: summary.scope.channels }, resolver);
   // V3-9b F14 老闆一頁版：只留 L1——本期一句話、四個關鍵數字、三件事的標題與影響金額、決議一列；數字與標準版同一個 summary／snapshot。
   if (spec.sections.kpis === "four") {
     if (spec.sections.oneLiner) records.push({ section: text(labels.overview.snapshotUi.heading), detail: text(variantOneLiner(summary, input.snapshot)) });
@@ -178,7 +179,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
     info(s.sections.scope, s.items.previous, period(summary.scope.previous_period)),
     info(s.sections.scope, s.items.current, period(summary.scope.current_period)),
     info(s.sections.scope, s.items.comparison, summary.scope.comparison_mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays),
-    info(s.sections.scope, s.items.channels, channelsLabel(summary.scope.channels, alias)),
+    info(s.sections.scope, s.items.channels, channelsLabel(summary.scope.channels, resolver)),
   );
   for (const row of summary.headlines) records.push({
     section: text(s.sections.keyDeltas), item: text(labels.metrics[row.metric].headline), scope: text(total),
@@ -193,7 +194,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   for (const [index, item] of summary.priorities.entries()) {
     const impact = item.impact ?? item.ranking_amount;
     records.push({
-      section: text(s.sections.topThree), item: text(fill(s.priorityItem, { n: index + 1, headline: item.title })), scope: text(scopeLabel(item.primary.scope, alias)),
+      section: text(s.sections.topThree), item: text(fill(s.priorityItem, { n: index + 1, headline: item.title })), scope: text(scopeLabel(item.primary.scope, resolver)),
       impact: moneyCell(impact.value), detail: text(fill(s.nextStep, { text: item.recommendation })),
     });
   }
@@ -207,8 +208,7 @@ function summarySheet(input: ExcelExportInput, spec: ExportVariantSpec): ExcelSh
   return sheet(copy.sheets.summary, copy.columns.summary, records, { previous: "money_l2", current: "money_l2", change: "money_l2", impact: "money_l2" });
 }
 
-function channelSheet(summary: ManagerSummary): ExcelSheet {
-  const alias = demoAlias(summary.dataset_id);
+function channelSheet(summary: ManagerSummary, resolver: NameResolver): ExcelSheet {
   const headline = (name: SummaryMetric["metric"]) => {
     const row = summary.headlines.find(entry => entry.metric === name);
     if (!row) throw new Error("EXCEL_SUMMARY_HEADLINE_MISSING");
@@ -224,7 +224,7 @@ function channelSheet(summary: ManagerSummary): ExcelSheet {
     };
   };
   // 最後一列合計＝兩個關鍵差額（同一個來源）；各通路差額不能再加總（口徑說明第 5 條）。
-  const records = [...summary.channels.map(row => record(channelLabel(row.channel, alias), row.revenue, row.contribution)), record(labels.overview.sections.total, headline("net_revenue"), headline("contribution_after_marketing"))];
+  const records = [...summary.channels.map(row => record(channelLabel(row.channel, resolver), row.revenue, row.contribution)), record(labels.overview.sections.total, headline("net_revenue"), headline("contribution_after_marketing"))];
   // 通路表是摘要層（§3.3 通路寬表 L2）：整數元；到分的值在 CSV 與「貢獻變化拆解」。
   const money = "money_l2" as const;
   return sheet(copy.sheets.channels, copy.columns.channels, records, { previous_net_revenue: money, current_net_revenue: money, net_revenue_change: money, previous_contribution: money, current_contribution: money, contribution_change: money });
@@ -246,10 +246,10 @@ function bridgeSheet(snapshot: WorkspaceSnapshot): ExcelSheet {
   return sheet(copy.sheets.bridge, copy.columns.bridge, records, { previous: "money", current: "money", impact: "money" });
 }
 
-function productSheet(rows: readonly ProductComparisonRow[], alias: boolean): ExcelSheet {
+function productSheet(rows: readonly ProductComparisonRow[], resolver: NameResolver): ExcelSheet {
   const blank = labels.products.comparison.blankCategory;
   const records = rows.map(row => ({
-    channel: text(channelLabel(row.channel, alias)), sku: text(row.sku), category: text(row.category.trim() ? categoryLabel(row.category, alias) : blank),
+    channel: text(channelLabel(row.channel, resolver)), sku: text(row.sku), category: text(row.category.trim() ? categoryLabel(row.category, resolver) : blank),
     current_units: countCell(row.current.metrics.units_sold.value),
     previous_net_revenue: moneyCell(row.previous.metrics.net_revenue.value), current_net_revenue: moneyCell(row.current.metrics.net_revenue.value),
     previous_gross_profit: moneyCell(row.previous.metrics.gross_profit.value), current_gross_profit: moneyCell(row.current.metrics.gross_profit.value),
@@ -270,7 +270,7 @@ function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec): Excel
     owner: text(doc.owner_role.trim() || board.unassigned), due: text(doc.deadline || board.noDeadline),
     status: text(EXECUTION_STATUS[doc.execution_status]), status_updated_at: doc.status_updated_at ? text(doc.status_updated_at) : EMPTY,
     pinned: text(doc.pinned ? copy.actions.pinned : copy.actions.notPinned), evidence_count: numeric(doc.fact_ids.length),
-    scope: text(scopeLabel(doc.binding.scope, demoAlias(doc.binding.dataset_id))),
+    scope: text(scopeLabel(doc.binding.scope, makeResolver(undefined, doc.binding.dataset_id))),
     // 引用的是較早的資料（或舊資料待重新核對）時提醒，與待辦頁的「引用較早資料」同一句。
     caution: doc.status === "stale" || doc.evidence_relation === "historical" ? text(labels.actions.form.staleBadge) : EMPTY,
     ad_decision: doc.ad_decision ? text(lookup(labels.actions.adDecisionV3.options, doc.ad_decision)) : EMPTY,
@@ -351,7 +351,7 @@ const weekName = (label: string, period: Period) => fill(labels.exports.variants
 function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   const { summary, snapshot, dataset } = input;
   const { report } = snapshot;
-  const alias = demoAlias(dataset.manifest.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const metricVersion = snapshot.metric_version;
   const sections: ChartDataSection[] = [];
 
@@ -366,7 +366,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   });
 
   // G2 本期利潤結構（合計）：10 列（項目、金額 L3、佔淨營收）＋每 100 元一列（與 G10 資料表同一句「剩／虧 {n} 元」）。
-  const profit = profitWaterfall(snapshot, "all", { alias, allChannels: dataset.manifest.channels });
+  const profit = profitWaterfall(snapshot, "all", { resolver, allChannels: dataset.manifest.channels });
   const profitCopy = labels.overview.profit;
   const perHundred = sharePerHundredText(profit.perHundred);
   sections.push({
@@ -380,7 +380,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   });
 
   // G4 各通路：上期、本期、差額（L2；差額＝metricComparison 的 change，與緊湊表差額欄同一個值）。
-  const channels = channelConclusion(snapshot, { alias });
+  const channels = channelConclusion(snapshot, { resolver });
   const change = (channel: string): Metric => Object.hasOwn(report.previous.channels, channel) && Object.hasOwn(report.current.channels, channel) ? metricComparison(snapshot, "contribution_after_marketing", channel).change : MISSING_METRIC;
   sections.push({
     chart: "G4", section: labels.overview.sections.channelMix, title: channels.title,
@@ -411,7 +411,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
     sections.push({
       chart: "G7b", section: spark.tableTitle, title: spark.tableTitle,
       columns: [labels.overview.channelTable.channelHeader, ...data.weeks.map(week => excelHeader(weekName(week.label, week.period), "money_l2"))],
-      rows: data.channels.map(series => [text(channelLabel(series.channel, alias)), ...series.values.map(value => chartMoney(value.metric.value, "money_l2"))]),
+      rows: data.channels.map(series => [text(channelLabel(series.channel, resolver)), ...series.values.map(value => chartMoney(value.metric.value, "money_l2"))]),
       version: CHANNEL_WEEKS_VERSION, arranged: true,
     });
   }
@@ -429,7 +429,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   }
 
   // G10 每 100 元淨營收去向（channel-structure-v1）：資料表同一組欄與格（shareTableCell）；每 100 元是「剩／虧 {n} 元」文字。
-  const share = shareSectionModel(snapshot, { alias });
+  const share = shareSectionModel(snapshot, { resolver });
   sections.push({
     chart: "G10", section: labels.diagnosis.chartsV4.share.section, title: share.title,
     columns: [labels.overview.channelsV3.table.channel, ...SHARE_TABLE_COLUMNS.map(column => column.label)],
@@ -438,7 +438,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   });
 
   // G11 日 × 通路（daily-heatmap-v1）：列＝日（超過 92 天時是週），欄＝通路（順序同畫面：標題所指的通路在前），格＝L3；通路 > 8 等不計算時不放。
-  const heat = heatSectionModel(snapshot, { alias });
+  const heat = heatSectionModel(snapshot, { resolver });
   const heatmap = heat.result.heatmap;
   if (heatmap !== null && heatmap.channels.length) {
     const heatCopy = labels.diagnosis.chartsV4.heat;
@@ -447,7 +447,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
     const [first] = heatmap.channels;
     sections.push({
       chart: "G11", section: fill(weeklyHeat ? heatCopy.sectionWeekly : heatCopy.section, { metric: metricDefinitions.contribution_after_marketing.label }), title: heat.title,
-      columns: [weeklyHeat ? heatCopy.weekHead : labels.exports.csv.columns.date, ...heatmap.channels.map(channel => excelHeader(channelLabel(channel.channel, alias), "money"))],
+      columns: [weeklyHeat ? heatCopy.weekHead : labels.exports.csv.columns.date, ...heatmap.channels.map(channel => excelHeader(channelLabel(channel.channel, resolver), "money"))],
       rows: weeklyHeat
         ? heatmap.weeks.map((week, index) => [text(weekName(week.label, week.period)), ...heatmap.channels.map(channel => amount(channel.rows[index].cells[0]))])
         : first.rows.flatMap((row, index) => row.cells.flatMap((cell, day) => cell.kind === "outside" ? [] : [[text(cell.key), ...heatmap.channels.map(channel => amount(channel.rows[index].cells[day]))]])),
@@ -472,10 +472,10 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   const scope = report.scope;
   const everyChannel = dataset.manifest.channels.length > 0 && dataset.manifest.channels.every(channel => scope.channels.includes(channel));
   const chartScope: ProductChartScope = {
-    ctx: { previous: scope.previous_period, current: scope.current_period, alias },
+    ctx: { previous: scope.previous_period, current: scope.current_period, resolver },
     current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: snapshot.data_as_of }),
     previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { days: false, anchor: snapshot.data_as_of }),
-    channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scope.channels, alias),
+    channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scope.channels, resolver),
   };
   const productColumns = [copy.columns.products.sku, copy.columns.products.channel];
   const top = productHighlights(products), all = productHighlights(products, products.length);
@@ -483,7 +483,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   sections.push({
     chart: "G13", section: variance.section, title: variance.title,
     columns: [...productColumns, ...VARIANCE_TABLE_COLUMNS.map(column => column.label)],
-    rows: variance.tableRows.map(row => [text(row.sku), text(channelLabel(row.channel, alias)), ...VARIANCE_TABLE_COLUMNS.map(column => chartMoney(column.data === "change" ? row.changes.gross_profit.value : row[column.data].metrics.gross_profit.value, "money_l2"))]),
+    rows: variance.tableRows.map(row => [text(row.sku), text(channelLabel(row.channel, resolver)), ...VARIANCE_TABLE_COLUMNS.map(column => chartMoney(column.data === "change" ? row.changes.gross_profit.value : row[column.data].metrics.gross_profit.value, "money_l2"))]),
     version: metricVersion, arranged: false,
   });
   const pareto = productPareto(products, "gross_profit", PRODUCT_PARETO_LIMIT);
@@ -492,7 +492,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
     sections.push({
       chart: "G14", section: model.section, title: model.title,
       columns: [...productColumns, ...PARETO_TABLE_COLUMNS.map(column => column.label)],
-      rows: pareto.allRows.map(entry => [text(entry.row.sku), text(channelLabel(entry.row.channel, alias)), ...PARETO_TABLE_COLUMNS.map(column => column.data === "share" ? chartRatio(entry.share.value) : chartMoney(column.data === "cumulative" ? entry.cumulative.value : entry.value.value, "money_l2"))]),
+      rows: pareto.allRows.map(entry => [text(entry.row.sku), text(channelLabel(entry.row.channel, resolver)), ...PARETO_TABLE_COLUMNS.map(column => column.data === "share" ? chartRatio(entry.share.value) : chartMoney(column.data === "cumulative" ? entry.cumulative.value : entry.value.value, "money_l2"))]),
       version: PRODUCT_PARETO_VERSION, arranged: true,
     });
   }
@@ -526,8 +526,8 @@ export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
   const spec = variantSpec(input.variant);
   const charts = spec.excelSheets.includes("chartData") ? chartDataSections(input) : [];
   const build: Record<ExcelSheetKey, () => ExcelSheet> = {
-    summary: () => summarySheet(input, spec), channels: () => channelSheet(summary), bridge: () => bridgeSheet(snapshot),
-    products: () => productSheet(input.products ?? [], demoAlias(dataset.manifest.dataset_id)), actions: () => actionSheet(input.actions, spec), basis: () => basisSheet(input, spec, charts),
+    summary: () => summarySheet(input, spec), channels: () => channelSheet(summary, snapshotResolver(snapshot)), bridge: () => bridgeSheet(snapshot),
+    products: () => productSheet(input.products ?? [], snapshotResolver(snapshot)), actions: () => actionSheet(input.actions, spec), basis: () => basisSheet(input, spec, charts),
     chartData: () => chartDataSheet(charts, spec), pnl: () => pnlSheet(snapshot),
   };
   return { sheets: spec.excelSheets.map(key => build[key]()) };

@@ -4,7 +4,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { CHANNEL_FEE_FIELDS, CHANNEL_STRUCTURE_MAX, CHANNEL_STRUCTURE_SM_MAX, CHANNEL_STRUCTURE_TOTAL_KEY, CHANNEL_STRUCTURE_VERSION, channelStructure } from "../src/application/chart-structure";
 import { chartColors, chartHeights } from "../src/application/chart-theme";
-import { channelLabel, channelsLabel, demoAlias } from "../src/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "../src/application/copy";
 import { deltaTone, formatAmountL2, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
 import { profitWaterfall } from "../src/application/waterfall";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
@@ -175,10 +175,10 @@ describe("G10 的「剩」與段比率直接用 profitWaterfall（A 級，逐字
 
 describe("G10 標題與副標（PRD §4.2 G10）", () => {
   it("有虧損通路：取每 100 元虧最多的通路（示範 MARKETPLACE 虧 1.5 元；4 通路合成資料 MARKETPLACE 虧 8.5 元）", () => {
-    const alias = demoAlias(demo.snapshot.report.dataset_id);
+    const resolver = snapshotResolver(demo.snapshot);
     const model = shareSectionModel(demo.snapshot);
     expect(model.titleKind).toBe("loss");
-    expect(model.title).toBe(fill(share.title.loss, { channel: channelLabel("MARKETPLACE", alias), n: "1.5" }));
+    expect(model.title).toBe(fill(share.title.loss, { channel: channelLabel("MARKETPLACE", resolver), n: "1.5" }));
     expect(shareSectionModel(golden.snapshot).title).toBe(fill(share.title.loss, { channel: "MARKETPLACE", n: "1.5" }));
     expect(shareSectionModel(synthetic.snapshot).title).toBe(fill(share.title.loss, { channel: "MARKETPLACE", n: "8.5" }));
   });
@@ -194,9 +194,9 @@ describe("G10 標題與副標（PRD §4.2 G10）", () => {
 
   it("副標＝標準名 · 本期 · 範圍；有不適用的通路時接一句原因（4 通路合成資料：SOCIAL 平台抽成沖回 −2,160.00）", () => {
     const { snapshot } = demo;
-    const alias = demoAlias(snapshot.report.dataset_id);
+    const resolver = snapshotResolver(snapshot);
     const { period } = snapshot.report.current;
-    const base = fill(share.subtitle, { section: share.section, period: formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of }), scope: channelsLabel(snapshot.report.scope.channels, alias) });
+    const base = fill(share.subtitle, { section: share.section, period: formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of }), scope: channelsLabel(snapshot.report.scope.channels, resolver) });
     expect(shareSectionModel(snapshot).subtitle).toBe(base);
     const model = shareSectionModel(synthetic.snapshot);
     expect(model.notApplicable).toEqual(["SOCIAL"]);

@@ -1,6 +1,7 @@
 "use client";
 
 import { channelLabel } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import type { SummaryScenario } from "@/application/manager-summary";
 import { deltaTone, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import type { ScenarioSelectionRef } from "@/application/scenario-workspace";
@@ -45,8 +46,8 @@ export interface MeetingScenariosInput {
   references: readonly Pick<ScenarioSelectionRef, "channel" | "plan_id">[];
   /** 會議範圍的通路（review.meeting_filters.channels）：列的順序。 */
   channels: readonly string[];
-  /** 通路名稱是否用示範別名（會議固定來源的 demoAlias）。 */
-  alias: boolean;
+  /** 通路名稱：會議固定來源的名稱解析器（V42-1a 過渡期同時接受 demoAlias 的 boolean；MeetingPage 改傳解析器後移除 boolean）。 */
+  alias: boolean | NameResolver;
   /** 會議本期（formatPeriodL1，M/D–M/D）。 */
   period: string;
 }

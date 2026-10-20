@@ -1,7 +1,8 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
-import { channelLabel, demoAlias } from "../src/application/copy";
+import { channelLabel, snapshotResolver } from "../src/application/copy";
+import { makeResolver } from "../src/application/channel-settings";
 import { applyEvidenceFilter, evidenceFilterError, evidenceFilterText, hasEvidenceFilter, scopedEvidenceFilter, type EvidenceFilter } from "../src/application/evidence-filter";
 import { evidenceRows, formatDateL1, formatPeriodL1, metricDefinitions } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
@@ -14,6 +15,8 @@ import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
 import { byTestId, element, escapeAttr } from "./helpers/markup";
 import { yoyInput } from "./helpers/yoy-dataset";
+/** 不套任何通路名稱的解析器（V42-1a 前的 alias: false）。 */
+const plain = makeResolver({}, "");
 
 // V3-9b 代理 A：F10 圖表點擊下鑽（PRD §10.1 F10、§9.5 互動 P1）。
 // applyEvidenceFilter 只過濾來源列（日期落在週的起訖、通路相等；manifest 列保留），不重算任何金額；
@@ -88,23 +91,23 @@ describe("evidenceFilterText：篩選片語", () => {
   it("週：「篩選：本期第 2 週（7/20–7/26）」；週＋通路以「 · 」相接；通路用示範資料的 alias；沒有篩選時為 null", () => {
     const week = demo.snapshot.weeks.filter(row => row.period === "current")[1];
     const anchor = demo.dataset.manifest.data_as_of;
-    const alias = demoAlias(demo.snapshot.report.dataset_id);
+    const resolver = snapshotResolver(demo.snapshot);
     const range = formatPeriodL1(week.start, week.end, { anchor, days: false });
     expect(range).toBe("7/20–7/26");
     const weekFilter = { week: { start: week.start, end: week.end, label: week.label } };
-    expect(evidenceFilterText(weekFilter, { alias, anchor })).toBe(fill(copy.phrase, { scope: fill(copy.week, { label: week.label, range }) }));
-    expect(evidenceFilterText(weekFilter, { alias, anchor })).toBe(`篩選：${fill(labels.overview.pnlV3.weekLabel.current, { n: 2 })}（7/20–7/26）`);
-    expect(evidenceFilterText({ ...weekFilter, channel: "DTC" }, { alias, anchor })).toBe(fill(copy.phrase, { scope: [fill(copy.week, { label: week.label, range }), channelLabel("DTC", alias)].join(copy.joiner) }));
-    expect(evidenceFilterText({ channel: "DTC" }, { alias: false })).toBe(fill(copy.phrase, { scope: "DTC" }));
-    expect(evidenceFilterText(undefined, { alias })).toBeNull();
-    expect(evidenceFilterText({}, { alias })).toBeNull();
+    expect(evidenceFilterText(weekFilter, { resolver, anchor })).toBe(fill(copy.phrase, { scope: fill(copy.week, { label: week.label, range }) }));
+    expect(evidenceFilterText(weekFilter, { resolver, anchor })).toBe(`篩選：${fill(labels.overview.pnlV3.weekLabel.current, { n: 2 })}（7/20–7/26）`);
+    expect(evidenceFilterText({ ...weekFilter, channel: "DTC" }, { resolver, anchor })).toBe(fill(copy.phrase, { scope: [fill(copy.week, { label: week.label, range }), channelLabel("DTC", resolver)].join(copy.joiner) }));
+    expect(evidenceFilterText({ channel: "DTC" }, { resolver: plain })).toBe(fill(copy.phrase, { scope: "DTC" }));
+    expect(evidenceFilterText(undefined, { resolver })).toBeNull();
+    expect(evidenceFilterText({}, { resolver })).toBeNull();
   });
 
   it("去年同期的週：期間與資料到的年份不同時寫年份", () => {
     const yoy = twoYear.snapshot.yoy!;
     if (yoy.status !== "ready") throw new Error("yoy 不可用");
     const week = yoy.weeks[0];
-    expect(evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { alias: false, anchor: twoYear.dataset.manifest.data_as_of })).toBe(fill(copy.phrase, { scope: fill(copy.week, { label: fill(labels.overview.trendYoyV3.weekLabel, { n: 1 }), range: "2025/7/13–2025/7/19" }) }));
+    expect(evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { resolver: plain, anchor: twoYear.dataset.manifest.data_as_of })).toBe(fill(copy.phrase, { scope: fill(copy.week, { label: fill(labels.overview.trendYoyV3.weekLabel, { n: 1 }), range: "2025/7/13–2025/7/19" }) }));
   });
 });
 
@@ -115,7 +118,7 @@ describe("抽屜（SSR）：下鑽的篩選片語與清除", () => {
   it("有 filter：原始明細段的小標與說明之後、分段按鈕之前一列片語＋「清除篩選」（各一份）；分段筆數是篩選後的列", () => {
     const html = render(golden.dataset, golden.snapshot, contribution(golden.snapshot, { channel: "DTC" }));
     const filter = byTestId(html, "evidence-filter");
-    expect(filter).toBe(`<div class="evidence-filter" data-testid="evidence-filter"><span>${escapeAttr(evidenceFilterText({ channel: "DTC" }, { alias: false })!)}</span><button type="button" class="ui-btn ui-btn-text" data-testid="evidence-filter-clear">${copy.clear}</button></div>`);
+    expect(filter).toBe(`<div class="evidence-filter" data-testid="evidence-filter"><span>${escapeAttr(evidenceFilterText({ channel: "DTC" }, { resolver: plain })!)}</span><button type="button" class="ui-btn ui-btn-text" data-testid="evidence-filter-clear">${copy.clear}</button></div>`);
     expect(html.split('data-testid="evidence-filter"')).toHaveLength(2);
     expect(html.split('data-testid="evidence-filter-clear"')).toHaveLength(2);
     expect(html).not.toContain("evidence-filter-apply");
@@ -138,12 +141,12 @@ describe("抽屜（SSR）：下鑽的篩選片語與清除", () => {
 
   it("通路長條（channelEvidence）與週的點（weekEvidence）開的抽屜都有片語；週的抽屜副標是該週期間、片語寫週名與起訖", () => {
     const channel = render(demo.dataset, demo.snapshot, channelEvidence(demo.snapshot, "MARKETPLACE", "current"));
-    const alias = demoAlias(demo.snapshot.report.dataset_id);
-    expect(byTestId(channel, "evidence-filter")).toContain(`<span>${escapeAttr(fill(copy.phrase, { scope: channelLabel("MARKETPLACE", alias) }))}</span>`);
+    const resolver = snapshotResolver(demo.snapshot);
+    expect(byTestId(channel, "evidence-filter")).toContain(`<span>${escapeAttr(fill(copy.phrase, { scope: channelLabel("MARKETPLACE", resolver) }))}</span>`);
     const week = demo.snapshot.weeks.filter(row => row.period === "current")[1];
     const html = render(demo.dataset, demo.snapshot, weekEvidence(week, "net_revenue", demo.snapshot.report.scope.channels));
-    expect(byTestId(html, "evidence-filter")).toContain(`<span>${escapeAttr(evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { alias, anchor: demo.dataset.manifest.data_as_of })!)}</span>`);
-    expect(html).toContain(`class="sub">${escapeAttr(evidenceSubtitle({ period: { start: week.start, end: week.end }, channels: demo.snapshot.report.scope.channels }, { alias, anchor: demo.dataset.manifest.data_as_of, allChannels: demo.dataset.manifest.channels, report: demo.snapshot.report }))}</p>`);
+    expect(byTestId(html, "evidence-filter")).toContain(`<span>${escapeAttr(evidenceFilterText({ week: { start: week.start, end: week.end, label: week.label } }, { resolver, anchor: demo.dataset.manifest.data_as_of })!)}</span>`);
+    expect(html).toContain(`class="sub">${escapeAttr(evidenceSubtitle({ period: { start: week.start, end: week.end }, channels: demo.snapshot.report.scope.channels }, { resolver, anchor: demo.dataset.manifest.data_as_of, allChannels: demo.dataset.manifest.channels, report: demo.snapshot.report }))}</p>`);
   });
 
   it("去年同期的週與整段：抽屜畫得出四層階梯（取 snapshot.yoy 的指標），整段的副標寫「去年同期」", () => {
@@ -249,16 +252,16 @@ describe("V4-3b filter.sku 只和商品層證據一起用", () => {
 describe("V4-3b evidenceFilterText：日期與商品片語", () => {
   const anchor = () => golden.dataset.manifest.data_as_of;
   it("單日「篩選：日期 8/2」；依週、單日、通路、商品的順序以「 · 」相接；日期與資料到的年份不同時寫年份", () => {
-    expect(evidenceFilterText({ date: "2026-08-02" }, { alias: false, anchor: anchor() })).toBe(fill(copy.phrase, { scope: fill(v4.date, { date: "8/2" }) }));
-    expect(evidenceFilterText({ date: "2026-08-02" }, { alias: false, anchor: anchor() })).toBe("篩選：日期 8/2");
-    expect(evidenceFilterText({ channel: "DTC", date: "2026-08-02" }, { alias: false, anchor: anchor() })).toBe(fill(copy.phrase, { scope: [fill(v4.date, { date: "8/2" }), "DTC"].join(copy.joiner) }));
-    expect(evidenceFilterText({ sku: "A" }, { alias: false })).toBe(fill(copy.phrase, { scope: fill(v4.sku, { sku: "A" }) }));
-    expect(evidenceFilterText({ sku: "A" }, { alias: false })).toBe("篩選：商品 A");
+    expect(evidenceFilterText({ date: "2026-08-02" }, { resolver: plain, anchor: anchor() })).toBe(fill(copy.phrase, { scope: fill(v4.date, { date: "8/2" }) }));
+    expect(evidenceFilterText({ date: "2026-08-02" }, { resolver: plain, anchor: anchor() })).toBe("篩選：日期 8/2");
+    expect(evidenceFilterText({ channel: "DTC", date: "2026-08-02" }, { resolver: plain, anchor: anchor() })).toBe(fill(copy.phrase, { scope: [fill(v4.date, { date: "8/2" }), "DTC"].join(copy.joiner) }));
+    expect(evidenceFilterText({ sku: "A" }, { resolver: plain })).toBe(fill(copy.phrase, { scope: fill(v4.sku, { sku: "A" }) }));
+    expect(evidenceFilterText({ sku: "A" }, { resolver: plain })).toBe("篩選：商品 A");
     const week = { start: "2026-08-02", end: "2026-08-08", label: fill(labels.overview.pnlV3.weekLabel.current, { n: 1 }) };
-    expect(evidenceFilterText({ sku: "A", channel: "DTC", date: "2026-08-02", week }, { alias: false, anchor: anchor() }))
+    expect(evidenceFilterText({ sku: "A", channel: "DTC", date: "2026-08-02", week }, { resolver: plain, anchor: anchor() }))
       .toBe(fill(copy.phrase, { scope: [fill(copy.week, { label: week.label, range: formatPeriodL1(week.start, week.end, { anchor: anchor(), days: false }) }), fill(v4.date, { date: "8/2" }), "DTC", fill(v4.sku, { sku: "A" })].join(copy.joiner) }));
     expect(formatDateL1("2025-08-02", { anchor: anchor() })).toBe("2025/8/2");
-    expect(evidenceFilterText({ date: "2025-08-02" }, { alias: false, anchor: anchor() })).toBe(fill(copy.phrase, { scope: fill(v4.date, { date: "2025/8/2" }) }));
+    expect(evidenceFilterText({ date: "2025-08-02" }, { resolver: plain, anchor: anchor() })).toBe(fill(copy.phrase, { scope: fill(v4.date, { date: "2025/8/2" }) }));
   });
 });
 
@@ -274,10 +277,10 @@ describe("V4-3b 抽屜（SSR）：單日與商品的下鑽", () => {
     const daily = report.current.daily.find(item => item.channel === "MARKETPLACE" && item.date === date)!;
     const evidence: EvidenceSelection = { name: "contribution_after_marketing", metric: daily.metrics.contribution_after_marketing, period: { start: date, end: date }, channels: ["MARKETPLACE"], sources: report.current.sources, title: metricDefinitions.contribution_after_marketing.label, filter: { channel: "MARKETPLACE", date } };
     const html = render(demo.dataset, demo.snapshot, evidence);
-    const alias = demoAlias(demo.snapshot.report.dataset_id);
+    const resolver = snapshotResolver(demo.snapshot);
     const anchor = demo.dataset.manifest.data_as_of;
-    const phrase = evidenceFilterText({ channel: "MARKETPLACE", date }, { alias, anchor })!;
-    expect(phrase).toBe(fill(copy.phrase, { scope: [fill(v4.date, { date: formatDateL1(date, { anchor }) }), channelLabel("MARKETPLACE", alias)].join(copy.joiner) }));
+    const phrase = evidenceFilterText({ channel: "MARKETPLACE", date }, { resolver, anchor })!;
+    expect(phrase).toBe(fill(copy.phrase, { scope: [fill(v4.date, { date: formatDateL1(date, { anchor }) }), channelLabel("MARKETPLACE", resolver)].join(copy.joiner) }));
     expect(byTestId(html, "evidence-filter")).toContain(`<span>${escapeAttr(phrase)}</span>`);
     expect(dates(html).length).toBeGreaterThan(0);
     expect(dates(html).every(value => value === date)).toBe(true);

@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { diagnosisGroups, summaryScopes, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
 import { priorityEvidence } from "@/application/manager-summary";
-import { channelsLabel, demoAlias, ruleCopy, scopeLabel } from "@/application/copy";
+import { channelsLabel, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
+import type { NameResolver } from "@/application/channel-settings";
 import { overlapping, type EventSet } from "@/application/events";
 import { deltaTone, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -74,12 +75,12 @@ export function displayMetric(name: MetricName, metric: Metric, layer: Layer = "
   return formatMetric(name, metric, layer);
 }
 /** 數據列的範圍文字：合計「所選通路合計（…）」、通路名、SKU「通路／SKU」。 */
-function factScope(fact: Fact, alias: boolean): string {
-  if (fact.scope.kind === "all") return fill(ui.scopeAllWith, { channels: channelsLabel(fact.scope.channels, alias) });
-  return scopeLabel(fact.scope, alias);
+function factScope(fact: Fact, resolver: NameResolver): string {
+  if (fact.scope.kind === "all") return fill(ui.scopeAllWith, { channels: channelsLabel(fact.scope.channels, resolver) });
+  return scopeLabel(fact.scope, resolver);
 }
-function factSelection(fact: Fact, alias: boolean): EvidenceSelection {
-  return { sku: fact.scope.sku, title: metricDefinitions[fact.metric].label, name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: fact.scope.kind === "all" ? ui.scopeAll : scopeLabel(fact.scope, alias) };
+function factSelection(fact: Fact, resolver: NameResolver): EvidenceSelection {
+  return { sku: fact.scope.sku, title: metricDefinitions[fact.metric].label, name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: fact.scope.kind === "all" ? ui.scopeAll : scopeLabel(fact.scope, resolver) };
 }
 
 const RANKING_METRIC: Partial<Record<RuleCode, MetricName>> = {
@@ -96,7 +97,7 @@ export function rankingText(value: string | null): string {
   return value === null ? formatEmpty("missing") : fill(labels.format.units.yuan, { value: formatSignedDelta(value, "L3") });
 }
 /** 排序金額的抽屜內容：沿用 R1 健檢卡的行為（差額規則附公式與上期／本期組成，本期值規則只列本期）。 */
-export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, row: DiagnosisScope, alias: boolean): EvidenceSelection | null {
+export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, row: DiagnosisScope, resolver: NameResolver): EvidenceSelection | null {
   const { diagnostic } = row;
   const name = RANKING_METRIC[diagnostic.code];
   if (!name || !diagnostic.ranking_amount) return null;
@@ -107,7 +108,7 @@ export function rankingSelection(snapshot: Pick<WorkspaceSnapshot, "report">, ro
   return {
     title: currentOnly ? metric : fill(ui.metricDelta, { metric }), name, metric: diagnostic.ranking_amount, sku: diagnostic.scope.sku,
     period: currentOnly ? current.period : { start: [previous.period.start, current.period.start].sort()[0], end: [previous.period.end, current.period.end].sort()[1] },
-    channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? ui.scopeAll : scopeLabel(diagnostic.scope, alias),
+    channels: diagnostic.scope.channels, sources: referenced.flatMap(fact => fact.sources), scopeLabel: diagnostic.scope.kind === "all" ? ui.scopeAll : scopeLabel(diagnostic.scope, resolver),
     ...(currentOnly ? {} : { formula: fill(ui.deltaFormula, { metric }), components: referenced.map(fact => ({ label: fact.period.start === previous.period.start ? labels.shell.periods.previous : labels.shell.periods.current, metric: fact })) }),
   };
 }
@@ -158,7 +159,7 @@ export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, ev
   const barred = rows.some(hasImpactBar);
   const impactBars: ImpactBarScale | null = barred ? { max: impactBarScale(rows), threshold: importanceThreshold ?? computed?.importance_threshold ?? "0.00" } : null;
   const totalBar = rows.some(group => group.rule === IMPACT_BAR_TOTAL_RULE && hasImpactBar(group));
-  const alias = demoAlias(snapshot.report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const counts = diagnosisCounts(rows);
   // R4 檔期提示：本期與檔期重疊時，每列展開內容多一行「檔期」；不改任何數字。
   const eventNames = [...new Set(overlapping(events, snapshot.report.current.period).map(row => row.label))];
@@ -168,7 +169,7 @@ export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, ev
   return <section className="panel diagnosis-panel" aria-labelledby="diagnosis-heading" data-testid="diagnosis-panel">
     <div className="sec-head">
       <div className="sec-title"><h2 id="diagnosis-heading">{labels.diagnosis.sections.diagnosisList}</h2>{badges.length > 0 && <span className="diagnosis-badges">{badges.map(item => <span key={item.kind} className="diagnosis-badge" data-testid={`diagnosis-count-${item.kind}`}><span className="diagnosis-badge-text" data-tone={item.tone} aria-hidden="true">{item.text}</span><span className="ui-count-badge" role="img" aria-label={fill(item.aria, { n: counts[item.kind] })}>{counts[item.kind]}</span></span>)}</span>}</div>
-      <span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, alias)}</span>
+      <span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, resolver)}</span>
     </div>
     <p className="sub">{ui.diagnosisNote}</p>
     {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria} data-impact-bars={impactBars ? "" : undefined}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} impactBars={impactBars} />)}</ol> : <DiagnosisEmpty />}
@@ -190,14 +191,14 @@ function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onC
   const closeMore = useCallback(() => { if (moreRef.current) moreRef.current.open = false; setMoreOpen(false); }, []);
   useDismiss(moreOpen, closeMore, moreRef, moreTriggerRef);
   const selected = group.scopes.find(row => row.diagnostic.id === selectedId) ?? group.scopes[0];
-  const alias = demoAlias(snapshot.report.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const { previous } = snapshot.report;
   const { shown, more } = summaryScopes(group, DIAGNOSIS_SCOPE_CHIPS);
   const hidden = group.scopes.slice(shown.length);
   const facts = new Map(selected.facts.map(fact => [fact.id, fact]));
   const isPrimary = selected.diagnostic.id === group.primary.id;
   const ranking = selected.diagnostic.ranking_amount;
-  const rankingEvidence = rankingSelection(snapshot, selected, alias);
+  const rankingEvidence = rankingSelection(snapshot, selected, resolver);
   const status = alertStatus(group);
   // 範圍標籤只在這一列的範圍和頁面範圍不同時顯示（合計與頁面範圍相同，不重複；頁面範圍只在標題列寫一次）。
   const primaryScope = group.scopes[0];
@@ -219,16 +220,16 @@ function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onC
               <div className="ui-popover scope-more-panel"><div className="scope-chips" role="group" aria-label={copy.scopeSwitch}>{hidden.map(row => chip(row, true))}</div></div>
             </details>}
           </div>
-          {!isPrimary && <p className="diagnosis-scope-headline">{fill(copy.scopeHeadline, { scope: selected.label, headline: ruleCopy(snapshot, selected.diagnostic, alias).headline })}</p>}
+          {!isPrimary && <p className="diagnosis-scope-headline">{fill(copy.scopeHeadline, { scope: selected.label, headline: ruleCopy(snapshot, selected.diagnostic, resolver).headline })}</p>}
         </div>}
         <h4 className="kv-heading">{group.scopes.length > 1 ? fill(copy.dataFor, { data: labels.diagnosis.sections.data, scope: selected.label }) : labels.diagnosis.sections.data}</h4>
         <dl className="kv-list fact-list">{selected.diagnostic.fact_ids.map(id => {
           const fact = facts.get(id);
           if (!fact) return <div key={id}><dt>{ui.factNotFound}</dt><dd /></div>;
           const period = fact.period.start === previous.period.start && fact.period.end === previous.period.end ? labels.shell.periods.previous : labels.shell.periods.current;
-          const scope = factScope(fact, alias);
+          const scope = factScope(fact, resolver);
           const metric = metricDefinitions[fact.metric].label;
-          return <div key={id}><dt>{fill(ui.factLine, { period, metric, scope })}</dt><dd><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact, alias))} aria-label={fill(ui.factAria, { period, metric, value: displayMetric(fact.metric, fact), scope })}>{displayMetric(fact.metric, fact)}</button></dd></div>;
+          return <div key={id}><dt>{fill(ui.factLine, { period, metric, scope })}</dt><dd><button type="button" className="number-link" onClick={() => onEvidence(factSelection(fact, resolver))} aria-label={fill(ui.factAria, { period, metric, value: displayMetric(fact.metric, fact), scope })}>{displayMetric(fact.metric, fact)}</button></dd></div>;
         })}</dl>
         <dl className="diagnosis-copy">
           <div><dt>{labels.diagnosis.sections.cause}</dt><dd>{group.cause}</dd></div>
@@ -240,7 +241,7 @@ function DiagnosisRow({ group, defaultOpen, snapshot, eventText, onEvidence, onC
         <details className="diagnosis-technical"><summary>{labels.evidence.sections.technicalDetails}</summary>
           <dl className="diagnosis-tech-list">
             <div><dt>{copy.ruleCode}</dt><dd><code>{selected.diagnostic.code}</code></dd></div>
-            {ranking && <div><dt>{rankingLabel(selected.diagnostic.code)}</dt><dd>{rankingEvidence ? <button type="button" className="number-link" onClick={() => onEvidence(rankingEvidence)} aria-label={fill(ui.rankingAria, { title: ruleCopy(snapshot, selected.diagnostic, alias).headline, amount: rankingText(ranking.value) })}>{rankingText(ranking.value)}</button> : rankingText(ranking.value)}</dd></div>}
+            {ranking && <div><dt>{rankingLabel(selected.diagnostic.code)}</dt><dd>{rankingEvidence ? <button type="button" className="number-link" onClick={() => onEvidence(rankingEvidence)} aria-label={fill(ui.rankingAria, { title: ruleCopy(snapshot, selected.diagnostic, resolver).headline, amount: rankingText(ranking.value) })}>{rankingText(ranking.value)}</button> : rankingText(ranking.value)}</dd></div>}
             <div><dt>{copy.metricVersion}</dt><dd><code>{snapshot.metric_version}</code></dd></div>
             <div><dt>{labels.exports.csv.columns.dataset_hash}</dt><dd><code>{snapshot.dataset_hash}</code></dd></div>
             <div><dt>{labels.exports.csv.columns.filter_hash}</dt><dd><code>{snapshot.filter_hash}</code></dd></div>

@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { PRODUCT_PARETO_LIMIT, PRODUCT_PARETO_VERSION, productPareto, type ProductPareto } from "@/application/chart-pareto";
 import { chartHeights, chartRowHeights } from "@/application/chart-theme";
-import { channelsLabel, demoAlias, formatAxisPercent, formatHeadlineAmount } from "@/application/copy";
+import { channelsLabel, formatAxisPercent, formatHeadlineAmount, snapshotResolver } from "@/application/copy";
 import { channelAliasTerms, l1ClauseLengths, L1_MAX_CJK } from "../scripts/lib/copy-scan.mjs";
 import { deltaTone, formatAmountL1, formatAmountL2, formatCount, formatPeriodL1, formatRateL1, formatRateL2, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { productHighlights } from "@/application/product-highlights";
@@ -53,13 +53,13 @@ async function load(name: string, input: DatasetInput): Promise<Loaded> {
   const dataset = validateDataset(input).dataset!;
   const snapshot = await createSnapshot(dataset, {}, await hashInput(input));
   const comparison = compareProducts(dataset, snapshot.report.scope);
-  const alias = demoAlias(dataset.manifest.dataset_id);
+  const resolver = snapshotResolver(snapshot);
   const { previous_period: previous, current_period: current, channels } = comparison.scope;
-  const ctx = { previous, current, alias };
+  const ctx = { previous, current, resolver };
   const every = dataset.manifest.channels.every(channel => channels.includes(channel));
   const scope: ProductChartScope = {
     ctx, current: formatPeriodL1(current.start, current.end, { days: false, anchor: snapshot.data_as_of }), previous: formatPeriodL1(previous.start, previous.end, { days: false, anchor: snapshot.data_as_of }),
-    channels: every ? labels.shell.periodBar.filter.allChannels : channelsLabel(channels, alias),
+    channels: every ? labels.shell.periodBar.filter.allChannels : channelsLabel(channels, resolver),
   };
   const html = renderToStaticMarkup(createElement(ProductComparisonPanel, { dataset, snapshot, onEvidence: () => undefined }));
   return { name, dataset, snapshot, rows: comparison.rows, ctx, scope, html };
@@ -199,7 +199,7 @@ describe("V4-4 G14 商品毛利為負的商品累計（有負值時渲染）", (
       const table = byTestId(details, PRODUCTS_PARETO_TABLE_TESTID);
       expect([...table.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1]), name).toEqual([labels.products.pageV3.columns.product, fill(labels.format.units.yuanColumn, { label: `${labels.shell.periods.current}${SHORT}` }), fill(labels.format.units.yuanColumn, { label: copy.pareto.columns.cumulative }), copy.pareto.columns.share]);
       const rows = tableRows(table);
-      expect(rows, name).toEqual(pareto.allRows.map(entry => [productChartLabel(entry.row, set.ctx.alias), formatAmountL2(entry.value.value), formatAmountL2(entry.cumulative.value), formatRateL2(entry.share.value)]));
+      expect(rows, name).toEqual(pareto.allRows.map(entry => [productChartLabel(entry.row, set.ctx.resolver), formatAmountL2(entry.value.value), formatAmountL2(entry.cumulative.value), formatRateL2(entry.share.value)]));
       expect(rows.at(-1)!.slice(2), name).toEqual([formatAmountL2(pareto.total.value), formatRateL2("1.000000000000")]);
       expect(table.match(/class="number-link(?: negative)?"/g), name).toHaveLength(pareto.count * 3);
       expect(details, name).toContain(escapeAttr(fill(copy.pareto.tableNote, { metric: METRIC })));
@@ -225,7 +225,7 @@ describe("V4-4 G14 商品毛利為負的商品累計（有負值時渲染）", (
         const n = index + 1;
         const cumulative = table.evidenceOf(row, column("cumulative"))!;
         expect(cumulative).toMatchObject({ title: fill(copy.pareto.drawer.cumulativeTitle, { n, metric: METRIC }), formula: fill(copy.pareto.drawer.cumulativeFormula, { n, metric: METRIC }), metric: row.entry.cumulative, valueKind: "level", metricVersion: PRODUCT_PARETO_VERSION, definition: fill(copy.pareto.drawer.cumulativeDefinition, { n, metric: METRIC }), formulaTechnical: copy.pareto.drawer.cumulativeFormulaTechnical });
-        expect(cumulative.components!.map(item => item.label)).toEqual(pareto.allRows.slice(0, n).map(entry => productChartLabel(entry.row, set.ctx.alias)));
+        expect(cumulative.components!.map(item => item.label)).toEqual(pareto.allRows.slice(0, n).map(entry => productChartLabel(entry.row, set.ctx.resolver)));
         const share = table.evidenceOf(row, column("share"))!;
         const numerator = fill(copy.pareto.drawer.numerator, { n, metric: METRIC }), denominator = fill(copy.pareto.drawer.denominator, { metric: METRIC });
         expect(share).toMatchObject({ title: fill(copy.pareto.drawer.shareTitle, { n, metric: METRIC }), metric: row.entry.share, unitOverride: "percent", valueKind: "level", metricVersion: PRODUCT_PARETO_VERSION, formula: fill(copy.pareto.drawer.shareFormula, { numerator, denominator }), definition: fill(copy.pareto.drawer.shareDefinition, { n, metric: METRIC }) });
@@ -313,8 +313,8 @@ describe("V4-4 G13 商品毛利兩期差額", () => {
     const lead = productHighlights(set.rows).worstChange[0];
     expect(lead.changes.gross_profit.value).toBe("-30198.96");
     const section = byTestId(set.html, PRODUCTS_VARIANCE_TESTID);
-    expect(section).toContain(`<h4 id="products-variance-title">${escapeAttr(fill(copy.variance.title.decrease, { product: productChartLabel(lead, true), metric: METRIC, amount: formatHeadlineAmount("-30198.96") }))}</h4>`);
-    expect(productChartLabel(lead, true)).toBe(fill(copy.product, { sku: "SKU-020", channel: labels.data.demoChannelAlias.MARKETPLACE }));
+    expect(section).toContain(`<h4 id="products-variance-title">${escapeAttr(fill(copy.variance.title.decrease, { product: productChartLabel(lead, set.ctx.resolver), metric: METRIC, amount: formatHeadlineAmount("-30198.96") }))}</h4>`);
+    expect(productChartLabel(lead, set.ctx.resolver)).toBe(fill(copy.product, { sku: "SKU-020", channel: labels.data.demoChannelAlias.MARKETPLACE }));
     expect(section).toContain(`<p class="sub" id="products-variance-sub">${escapeAttr(fill(copy.variance.subtitle, { section: fill(copy.variance.section, { metric: METRIC }), current: set.scope.current, previous: set.scope.previous, scope: set.scope.channels }))}</p>`);
   });
 
@@ -324,7 +324,7 @@ describe("V4-4 G13 商品毛利兩期差額", () => {
       const all = productHighlights(set.rows, set.rows.length);
       const table = byTestId(byTestId(set.html, PRODUCTS_VARIANCE_TESTID), PRODUCTS_VARIANCE_TABLE_TESTID);
       const expected = [...all.worstChange, ...all.bestChange];
-      expect(tableRows(table), name).toEqual(expected.map(row => [productChartLabel(row, set.ctx.alias), formatAmountL2(row.previous.metrics.gross_profit.value), formatAmountL2(row.current.metrics.gross_profit.value), formatSignedDelta(row.changes.gross_profit.value, "L2")]));
+      expect(tableRows(table), name).toEqual(expected.map(row => [productChartLabel(row, set.ctx.resolver), formatAmountL2(row.previous.metrics.gross_profit.value), formatAmountL2(row.current.metrics.gross_profit.value), formatSignedDelta(row.changes.gross_profit.value, "L2")]));
       expect(expected.length, name).toBe(set.rows.filter(row => row.changes.gross_profit.value !== null && Number(row.changes.gross_profit.value) !== 0).length);
     }
     // 示範資料 15 列減少、25 列增加；合成資料 6＋4（差額 0 的 2 列不列）。
@@ -514,7 +514,7 @@ describe("V4-10 G24 折扣率 × 商品毛利率散佈（商品頁進階 <detail
       const table = byTestId(details, PRODUCTS_SCATTER_TABLE_TESTID);
       expect([...table.matchAll(/<th scope="col"[^>]*>([^<]*)<\/th>/g)].map(match => match[1]), name).toEqual([labels.products.pageV3.columns.product, `${labels.shell.periods.current}${metricDefinitions.discount_rate.shortLabel}`, `${labels.shell.periods.current}${metricDefinitions.gross_margin.shortLabel}`]);
       const plotted = scatterRows(set);
-      expect(tableRows(table), name).toEqual(plotted.map(row => [productChartLabel(row, set.ctx.alias), formatRateL2(row.current.metrics.discount_rate.value), formatRateL2(row.current.metrics.gross_margin.value)]));
+      expect(tableRows(table), name).toEqual(plotted.map(row => [productChartLabel(row, set.ctx.resolver), formatRateL2(row.current.metrics.discount_rate.value), formatRateL2(row.current.metrics.gross_margin.value)]));
       expect(table.match(/class="number-link"/g)?.length ?? 0, name).toBe(plotted.length * 2);
       expect(details.indexOf(`<p class="note">${escapeAttr(scatterCopy.limitNote)}</p>`), `${name}：限制句在表格之後`).toBeGreaterThan(details.indexOf("</table>"));
       expect(set.html.split(escapeAttr(scatterCopy.limitNote)), `${name}：限制句只有一處（資料表 <details> 內）`).toHaveLength(2);

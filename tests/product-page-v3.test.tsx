@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { channelsLabel, conversionSentence, demoAlias } from "@/application/copy";
+import { channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
 import { formatCount, formatPeriodL1, metricDefinitions } from "@/application/presentation";
 import { productHighlights } from "@/application/product-highlights";
 import { createSnapshot, hashInput } from "@/application/workspace";
@@ -93,7 +93,7 @@ describe("V3-5 商品毛利頁（伺服器端渲染）", () => {
     const expected = (channels: string) => fill(page.scope, { current: formatPeriodL1(current.period.start, current.period.end, { days: false, anchor: snapshot.data_as_of }), previous: formatPeriodL1(previous.period.start, previous.period.end, { days: false, anchor: snapshot.data_as_of }), channels });
     expect(html).toContain(`<p class="product-scope" data-testid="product-scope">${expected(labels.shell.periodBar.filter.allChannels)}</p>`);
     const dtc = await render("golden", { filters: { channels: ["DTC"] } });
-    expect(dtc.html).toContain(expected(channelsLabel(["DTC"], demoAlias(dtc.dataset.manifest.dataset_id))));
+    expect(dtc.html).toContain(expected(channelsLabel(["DTC"], snapshotResolver(dtc.snapshot))));
     // allChannels 明確傳入時以它判斷（例如資料集只有部分通路被選）。
     const explicit = await render("golden", { allChannels: ["DTC", "MARKETPLACE", "OTHER"] });
     expect(explicit.html).not.toContain(` · ${labels.shell.periodBar.filter.allChannels} · `);
@@ -323,7 +323,7 @@ describe("V4-4 商品頁 G13：product-best 在 chart-products-variance 內；�
   async function varianceTree(name: string) {
     const { dataset, snapshot, html } = await render(name);
     const comparison = compareProducts(dataset, snapshot.report.scope);
-    const ctx = { previous: comparison.scope.previous_period, current: comparison.scope.current_period, alias: demoAlias(dataset.manifest.dataset_id) };
+    const ctx = { previous: comparison.scope.previous_period, current: comparison.scope.current_period, resolver: snapshotResolver(snapshot) };
     const scope: ProductChartScope = { ctx, current: "", previous: "", channels: "" };
     const lists = productHighlights(comparison.rows), all = productHighlights(comparison.rows, comparison.rows.length);
     const model = varianceSectionModel({ decrease: lists.worstChange, increase: lists.bestChange, allDecrease: all.worstChange, allIncrease: all.bestChange }, scope);

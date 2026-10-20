@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { track, type AnalyticsEvent } from "../src/application/analytics";
-import { channelsLabel, demoAlias, formatHeadlineAmount } from "../src/application/copy";
+import { channelsLabel, formatHeadlineAmount, snapshotResolver } from "../src/application/copy";
 import { diagnosisGroups } from "../src/application/diagnosis-group";
 import { deltaWord, formatAmountL1, formatDateL1, formatGrowth, formatMetric, formatPeriodL1, formatPointsValue, MINUS, metricDefinitions } from "../src/application/presentation";
 import { buildWeeklySummary, snapshotSentence, type WeeklySummaryInput } from "../src/application/weekly-summary";
@@ -193,7 +193,7 @@ describe("buildWeeklySummary：F1 週會摘要（PRD §10.2）", () => {
     expect(lines).toEqual([
       weekly.title,
       "golden 驗證資料",
-      fill(weekly.period, { current: span(golden, "current"), previous: span(golden, "previous"), channels: channelsLabel(golden.report.scope.channels, demoAlias(golden.report.dataset_id)) }),
+      fill(weekly.period, { current: span(golden, "current"), previous: span(golden, "previous"), channels: channelsLabel(golden.report.scope.channels, snapshotResolver(golden)) }),
       "",
       ...keyLines(golden),
       "",
@@ -228,7 +228,7 @@ describe("buildWeeklySummary：F1 週會摘要（PRD §10.2）", () => {
   it("示範資料：期間行寫兩期日期與天數（formatPeriodL1 不帶天數＋units.periodDays）", () => {
     const summary = buildWeeklySummary(input(demo, { datasetName: "示範資料" }));
     const lines = summary.text.split("\n");
-    expect(lines[2]).toBe(fill(weekly.period, { current: span(demo, "current"), previous: span(demo, "previous"), channels: channelsLabel(demo.report.scope.channels, true) }));
+    expect(lines[2]).toBe(fill(weekly.period, { current: span(demo, "current"), previous: span(demo, "previous"), channels: channelsLabel(demo.report.scope.channels, snapshotResolver(demo)) }));
     // 目前範圍涵蓋資料集全部通路時，期間行寫「全部通路」（PRD §10.2 範例；與一句話的範圍行、期間列同一個字）。
     const all = buildWeeklySummary(input(demo, { datasetName: "示範資料", allChannels: demo.report.scope.channels })).text.split("\n");
     expect(all[2]).toBe(fill(weekly.period, { current: span(demo, "current"), previous: span(demo, "previous"), channels: labels.shell.periodBar.filter.allChannels }));

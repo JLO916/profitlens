@@ -12,7 +12,6 @@ import { resolve } from "node:path";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { channelConclusion } from "../../src/application/chart-takeaways";
 import { chartHeights } from "../../src/application/chart-theme";
-import { demoAlias } from "../../src/application/copy";
 import { formatAmountL1 } from "../../src/application/presentation";
 import { fill, labels } from "../../src/i18n";
 import { openActionsExport, openScenarioExport } from "./actions-helpers-v3";
@@ -124,7 +123,7 @@ test("(5) G4 有 null 通路時（合成資料 LIVE）每根長條旁的標值�
   await importSynthetic(page);
   await gotoPage(page, "overview");
   const snapshot = await datasetSnapshot("synthetic");
-  const rows = channelConclusion(snapshot, { alias: demoAlias(snapshot.report.dataset_id) }).rows;
+  const rows = channelConclusion(snapshot).rows;
   expect(rows.some(row => row.current.value === null), "合成資料有本期資料待補的通路").toBe(true);
   const chart = page.getByTestId("channel-mix");
   const ticks = chart.locator(".recharts-yAxis-tick-labels text");

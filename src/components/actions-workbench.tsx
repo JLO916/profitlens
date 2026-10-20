@@ -4,7 +4,8 @@ import { createPortal } from 'react-dom';
 import type { Fact } from '@/domain/types';
 import { ACTION_EXECUTION_STATUSES, actionDocuments, addActionDraft, boardColumns, confirmBoundAction, editActionManagement, knownOwners, moveActionUp, pinAction, previewActionRebind, commitActionRebind, removeBoundAction, taipeiToday, type ActionContext, type ActionSource, type ActionWorkspace, type ActionRebindPreview, type ActionExecutionStatus, type BoundAction } from '@/application/action-workspace';
 import { formatDateL1, metricDefinitions } from '@/application/presentation';
-import { channelsLabel, demoAlias } from '@/application/copy';
+import { channelsLabel } from '@/application/copy';
+import { makeResolver } from '@/application/channel-settings';
 import { fill, labels } from '@/i18n';
 import type { EvidenceSelection } from './evidence-drawer';
 import { ActionEditor, AdDecisionBadge, evidenceTag, statusLabels, statuses, type ActionDocument } from './action-editor';
@@ -86,7 +87,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   function moveTo(id: string, status: ActionExecutionStatus, n: number) {
     try { onChange(editActionManagement(workspace, id, { execution_status: status })); pendingFocus.current = id; setNotice(fill(board.moved, { n, status: statusLabels[status] })); } catch { setNotice(ui.invalidInput); }
   }
-  function evidence(fact: Fact, context: ActionContext) { const alias = demoAlias(context.session.dataset_id); onEvidence({ sku: fact.scope.sku, title: fill(ui.evidenceTitle, { metric: metricDefinitions[fact.metric].label }), name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: `${context.session.dataset_hash !== source.snapshot.dataset_hash || context.session.stale ? ui.historicalPrefix : ''}${fact.scope.sku ? fill(ui.skuScope, { sku: fact.scope.sku }) : channelsLabel(fact.scope.channels, alias)}` }, context); }
+  function evidence(fact: Fact, context: ActionContext) { const resolver = makeResolver(undefined, context.session.dataset_id); onEvidence({ sku: fact.scope.sku, title: fill(ui.evidenceTitle, { metric: metricDefinitions[fact.metric].label }), name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: `${context.session.dataset_hash !== source.snapshot.dataset_hash || context.session.stale ? ui.historicalPrefix : ''}${fact.scope.sku ? fill(ui.skuScope, { sku: fact.scope.sku }) : channelsLabel(fact.scope.channels, resolver)}` }, context); }
   async function prepareRebind(id: string) {
     const ticket = ++request.current; const captured = latest.current; setPreview(null); setBusy(id); setNotice('');
     try {
