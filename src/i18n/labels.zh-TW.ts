@@ -3041,6 +3041,11 @@ export const storage = {
     saving: "正在儲存，還沒有替換資料…",
   },
   buttons: { downloadBackup: "下載備份檔", saveLocal: "存在這台電腦", deleteLocal: "刪除這台電腦上的資料", restorePreview: storageButtonsRestorePreview, clear: "清空目前資料" },
+  // ── V42-1a 錨點：還原通路設定（D-V42-9＝A）
+  v42: {
+    /** 讀入備份時 payload.channel_settings 裡不在這份資料集的通路代碼被略過（RestoredWorkspace.dropped_channel_codes）：{n}＝略過的代碼數，{codes}＝代碼清單（頓號分隔）。本批只定義字串與還原結果欄位，畫面顯示在 V42-1b。 */
+    droppedChannels: "讀入備份時略過 {n} 個不在資料集裡的通路代碼：{codes}。",
+  },
 } as const;
 
 // ── empty：空狀態
