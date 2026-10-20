@@ -45,7 +45,8 @@
 | 批次 | 主題 | 大小 | 依賴（批次、拍板、人工關卡） | 狀態 |
 |---|---|---|---|---|
 | V42-0 | 基準與護欄（不改畫面；CLAUDE.md 取代；子集稽核清單） | M | V41-6 上線；D-V42-1 到 6、20、22；使用者同意 CLAUDE.md 草案 | 完成（2026-10-16；E2E 1,143／0／29；64 張 0 差異；`/` 首載 519,705（V42-1 起門檻 527,897）；390 TBT 五項通過；labels 快照 3,163；子集稽核 31 條；驗收見 `verification/revamp-v42-V42-0-acceptance.md`） |
-| V42-1 | 通路設定：顯示名稱、順序、群組的設定、解析與保存（開工前評估拆 1a 設定模組與備份／1b 編輯器與名稱套用） | M | V42-0；D-V42-8、9、13（示範資料的預設設定）、14、15（對照列） | 未開工 |
+| V42-1a | 通路設定：設定模組、名稱套用（`createSnapshot` 第 4 個參數、解析器、35 個檔）與備份（不改畫面） | M | V42-0；D-V42-9、13、14 | 進行中（2026-10-20 開工） |
+| V42-1b | 通路設定：編輯器（資料來源頁）、Excel 對照列、頁面狀態、E2E | M | V42-1a；D-V42-8、13、15 | 未開工 |
 | V42-2a | 群組層與單一通路層：期間列兩層選單、群組範圍、範圍文字、下鑽、子集稽核修正 | M | V42-1；D-V42-10、12 | 未開工 |
 | （preview） | 經使用者當次同意 push `revamp/v4.2` 建 preview，給 **H8** 用（D-V42-26） | — | V42-2a | — |
 | V42-2b | 全部通路畫面的群組合計列：`channel-groups.ts`、G4 精簡表、通路寬表、週會摘要的 `groups` 欄位（CSV 不變） | M | V42-2a；D-V42-7（含本批）、11、28 | 未開工 |
@@ -86,25 +87,42 @@
 
 ---
 
-## V42-1 通路設定（M；開工前評估拆 1a／1b）
+## V42-1 通路設定（M；2026-10-20 開工前拆成 1a／1b）
+
+開工前評估：第 2 項（`createSnapshot` 第 4 個參數、`copy.ts` 四個函式改收解析器、35 個檔約 175 處呼叫點改讀 `snapshot.channel_names`）加第 4 項（備份 schema、還原順序、四份備份測試）本身就是一個 M 批，而且**不改任何畫面**；第 3、5、7、8 項（編輯器、對照列、頁面狀態、E2E、說明頁）才會改畫面。拆開後 1a 的畫面基準 0 差異、驗收簡單，1b 只剩 UI。兩批都依賴 D-V42-8、9、13、14、15。原第 1–8 項的內容原樣分到下面兩節，沒有刪減。
+
+### V42-1a 設定模組、名稱套用與備份（M；不改任何畫面）
 
 **範圍**
-1. 新純模組 `src/application/channel-settings.ts`（PRD §3.1）：型別、對 `manifest.channels` 的驗證與名稱清理（四條規則、NFC、不重複）、`resolveChannelLabel`、群組解析（成員集合精確比對）、`synthetic-demo*` 的預設設定＝既有 `demoChannelAlias`；`tests/channel-settings.test.ts`。
-2. 名稱套用（D-V42-14）：`createSnapshot(dataset, filters, hash, settings?)` 加第 4 個選填參數，解析結果放進 `WorkspaceSnapshot` 的選填 `channel_names`；repo 的 10 個呼叫點每處都傳入 `Active.channel_settings`（`src/components/dashboard.tsx:277、341、362`、`src/components/meeting-page.tsx:95`、`src/components/multi-scenario-workbench.tsx:56`、`src/application/action-workspace.ts:143`、`src/application/workspace-backup.ts:245、446、508`、`src/application/review-session.ts:113`；備份還原在 `restoreV4` 讀出 `payload.channel_settings` 之後才建快照；呼叫點清單見 PRD §3.4）；`copy.ts` 的 `channelLabel`、`channelsLabel`、`scopeLabel`、`categoryLabel` 改收解析器；35 個檔的呼叫點改讀 `snapshot.channel_names`；所有既有字串與匯出位元組不變；單元測試「試算頁單一通路快照與還原後快照的範圍文字等於設定的顯示名稱」；驗收文件列改到的檔數。
-3. 編輯器（D-V42-8）：資料來源頁 `DataWorkspace` 的「通路設定」區（`<details>` 收合；每個通路一列：顯示名稱、群組、順序；按鈕「新增群組」「套用設定」；「要注意」`<details>` 放「顯示名稱只改畫面；CSV、備份與 AI 用的仍是通路代碼。」）；在 `workspace-panels` chunk 內，不進 `/` 首載。設定存在 `Active`（React state），不用模組全域變數。本批群組只能建立與指派，還不能在期間列選（V42-2a）。
-4. 儲存（D-V42-9）：v5 信封加選填 `payload.channel_settings`，沒有設定時不寫鍵；「沒有設定」＝使用者的設定與預設沒有差（示範別名是由 `dataset_id` 推出的隱含預設，永遠不寫進 `channel_settings`；寫出前先與預設比對、去掉等於預設的欄位，任一 `label`、`group`、`order` 非預設才寫鍵）；還原時丟棄未知代碼並提示；`tests/backup-schema-v5.test.ts`（加「示範資料未改設定時備份文字逐位元組等於 v4.1.2」）、`backup-restore-matrix.test.ts`、`workspace-backup.test.ts`、`auto-save.test.ts` 同批；示範與 golden 的備份輸出位元組不變。
-5. 匯出對照列（D-V42-15）：Excel「版本與來源」加「通路設定」對照列（代碼、顯示名稱、群組），只加列；人讀匯出的範圍文字改用解析器（群組名要到 V42-2a 才會出現）；CSV、JSON 維持代碼；人讀欄位跳脫（含 `=`、`+`、`-`、`@` 開頭）。
-6. 隱私：AI 快照負載不含名稱（單元測試）；批次開工時查 `docs/AI_CONTRACT.md` 與現有寫出函式的跳脫。
-7. 頁面狀態 `data-channel-settings`（synthetic-4-channel 加設定）；`mounted-testids` M1（收合內容保持掛載）；E2E 四尺寸：在資料來源頁設定名稱與群組、下載備份再還原、顯示名稱出現在總覽與健檢；`keyboard-walk` 加通路設定區的里程碑。
-8. 說明頁：`data` 區既有截圖若被改到，同批 `write`；新步驟文字留到 V42-5。
+1. 新純模組 `src/application/channel-settings.ts`（PRD §3.1）：型別（`version: "channel-settings-v1"`、`channels[] { code, label?, group?, order? }`、`groups[] { id, label, order }`）、對 `manifest.channels` 的驗證與名稱清理（四條規則、NFC、通路與群組之間不重複、可等於自己的代碼）、未知代碼丟棄並回報、`synthetic-demo*` 的預設設定＝既有 `demoChannelAlias`（隱含預設，永遠不寫進備份）、與預設比對後的正規化（等於預設的欄位去掉、剩空就是「沒有設定」）、名稱解析器（代碼 → 顯示名稱；群組依成員集合解析，順序無關）、`order` 穩定排序；`tests/channel-settings.test.ts`。
+2. 名稱套用（D-V42-14）：`createSnapshot(dataset, filters, hash, settings?)` 加第 4 個選填參數，解析結果放進 `WorkspaceSnapshot` 的選填 `channel_names`（代碼 → 顯示名稱）與選填 `channel_groups`（群組 id、名稱、成員代碼，給 V42-2a 用），`filter_hash`、`dataset_hash` 不變；repo 的 10 個呼叫點每處都傳入 `Active.channel_settings`（`src/components/dashboard.tsx` 3 處、`meeting-page.tsx`、`multi-scenario-workbench.tsx`、`src/application/action-workspace.ts`、`review-session.ts`、`workspace-backup.ts` 3 處；備份還原在 `restoreV4` 讀出 `payload.channel_settings` 之後才建快照；清單見 PRD §3.4）；`Active` 加選填 `channel_settings`（React state，本批沒有 UI 寫入它）；`copy.ts` 的 `channelLabel`、`channelsLabel`、`scopeLabel`、`categoryLabel` 改收解析器（過渡期同時接受舊的 `alias: boolean`，整合後移除），35 個檔的呼叫點改讀 `snapshot.channel_names`；所有既有字串與示範／golden 的匯出位元組不變；單元測試「試算頁單一通路快照與還原後快照的範圍文字等於設定的顯示名稱」；子集稽核 12c（`review-session.ts:126` 的單一通路 `scopeLabel`）在本批改成解析器；驗收文件列改到的檔數。
+3. 儲存（D-V42-9）：v5 信封加選填 `payload.channel_settings`，沒有設定時不寫鍵（「沒有設定」＝與預設沒有差）；還原時丟棄未知代碼並以既有的還原提示機制提示（字串 `storage.v42.*`）；`tests/backup-schema-v5.test.ts`（加「示範資料未改設定時備份文字逐位元組等於 v4.1.2」）、`backup-restore-matrix.test.ts`、`workspace-backup.test.ts`、`auto-save.test.ts` 同批；v1 到 v4 信封帶 `channel_settings` 一律 `INVALID_WORKSPACE_FORMAT`；示範與 golden 的備份輸出位元組不變。
+4. 隱私：AI 快照負載不含顯示名稱與群組名（單元測試）；開工時查 `docs/AI_CONTRACT.md` 與現有寫出函式（CSV、XLSX 人讀欄位）的跳脫並記在驗收文件。
+5. 人讀匯出的範圍文字改用解析器（Excel 範圍文字、PPT、一頁摘要、週會摘要、會議紀錄）；CSV、JSON 維持代碼；對照列留到 1b。
 
-**依賴**：V42-0；D-V42-8、9、13（示範資料的預設設定）、14、15。
+**依賴**：V42-0；D-V42-9、13、14。
+
+**允許變動畫面**：無。64 張與 V42-0 0 差異（沒有 UI；`channel_settings` 沒有值時所有畫面與匯出逐位元組相同）。
+
+**驗收重點**：既有字串逐字相同（三份快照）；示範／golden 的匯出位元組不變（`export-numeric-baseline` 與備份位元組測試）；備份矩陣 v1 到 v5 全部還原；有設定時備份往返相等；試算頁單一通路快照與還原後快照的範圍文字等於設定的顯示名稱；AI 快照負載不含名稱；`/` First Load 差額只含 `channel-settings.ts` 與 `copy.ts`／`workspace.ts` 的改動（寫出差額組成）；390 五項不退；`GUIDE_MEDIA=check` 0 差異。
+
+**同批 labels 與測試**：`storage.v42.*`（還原提示；「── V42-1a 錨點」）；`testids-v42-added.txt` 不追加（沒有新 testid）；`feature-retention.csv` 中 `batch`＝V42-1 的備份與匯出列打勾（其餘 V42-1 列在 1b）。
+
+### V42-1b 編輯器、對照列與 E2E（M）
+
+**範圍**
+1. 編輯器（D-V42-8）：資料來源頁 `DataWorkspace` 的「通路設定」區（`<details>` 收合；每個通路一列：顯示名稱、群組、順序；按鈕「新增群組」「套用設定」；「要注意」`<details>` 放「顯示名稱只改畫面；CSV、備份與 AI 用的仍是通路代碼。」）；在 `workspace-panels` chunk 內，不進 `/` 首載。套用時寫進 `Active.channel_settings` 並重算快照（走既有的 `applyFilters` 路徑）。本批群組只能建立與指派，還不能在期間列選（V42-2a）。
+2. 匯出對照列（D-V42-15）：Excel「版本與來源」加「通路設定」對照列（代碼、顯示名稱、群組），只加列；人讀欄位跳脫（含 `=`、`+`、`-`、`@` 開頭）。
+3. 頁面狀態 `data-channel-settings`（synthetic-4-channel 加設定：自有＝DTC＋SOCIAL、平台＝MARKETPLACE＋LIVE）；`mounted-testids` M1（收合內容保持掛載）；E2E 四尺寸：在資料來源頁設定名稱與群組、下載備份再還原、顯示名稱出現在總覽與健檢；`keyboard-walk` 加通路設定區的里程碑。
+4. 說明頁：`data` 區既有截圖若被改到，同批 `write`；新步驟文字留到 V42-5。
+
+**依賴**：V42-1a；D-V42-8、13、15。
 
 **允許變動畫面**：09 資料來源 × 4（通路設定區預設收合時只多一行 summary）；新 17 通路設定編輯器展開 × 4。其餘 0 差異（期間列本批不改）。
 
-**驗收重點**：既有字串與示範／golden 的匯出位元組逐字相同；示範資料未改設定時備份文字逐位元組等於 v4.1.2；備份矩陣 v1 到 v5 全部還原；試算頁單一通路快照與還原後快照的範圍文字等於設定的顯示名稱；`/` First Load 差額只含新字串（首載 chunk 清單無新元件模組）；390 五項不退（資料來源頁會升，要量）；B9 資料來源頁 ≤ 2,629；`GUIDE_MEDIA=check` 0 差異或已 `write` 並寫理由；AI 快照負載不含名稱。
+**驗收重點**：B9 資料來源頁 ≤ 2,629；390 資料來源 TBT 不退（會升，要量）；`GUIDE_MEDIA=check` 0 差異或已 `write` 並寫理由；`/` First Load 差額只含新字串（首載 chunk 清單無新元件模組）；備份往返含編輯器寫入的設定。
 
-**同批 labels 與測試**：`data.channelSettingsV42.*`、`exports.v42.*`、`storage.v42.*`（「── V42-1 錨點」）；`testids-v42-added.txt` 追加；`feature-retention.csv` 中 `batch`＝V42-1 的列打勾。
+**同批 labels 與測試**：`data.channelSettingsV42.*`、`exports.v42.*`（「── V42-1b 錨點」）；`testids-v42-added.txt` 追加 `channel-settings`、`channel-settings-row-{code}`、`channel-settings-group-{groupId}`；`feature-retention.csv` 中其餘 `batch`＝V42-1 的列打勾。
 
 ---
 
