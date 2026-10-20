@@ -46,8 +46,8 @@ export interface MeetingScenariosInput {
   references: readonly Pick<ScenarioSelectionRef, "channel" | "plan_id">[];
   /** 會議範圍的通路（review.meeting_filters.channels）：列的順序。 */
   channels: readonly string[];
-  /** 通路名稱：會議固定來源的名稱解析器（V42-1a 過渡期同時接受 demoAlias 的 boolean；MeetingPage 改傳解析器後移除 boolean）。 */
-  alias: boolean | NameResolver;
+  /** 通路名稱：會議固定來源的名稱解析器（MeetingPage 的 alias；沒有設定時是該資料集的隱含預設，示範資料是既有別名）。 */
+  alias: NameResolver;
   /** 會議本期（formatPeriodL1，M/D–M/D）。 */
   period: string;
 }

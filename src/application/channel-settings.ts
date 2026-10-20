@@ -15,7 +15,7 @@ export interface ResolvedChannelGroup { id: string; label: string; members: stri
 export interface NameResolver { channel(code: string): string; category(code: string): string; names: ChannelNames }
 export interface ChannelSettingsValidation { settings: ChannelSettings; droppedCodes: string[]; invalidNames: string[] }
 
-/** 與 copy.ts 既有的 demoAlias 同一條規則：dataset_id 以 synthetic-demo 開頭才套示範別名。 */
+/** v4.1.2 copy.ts 的 demoAlias 的同一條規則（整合後只剩這裡）：dataset_id 以 synthetic-demo 開頭才套示範別名。 */
 export function isDemoDataset(datasetId: string): boolean {
   return datasetId.startsWith("synthetic-demo");
 }

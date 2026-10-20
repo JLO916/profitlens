@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { l1ClauseLengths, L1_MAX_CJK, channelAliasTerms } from "../scripts/lib/copy-scan.mjs";
+import { makeResolver } from "@/application/channel-settings";
 import { chartColors, chartHeights, chartRowHeights } from "@/application/chart-theme";
 import { emptyActionWorkspace } from "@/application/action-workspace";
 import { buildManagerSummary, exportManagerSummaryMarkdown, type SummaryScenario } from "@/application/manager-summary";
@@ -44,7 +45,7 @@ const renderPage = (state: Meeting7) => renderToStaticMarkup(createElement(Meeti
 const scenario = (channel: string, delta: string | null, status: SummaryScenario["status"] = "current"): SummaryScenario => ({ id: `ctx-${channel}::${planId(channel)}::1`, name: planName(channel), status, scopeLabel: channel, baseline: "270.00", contribution: delta === null ? null : String(270 + Number(delta)), delta, assumptions: [] });
 const modelInput = (rows: [string, string | null, SummaryScenario["status"]?][], patch: Partial<MeetingScenariosInput> = {}): MeetingScenariosInput => ({
   scenarios: rows.map(([channel, delta, status]) => scenario(channel, delta, status)), references: rows.map(([channel]) => ({ channel, plan_id: planId(channel) })),
-  channels: [...CHANNELS], alias: false, period: "8/2–8/2", ...patch,
+  channels: [...CHANNELS], alias: makeResolver(undefined, ""), period: "8/2–8/2", ...patch,
 });
 
 describe("G15 會議實例模型（純函式）", () => {

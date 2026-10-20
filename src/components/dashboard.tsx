@@ -22,7 +22,7 @@ import { buildManagerSummary, exportManagerSummaryMarkdown } from "@/application
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { fill, labels } from "@/i18n";
 import { channelLabel, channelsLabel, ruleCopy, snapshotResolver } from "@/application/copy";
-import type { ChannelSettings } from "@/application/channel-settings";
+import { makeResolver, type ChannelSettings } from "@/application/channel-settings";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
 import { MeetingEntry, currentViewDecisionContext, downloadMeetingMarkdown } from "./meeting-entry";
@@ -566,7 +566,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const presets = active ? periodPresets(active.dataset.manifest, { previous: { start: dates.previousStart, end: dates.previousEnd }, current: { start: dates.currentStart, end: dates.currentEnd }, comparison_mode: comparisonMode }) : [];
   const presetMatches = (preset: PeriodPreset) => preset.status === "ready" && preset.comparison_mode === comparisonMode && preset.previous.start === dates.previousStart && preset.previous.end === dates.previousEnd && preset.current.start === dates.currentStart && preset.current.end === dates.currentEnd;
   // V42-1a：期間列的通路名稱讀快照的 channel_names（沒有設定時是示範別名的隱含預設）；沒有資料時不會用到。
-  const alias = active ? snapshotResolver(active.snapshot) : false;
+  const alias = active ? snapshotResolver(active.snapshot) : makeResolver(undefined, "");
   // 會議頁的目標（同一份資料才帶進摘要）；固定物件身分，避免每次 render 重算會議摘要。
   const meetingTargets = useMemo(() => active ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : null, [active]);
   // V3-2a：「資料就緒」改為「資料到 {date}」（§8.3 #26）；資料到的日期已在狀態文字內，旁邊只留資料集名稱。

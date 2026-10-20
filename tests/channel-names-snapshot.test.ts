@@ -66,9 +66,8 @@ describe("V42-1a 快照的通路名稱", () => {
     const demoInput = fixture("demo"), goldenInput = fixture("golden");
     const demo = await createSnapshot(validateDataset(demoInput).dataset!, {}, await hashInput(demoInput));
     const golden = await createSnapshot(validateDataset(goldenInput).dataset!, {}, await hashInput(goldenInput));
-    expect(scopeLabel(scopeOf(demo), snapshotResolver(demo))).toBe(scopeLabel(scopeOf(demo), true));
     expect(scopeLabel(scopeOf(demo), snapshotResolver(demo))).toBe(`${labels.overview.sections.total}（${labels.data.demoChannelAlias.DTC}、${labels.data.demoChannelAlias.MARKETPLACE}）`);
-    expect(scopeLabel(scopeOf(golden), snapshotResolver(golden))).toBe(scopeLabel(scopeOf(golden), false));
+    expect(scopeLabel(scopeOf(golden), snapshotResolver(golden))).toBe(`${labels.overview.sections.total}（${golden.report.scope.channels.join("、")}）`);
     expect(snapshotResolver(golden).channel("DTC")).toBe("DTC");
     // 示範資料加了設定：沒有改到的通路仍是既有別名。
     const demoNamed = await createSnapshot(validateDataset(demoInput).dataset!, {}, await hashInput(demoInput), { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "DTC", label: "官網" }], groups: [] });

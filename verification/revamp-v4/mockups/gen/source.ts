@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { demoAlias } from "@/application/copy";
+import { type NameResolver } from "@/application/channel-settings";
+import { snapshotResolver } from "@/application/copy";
 import { parseTargets, type TargetSet } from "@/application/targets";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
@@ -29,8 +30,8 @@ export interface MockupSource {
   input: DatasetInput;
   dataset: Dataset;
   snapshot: WorkspaceSnapshot;
-  /** 示範資料套用通路別名（官網 · DTC、平台 · MARKETPLACE），其他資料集維持代碼。 */
-  alias: boolean;
+  /** 通路名稱解析器（V42-1a 起 copy.ts 只收解析器）：示範資料套用通路別名（官網 · DTC、平台 · MARKETPLACE），其他資料集維持代碼；輸出與 v4 的 boolean 路徑逐字相同。 */
+  alias: NameResolver;
   targets: TargetSet | null;
 }
 
@@ -55,5 +56,5 @@ export async function loadSource(spec: SourceSpec): Promise<MockupSource> {
     const bytes = new Uint8Array(readFileSync(resolve(spec.targetsFile)));
     targets = parseTargets({ name: "targets.csv", bytes }, dataset.manifest.channels).set;
   }
-  return { spec, input, dataset, snapshot, alias: demoAlias(dataset.manifest.dataset_id), targets };
+  return { spec, input, dataset, snapshot, alias: snapshotResolver(snapshot), targets };
 }

@@ -13,6 +13,7 @@ import { buildReviewDecisionContext, createReviewSession, rebuildReviewSnapshot,
 import { addActionDraft, editActionManagement, emptyActionWorkspace, pinAction, taipeiToday, type ActionWorkspace } from "@/application/action-workspace";
 import { exportMeetingMarkdown, finalizeMeeting, freezeMeeting, MAX_MEETING_HISTORY, removeMeeting, validateMeeting, type Meeting } from "@/application/meeting";
 import { buildManagerSummary } from "@/application/manager-summary";
+import { makeResolver } from "@/application/channel-settings";
 import { channelsLabel, formatHeadlineAmount } from "@/application/copy";
 import { formatAmountL1, formatAmountL2, formatDateL1, formatGrowth, formatPeriodL1, formatSignedDelta } from "@/application/presentation";
 import { exportWorkspaceBackup, restoreWorkspaceBackup } from "@/application/workspace-backup";
@@ -95,6 +96,8 @@ const page = labels.meeting.page, record = labels.meeting.record, copy = labels.
 /** V3-4a：總覽會議入口的字串搬到本期一句話區塊（labels.overview.snapshotUi）。 */
 const entryUi = labels.overview.snapshotUi;
 const NOW = "2026-10-03T06:00:00.000Z";
+/** V42-1a：沒有 channel_names 的快照用隱含預設——golden 是代碼、示範資料是既有別名。 */
+const GOLDEN_NAMES = makeResolver(undefined, "golden-v1"), DEMO_NAMES = makeResolver(undefined, "synthetic-demo-12w-v1");
 const inputs = { volume_change_pct: "0", discount_change_pp: "0", fulfillment_change_pct: "-10", ad_change_pct: "0", one_time_cost: "0", assumptions_accepted: true };
 async function source(name = "golden", filters: AnalysisFilters = {}) {
   const input = fixture(name); const dataset = validateDataset(input).dataset!;
@@ -178,7 +181,7 @@ describe("R6-2 meeting page with a draft", () => {
     for (const name of [labels.meeting.form.name, labels.meeting.form.date]) expect(basics).toContain(`<span class="sr-only">${name}</span>`);
     // 固定範圍一行（動作列下方）：來源狀態與通路、兩期（M/D）、資料到。
     const scopeLine = text(html.slice(html.indexOf('<p class="meeting-scope-line">')));
-    expect(scopeLine).toContain(`${fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(["DTC", "MARKETPLACE"], false) })} · ${fill(pageV3.scopeLine, { previous: formatPeriodL1("2026-08-01", "2026-08-01", { anchor: "2026-08-03" }), current: formatPeriodL1("2026-08-02", "2026-08-02", { anchor: "2026-08-03" }), asOf: formatDateL1("2026-08-03", { anchor: "2026-08-03" }) })}`);
+    expect(scopeLine).toContain(`${fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(["DTC", "MARKETPLACE"], GOLDEN_NAMES) })} · ${fill(pageV3.scopeLine, { previous: formatPeriodL1("2026-08-01", "2026-08-01", { anchor: "2026-08-03" }), current: formatPeriodL1("2026-08-02", "2026-08-02", { anchor: "2026-08-03" }), asOf: formatDateL1("2026-08-03", { anchor: "2026-08-03" }) })}`);
     expect(scopeLine).toContain(labels.meeting.buttons.updateMeetingSource);
     expect(html).not.toContain('data-testid="review-view-difference"');
     // ①②③ 由會議摘要（固定範圍）提供：淨營收 +220.00、扣廣告後貢獻 −315.00（golden 手算）；V3-2b 起主層用 L1 方向詞＋成長率。
@@ -558,7 +561,7 @@ describe("V4-6 G15 會議實例（議程 5）", () => {
     const [chart] = findAll(tree, element => element.type === MeetingScenariosChart);
     expect(chart).toBeDefined();
     const context = buildReviewDecisionContext(state.review, state.scenarios, state.actions);
-    expect(chart.props).toMatchObject({ scenarios: context.scenarios, references: state.review.selected_scenarios, channels: state.review.meeting_filters.channels, alias: false, period: formatPeriodL1("2026-08-02", "2026-08-02", { days: false, anchor: "2026-08-03" }) });
+    expect(chart.props).toMatchObject({ scenarios: context.scenarios, references: state.review.selected_scenarios, channels: state.review.meeting_filters.channels, alias: expect.objectContaining({ names: {} }), period: formatPeriodL1("2026-08-02", "2026-08-02", { days: false, anchor: "2026-08-03" }) });
   });
 });
 
@@ -813,10 +816,10 @@ describe("R6-F2 channel aliases follow the meeting's own data", () => {
     // V3-7：差異的完整句子在橫幅「檢視差異」的 popover 裡（C22＋C14）。
     const banner = block(html, "review-view-difference");
     expect(text(banner.slice(banner.indexOf('<div class="ui-popover meeting-banner-popover">'), banner.indexOf("</details>")))).toBe(fill(copy.viewDifference, {
-      meetingChannels: channelsLabel(channels, false), meetingStart: "2026-08-02", meetingEnd: "2026-08-02",
-      viewChannels: channelsLabel(demo.snapshot.report.scope.channels, true), viewStart: demo.snapshot.report.current.period.start, viewEnd: demo.snapshot.report.current.period.end, datasetNote: copy.viewDifferenceDataset,
+      meetingChannels: channelsLabel(channels, GOLDEN_NAMES), meetingStart: "2026-08-02", meetingEnd: "2026-08-02",
+      viewChannels: channelsLabel(demo.snapshot.report.scope.channels, DEMO_NAMES), viewStart: demo.snapshot.report.current.period.start, viewEnd: demo.snapshot.report.current.period.end, datasetNote: copy.viewDifferenceDataset,
     }));
-    expect(text(html)).toContain(fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(channels, false) }));
+    expect(text(html)).toContain(fill(copy.sourceLine, { sourceStatus: copy.sourceFixed, channels: channelsLabel(channels, GOLDEN_NAMES) }));
     const agenda = block(html, "meeting-agenda");
     for (const channel of channels) expect(agenda).toContain(`aria-label="${fill(copy.scenarioSelect, { channel })}"`);
     expect(text(agenda)).not.toContain(labels.data.demoChannelAlias.DTC);

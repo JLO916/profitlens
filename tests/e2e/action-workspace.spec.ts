@@ -3,6 +3,7 @@ import { appendFile, readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { fill, labels } from '../../src/i18n';
+import { makeResolver } from '../../src/application/channel-settings';
 import { channelsLabel } from '../../src/application/copy';
 import { formatAmountL1, formatAmountL2, formatAmountL3, formatCount, formatDateL1 } from '../../src/application/presentation';
 import { chartColors } from '../../src/application/chart-theme';
@@ -69,7 +70,7 @@ test('PL05 診斷帶入精確證據、跨通路草稿、歷史來源與五工作
  let doc=JSON.parse(await downloadDecision(page,'json'));expect(doc.actions[0].fact_ids).toEqual(ids);expect(doc.actions[0].evidence_confirmed).toBe(false);expect(doc.actions[0].binding.scope.channels).toEqual(['DTC','MARKETPLACE']);
  await selectChannel(page,'MARKETPLACE');await expect(first.getByLabel(labels.actions.form.owner,{exact:true})).toBeEnabled();await expect(first).not.toContainText(labels.actions.form.staleBadge);
  await first.getByRole('button',{name:evidenceButton(aw.viewEvidenceItem,'2026-08-02',cmAfter)}).first().click();
- await expectDrawerAmount(page,'255.00');await expect(evidenceDrawer(page)).toContainText(channelsLabel(['DTC','MARKETPLACE'],false));await page.keyboard.press('Escape');
+ await expectDrawerAmount(page,'255.00');await expect(evidenceDrawer(page)).toContainText(channelsLabel(['DTC','MARKETPLACE'],makeResolver(undefined,'golden-v1')));await page.keyboard.press('Escape');
  for(let n=2;n<=5;n++)await page.getByRole('button',{name:labels.actions.buttons.addAction,exact:true}).click();
  for(let n=1;n<=3;n++)await page.getByTestId(`action-${n}`).getByRole('button',{name:labels.actions.buttons.pin,exact:true}).click();
  await page.getByTestId('action-4').getByRole('button',{name:labels.actions.buttons.pin,exact:true}).click();await expect(page.getByTestId('action-notice')).toContainText(aw.maxPinned);

@@ -15,7 +15,7 @@ import type { ExcelMeeting } from "@/application/excel-export";
 import { downloadText } from "@/application/download";
 import { track } from "@/application/analytics";
 import { deltaTone, formatAmountL1, formatAmountL2, formatDateL1, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
-import { channelLabel, channelsLabel, demoAlias, snapshotResolver } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
 import { makeResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import { scenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
@@ -176,8 +176,6 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
 
   // 會議的通路名稱看會議固定的來源快照（golden 不套示範別名；有設定時是它的 channel_names）；來源還沒重建好時用該資料集的隱含預設。「目前看的」才用目前檢視的快照。
   const alias = ready ? snapshotResolver(ready.snapshot) : makeResolver(undefined, reviewDatasetId(review)), viewAlias = snapshotResolver(source.snapshot);
-  // 過渡期：方案圖（meeting/scenarios-chart.tsx）仍收 boolean 的示範別名，整合名稱解析器後改傳 alias。
-  const chartAlias = demoAlias(reviewDatasetId(review));
   const context = buildReviewDecisionContext(review, scenarioWorkspace, actionWorkspace, alias);
   const actions = actionDocuments(actionWorkspace);
   const date = review.meeting_date ?? taipeiToday();
@@ -350,7 +348,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
             <AgendaItem n={5} title={record.agenda.scenarios}>
               <p className="meeting-agenda-note">{page.scenariosNote}</p>
               {/* V4-6 代理 B：G15 會議實例（chart-meeting-scenarios，h4、inline）在每通路選入列之前；V4-6 整合（審查 R1-V46-S1）：一律渲染，沒有選入方案時是等高空狀態（下方的區段型空狀態維持 v3、DOM 不變）。 */}
-              <MeetingScenariosChart scenarios={context.scenarios} references={review.selected_scenarios} channels={scope.channels} alias={chartAlias} period={formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: review.data_as_of })} />
+              <MeetingScenariosChart scenarios={context.scenarios} references={review.selected_scenarios} channels={scope.channels} alias={alias} period={formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: review.data_as_of })} />
               {context.scenarios.length ? <div className="meeting-scenarios" data-testid="meeting-scenario-results">{scenarioRows}<p className="meeting-agenda-note">{summaryCopy.scenarioNote}</p></div> : <div className="meeting-scenarios">{scenarioRows}<div className="ui-empty-block meeting-scenarios-empty" data-testid="meeting-scenario-results-empty"><p className="ui-empty-title">{labels.empty.stateV3.meetingNoScenarioTitle}</p><p>{labels.empty.stateV3.meetingNoScenarioBody}</p>{onGoToScenarios && <button type="button" className="ui-btn ui-btn-text" data-testid="meeting-go-scenarios" onClick={onGoToScenarios}>{labels.empty.stateV3.meetingGoToScenarios}</button>}</div></div>}
               {alertFor("scenarios")}
             </AgendaItem>

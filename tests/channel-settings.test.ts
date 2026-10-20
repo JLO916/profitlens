@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryLabel, channelLabel, channelsLabel, demoAlias, scopeLabel } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, scopeLabel } from "@/application/copy";
 import {
   CHANNEL_SETTINGS_VERSION, defaultChannelSettings, isDemoDataset, isValidChannelName, makeResolver, normalizeChannelSettings, orderedChannels,
   resolveChannelGroups, resolveChannelNames, snapshotChannelFields, validateChannelSettings, type ChannelSettings,
@@ -83,30 +83,32 @@ describe("channel-settings：群組解析與順序", () => {
 });
 
 describe("channel-settings：示範資料的隱含預設讓既有別名輸出逐字相同", () => {
-  it("isDemoDataset 與 demoAlias 同一條規則", () => {
-    for (const id of [DEMO_ID, "synthetic-demo", "golden-v1", "alternative-manual-v1", "synthetic-4-channel-v1", ""]) expect(isDemoDataset(id)).toBe(demoAlias(id));
+  it("isDemoDataset：dataset_id 以 synthetic-demo 開頭才是示範資料（v4.1.2 copy.ts demoAlias 的同一條規則）", () => {
+    for (const id of [DEMO_ID, "synthetic-demo"]) expect(isDemoDataset(id)).toBe(true);
+    for (const id of ["golden-v1", "alternative-manual-v1", "synthetic-4-channel-v1", ""]) expect(isDemoDataset(id)).toBe(false);
   });
   it("defaultChannelSettings：示範資料的 label＝demoChannelAlias（只放 manifest 裡的代碼）、不預設群組；其他資料集沒有 label", () => {
     expect(defaultChannelSettings(DEMO_ID, [...DEMO_CHANNELS, "SHOPEE"])).toEqual(settings([{ code: "DTC", label: labels.data.demoChannelAlias.DTC }, { code: "MARKETPLACE", label: labels.data.demoChannelAlias.MARKETPLACE }, { code: "SHOPEE" }]));
     expect(defaultChannelSettings("golden-v1", DEMO_CHANNELS)).toEqual(settings([{ code: "DTC" }, { code: "MARKETPLACE" }]));
   });
-  it("解析器與 boolean 路徑逐字相同：通路、多通路、範圍文字、品類", () => {
+  it("解析器輸出與 v4.1.2 的 boolean 路徑逐字相同：通路、多通路、範圍文字、品類", () => {
     const demo = makeResolver(undefined, DEMO_ID), plain = makeResolver(undefined, "golden-v1");
     const fromNames = makeResolver(resolveChannelNames(undefined, DEMO_ID, DEMO_CHANNELS), DEMO_ID);
+    // v4.1.2 copy.ts 的 boolean 路徑：alias 為 true 時 demoChannelAlias[code] || code、demoCategoryAlias[code] || code；false 時是代碼。
+    const legacyChannel = (code: string) => labels.data.demoChannelAlias[code] || code, legacyCategory = (code: string) => labels.data.demoCategoryAlias[code] || code;
     for (const code of [...DEMO_CHANNELS, "SHOPEE"]) {
-      expect(channelLabel(code, demo)).toBe(channelLabel(code, true));
-      expect(channelLabel(code, fromNames)).toBe(channelLabel(code, true));
-      expect(channelLabel(code, plain)).toBe(channelLabel(code, false));
+      expect(channelLabel(code, demo)).toBe(legacyChannel(code));
+      expect(channelLabel(code, fromNames)).toBe(legacyChannel(code));
       expect(channelLabel(code, plain)).toBe(code);
     }
-    expect(channelsLabel(DEMO_CHANNELS, demo)).toBe(channelsLabel(DEMO_CHANNELS, true));
+    expect(channelsLabel(DEMO_CHANNELS, demo)).toBe(DEMO_CHANNELS.map(legacyChannel).join("、"));
     expect(channelsLabel(DEMO_CHANNELS, demo)).toBe(`${labels.data.demoChannelAlias.DTC}、${labels.data.demoChannelAlias.MARKETPLACE}`);
-    expect(scopeLabel({ kind: "all", channels: [...DEMO_CHANNELS] }, demo)).toBe(scopeLabel({ kind: "all", channels: [...DEMO_CHANNELS] }, true));
+    expect(scopeLabel({ kind: "all", channels: [...DEMO_CHANNELS] }, demo)).toBe(`${labels.overview.sections.total}（${DEMO_CHANNELS.map(legacyChannel).join("、")}）`);
     expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, demo)).toBe(labels.data.demoChannelAlias.DTC);
     expect(scopeLabel({ kind: "sku", channels: ["DTC"], sku: "SKU-1" }, plain)).toBe("DTC／SKU-1");
     for (const code of [...Object.keys(labels.data.demoCategoryAlias), "UNKNOWN", ""]) {
-      expect(categoryLabel(code, demo)).toBe(categoryLabel(code, true));
-      expect(categoryLabel(code, plain)).toBe(categoryLabel(code, false));
+      expect(categoryLabel(code, demo)).toBe(legacyCategory(code));
+      expect(categoryLabel(code, plain)).toBe(code);
     }
     expect(demo.names).toEqual(labels.data.demoChannelAlias);
     expect(plain.names).toEqual({});
