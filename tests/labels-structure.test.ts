@@ -62,6 +62,25 @@ const V4_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v41/labels-
  * v4 快照之後 v4.1 在 guide. 與 shell.guideV41. 下新增的字串沒有凍結值，所以 v4.2 另以這份快照逐鍵逐字比對（三份快照：v3 2,581、v4 2,839、v4.1 3,163）。
  */
 const V41_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v42/labels-v41.flat.json"), "utf8")) as Record<string, string>;
+/**
+ * ── V42-G1 錨點（插入批；使用者 2026-10-20 提供說明首頁改寫稿；docs/revamp-v4.2/06_BATCHES.md V42-G1、D-V42-32、33）──
+ * v4.2「既有字串一字不改」的唯一例外：說明首頁 /guide 的改寫。例外快照只含改值與新增的 guide. 鍵（由改寫後的 guideLabels 產生，產生方式見 06_BATCHES V42-G1），
+ * 刪除的鍵明列在 V42_G1_REMOVED_KEYS；v4.1.2 快照的其他每個鍵（labels.zh-TW.ts 的 2,842 個與 guide 其餘的）仍逐字凍結，例外快照裡的字串也凍結（之後再改要重產快照並記決定）。
+ */
+const V42_G1_FLAT = JSON.parse(readFileSync(resolve("verification/revamp-v42/labels-guide-rewrite.flat.json"), "utf8")) as Record<string, string>;
+/** V42-G1 刪除的 15 個鍵：v4.1 獨特性 7 項的 title、body，與「這些做法的代價」那一段。 */
+const V42_G1_REMOVED_KEYS: readonly string[] = [
+  "guide.tradeoffs.body",
+  "guide.unique.items.bridge.body", "guide.unique.items.bridge.title",
+  "guide.unique.items.evidence.body", "guide.unique.items.evidence.title",
+  "guide.unique.items.local.body", "guide.unique.items.local.title",
+  "guide.unique.items.meeting.body", "guide.unique.items.meeting.title",
+  "guide.unique.items.rules.body", "guide.unique.items.rules.title",
+  "guide.unique.items.scenarios.body", "guide.unique.items.scenarios.title",
+  "guide.unique.items.taiwan.body", "guide.unique.items.taiwan.title",
+];
+/** 可以和 v4.1.2 快照不同的鍵＝例外快照的鍵（改值或新增）＋刪除清單；全部在 guide. 下。 */
+const V42_G1_EXCEPTIONS = new Set([...Object.keys(V42_G1_FLAT), ...V42_G1_REMOVED_KEYS]);
 /** V41-1 起才有的說明頁標籤檔（D-V41-12＝A'）；只給伺服器模組 import，不進工作台首載。 */
 const GUIDE_FILE = resolve("src/i18n/guide.zh-TW.ts");
 
@@ -258,9 +277,11 @@ describe("V42-0 labels 護欄：v4.1.2 既有字串逐鍵逐字不變，新葉�
     expect(V42_NEW_KEY_PREFIXES.filter(prefix => [...V3_NEW_KEY_PREFIXES, ...V4_NEW_KEY_PREFIXES, ...V41_NEW_KEY_PREFIXES].some(other => other.startsWith(prefix) || prefix.startsWith(other)))).toEqual([]);
   });
 
-  it("快照的每個鍵都還在（labels 或 guideLabels），字串逐字相同（v4.2 不改既有字串）", () => {
-    const changed = Object.entries(V41_FLAT).filter(([path, value]) => getAny(path) !== value).map(([path, value]) => `${path}：快照 ${JSON.stringify(value)}，現在 ${JSON.stringify(getAny(path))}`);
+  it("快照的每個鍵都還在（labels 或 guideLabels），字串逐字相同（v4.2 不改既有字串；V42-G1 說明首頁改寫的例外鍵另由下方「V42-G1」護欄凍結）", () => {
+    const changed = Object.entries(V41_FLAT).filter(([path, value]) => !V42_G1_EXCEPTIONS.has(path) && getAny(path) !== value).map(([path, value]) => `${path}：快照 ${JSON.stringify(value)}，現在 ${JSON.stringify(getAny(path))}`);
     expect(changed).toEqual([]);
+    // 例外只在 guide. 下：labels.zh-TW.ts 的 2,842 個鍵沒有任何例外。
+    expect([...V42_G1_EXCEPTIONS].filter(path => !path.startsWith("guide."))).toEqual([]);
   });
 
   it("labels.zh-TW.ts 快照以外的新葉節點只能在 V42_NEW_KEY_PREFIXES 下；guide.zh-TW.ts 快照以外的新葉節點只能在 guide. 下；LABEL_GROUPS 維持 24 組（沒有 guide 分組）", () => {
@@ -272,5 +293,50 @@ describe("V42-0 labels 護欄：v4.1.2 既有字串逐鍵逐字不變，新葉�
     expect(new Set(GUIDE_ENTRIES.map(([path]) => path)).size).toBe(GUIDE_ENTRIES.length);
     expect(GROUPS).toHaveLength(24);
     expect(GROUPS).not.toContain("guide");
+  });
+});
+
+describe("V42-G1 labels 護欄：說明首頁改寫的例外（只有例外快照的鍵與刪除清單可以和 v4.1.2 快照不同；改寫後的字串同樣凍結）", () => {
+  const GUIDE_ENTRIES = labelEntries(guideLabels);
+  const rewriteKeys = Object.keys(V42_G1_FLAT);
+  const changedKeys = rewriteKeys.filter(path => Object.hasOwn(V41_FLAT, path));
+  const addedKeys = rewriteKeys.filter(path => !Object.hasOwn(V41_FLAT, path));
+
+  it("例外快照：鍵已排序、全在 guide. 下、不重複、與刪除清單不重疊；刪除的 15 個鍵都在 v4.1.2 快照裡、現在都不存在", () => {
+    expect(rewriteKeys.length).toBeGreaterThan(0);
+    expect(rewriteKeys).toEqual([...rewriteKeys].sort());
+    expect(rewriteKeys.filter(path => !path.startsWith("guide."))).toEqual([]);
+    expect(V42_G1_REMOVED_KEYS.filter(path => !path.startsWith("guide."))).toEqual([]);
+    expect(new Set(V42_G1_REMOVED_KEYS).size).toBe(V42_G1_REMOVED_KEYS.length);
+    expect(V42_G1_REMOVED_KEYS.filter(path => Object.hasOwn(V42_G1_FLAT, path))).toEqual([]);
+    expect(V42_G1_REMOVED_KEYS.filter(path => !Object.hasOwn(V41_FLAT, path))).toEqual([]);
+    expect(V42_G1_REMOVED_KEYS.filter(path => getAny(path) !== undefined)).toEqual([]);
+    expect(V42_G1_REMOVED_KEYS).toHaveLength(15);
+  });
+
+  it("例外快照的每個鍵：guideLabels 現在的值逐字相同（改寫後的字串凍結）；在 v4.1.2 快照裡的鍵，值一定和 v4.1.2 不同（例外清單不比實際改動寬）", () => {
+    expect(Object.entries(V42_G1_FLAT).filter(([path, value]) => getAny(path) !== value).map(([path, value]) => `${path}：例外快照 ${JSON.stringify(value)}，現在 ${JSON.stringify(getAny(path))}`)).toEqual([]);
+    expect(changedKeys.filter(path => V41_FLAT[path] === V42_G1_FLAT[path])).toEqual([]);
+  });
+
+  it("例外清單＝實際改動：v4.1.2 快照裡 guide. 鍵現在不同（含被刪）的，剛好是例外快照的改值鍵加刪除清單；改值 15、新增 31、刪除 15", () => {
+    const differs = Object.entries(V41_FLAT).filter(([path, value]) => path.startsWith("guide.") && getAny(path) !== value).map(([path]) => path).sort();
+    expect(differs).toEqual([...changedKeys, ...V42_G1_REMOVED_KEYS].sort());
+    expect(changedKeys).toHaveLength(15);
+    expect(addedKeys).toHaveLength(31);
+  });
+
+  it("guideLabels 的每個葉節點不是在 v4.1.2 快照（未改）就是在例外快照（改值或新增）：沒有未凍結的說明頁字串；葉節點 321 − 15 ＋ 31＝337（V42-5 加新步驟時再放寬為新鍵只要在 guide. 下，或重產例外快照）", () => {
+    expect(GUIDE_ENTRIES.map(([path]) => path).filter(path => !Object.hasOwn(V41_FLAT, path) && !Object.hasOwn(V42_G1_FLAT, path))).toEqual([]);
+    expect(GUIDE_ENTRIES).toHaveLength(321 - 15 + 31);
+  });
+
+  it("GUIDE_SENTINELS（guide.hub.title、guide.why.lead）不在例外裡、逐字不變；h1 下的副標不再引用 brand.description（D-V42-32）", () => {
+    for (const path of ["guide.hub.title", "guide.why.lead"]) {
+      expect(V42_G1_EXCEPTIONS.has(path), path).toBe(false);
+      expect(getAny(path), path).toBe(V41_FLAT[path]);
+    }
+    expect(V41_FLAT["guide.hub.intro"]).toBe("{ui:brand.description}");
+    expect(getAny("guide.hub.intro")).not.toMatch(/\{ui:/);
   });
 });

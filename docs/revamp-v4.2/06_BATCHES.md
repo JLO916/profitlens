@@ -47,6 +47,7 @@
 | V42-0 | 基準與護欄（不改畫面；CLAUDE.md 取代；子集稽核清單） | M | V41-6 上線；D-V42-1 到 6、20、22；使用者同意 CLAUDE.md 草案 | 完成（2026-10-16；E2E 1,143／0／29；64 張 0 差異；`/` 首載 519,705（V42-1 起門檻 527,897）；390 TBT 五項通過；labels 快照 3,163；子集稽核 31 條；驗收見 `verification/revamp-v42-V42-0-acceptance.md`） |
 | V42-1a | 通路設定：設定模組、名稱套用（`createSnapshot` 第 4 個參數、解析器、35 個檔）與備份（不改畫面） | M | V42-0；D-V42-9、13、14 | 進行中（2026-10-20 開工） |
 | V42-1b | 通路設定：編輯器（資料來源頁）、Excel 對照列、頁面狀態、E2E | M | V42-1a；D-V42-8、13、15 | 未開工 |
+| V42-G1 | 說明首頁改寫（插入批；使用者 2026-10-20 提供改寫稿）：副標、為什麼、幫哪些人、獨特性（3 主張＋1 前提）、刻意不做的事、30 秒上手引言；只動 `/guide` 一頁，不碰工作台與 `labels.zh-TW.ts` | S | 無（不依賴 V42-1a／1b；D-V42-32、33 依建議值） | 完成（2026-10-22；不計入上線前 8 批；驗收結果見本檔 V42-G1 節） |
 | V42-2a | 群組層與單一通路層：期間列兩層選單、群組範圍、範圍文字、下鑽、子集稽核修正 | M | V42-1；D-V42-10、12 | 未開工 |
 | （preview） | 經使用者當次同意 push `revamp/v4.2` 建 preview，給 **H8** 用（D-V42-26） | — | V42-2a | — |
 | V42-2b | 全部通路畫面的群組合計列：`channel-groups.ts`、G4 精簡表、通路寬表、週會摘要的 `groups` 欄位（CSV 不變） | M | V42-2a；D-V42-7（含本批）、11、28 | 未開工 |
@@ -123,6 +124,48 @@
 **驗收重點**：B9 資料來源頁 ≤ 2,629；390 資料來源 TBT 不退（會升，要量）；`GUIDE_MEDIA=check` 0 差異或已 `write` 並寫理由；`/` First Load 差額只含新字串（首載 chunk 清單無新元件模組）；備份往返含編輯器寫入的設定。
 
 **同批 labels 與測試**：`data.channelSettingsV42.*`、`exports.v42.*`（「── V42-1b 錨點」）；`testids-v42-added.txt` 追加 `channel-settings`、`channel-settings-row-{code}`、`channel-settings-group-{groupId}`；`feature-retention.csv` 中其餘 `batch`＝V42-1 的列打勾。
+
+---
+
+## V42-G1 說明首頁改寫（插入批；使用者 2026-10-20 提供改寫稿）
+
+使用者 2026-10-20 提供 `/guide` 說明首頁的改寫稿（Claude Docs 文件「EC ProfitLens /guide 改寫稿（行銷角度）」，主流程逐字抄錄到 scratchpad `v42/guide-rewrite-draft.md`；D-V41-10／11：動機段可用使用者提供的文字）並指示套用。這是插入批：不在「上線前 8 批」裡、不依賴 V42-1a／1b、不改工作台任何畫面、不碰 `labels.zh-TW.ts` 與 `src/application`，可以和 V42-1a 平行；一個工作階段。改寫前先做兩份唯讀地圖（M1 結構地圖與實作計畫、M2 逐句事實核對），不屬實或部分屬實的句子依 M2 改成產品裡成立的說法，不留行銷句。
+
+**範圍**（只有 `/guide` 一頁；H1、兩顆按鈕、本頁目錄（含第 3 項「這套服務有什麼獨特性？」）、各功能區索引、示範影片與逐步文字、頁尾、11 個功能區頁都不動）
+1. 副標 `guide.hub.intro`（不再引用 `brand.description`，改成說明頁自己的一句；D-V42-32）與 meta description `guide.hub.description`。
+2. 「為什麼做這套服務」：`why.lead` 逐字不動（`GUIDE_SENTINELS`）；`why.body.0`、`why.body.1`、`why.status` 改寫（結語的「最快的方法是」因說明頁最高級黑名單改「直接」）。
+3. 「幫哪些人解決哪些問題」：引言、三個角色的「以前怎麼做」「在這裡怎麼做」、顧問／財務一句改寫（三句「想知道」與改寫稿逐字相同、不算改動）；欄名、「從哪裡開始」的連結（`GUIDE_WHO`）、「適合誰，還沒涵蓋什麼」不動。
+4. 「這套服務有什麼獨特性？」：v4.1 的 7 項改成 3 個主張（有序清單）＋1 個前提（不編號、角色卡樣式），每項固定四段「一般做法／在這裡（幾點）／對你的意義／在哪裡看得到（功能區連結）」；資料常數在新檔 `src/components/guide/guide-hub-data.ts`（`GUIDE_HUB_CLAIMS`、`GUIDE_HUB_PREMISE`、`GUIDE_HUB_UNIQUE_KEYS`、`GUIDE_TRADEOFF_KEYS`、`GUIDE_TRADEOFF_LINKS`），因為本批對 `src/application` 零改動（`guide.ts` 的 `GUIDE_UNIQUE` 留著、V42-G1 起沒有頁面讀它）。連結文字一律是功能區標題（`GuideAreaRef`），`traceable` 仍連 `/guide/overview#bridge`。
+5. 「這些做法的代價」改名「刻意不做的事」（改寫稿的「我們刻意不做的事」含語氣黑名單「我們」）：引言、三點、結語；第一點附「相關說明：匯入資料」連到 `/guide/import`（改寫稿的「有整理工具說明 → /docs/ORDER_AGGREGATION.md」含箭頭字元，而且說明首頁的站內連結只有 `/`、`/guide/{area}`；整理工具說明的連結在匯入資料頁的「開始前」）。
+6. 「30 秒上手」加一行引言 `quickstart.lead`；四步與影片不動。
+7. 依事實改寫（M2 核對；D-V42-33）：後台「只有成交金額和廣告 ROAS」→「看得到」；「欄位自動對照」→「由系統先對照、你再確認」；「要賣到多少才打平」→「才打平（扣廣告後貢獻 = 0）」；「決定有沒有兌現，下週開會時自動對帳」→「決定做到哪裡，下次開會時自動列出上次決議與置頂待辦的狀態」；「匯出 PDF、Excel…」→「匯出成 PDF、Excel…」（「匯出 PDF」是按鈕名）；「一鍵加入待辦」→「可以直接加入待辦」；引述的兩個問句改陳述句；兩處破折號改逗號；19 處介面字串改 `{ui:}` 引用（渲染後與改寫稿同字）。
+8. 護欄例外（D-V42-32）：`tests/labels-structure.test.ts` 加「── V42-G1 錨點」——改值 15 鍵＋新增 31 鍵凍結在 `verification/revamp-v42/labels-guide-rewrite.flat.json`（只含這些鍵），刪除 15 鍵明列在 `V42_G1_REMOVED_KEYS`；例外清單必須恰好等於實際差異，`labels.zh-TW.ts` 的 2,842 鍵與 guide 其餘 291 鍵仍逐字凍結，`GUIDE_SENTINELS` 不在例外裡。
+
+**依賴**：無（D-V42-32、33 依建議值；使用者提供改寫稿即指示）。
+
+**允許變動畫面**：15 說明首頁首屏 × 4（副標在首屏）。其餘 60 張 0 差異；工作台 0 差異（`labels.zh-TW.ts` 不動、`/` 首載不變）。本批在工作樹只跑單元測試與說明頁 E2E，畫面基準的更新與 Lighthouse 留給收尾（下方「執行結果」如實寫）。
+
+**驗收重點**：typecheck、lint 0、`audit:ui`（copy 四項黑名單不升）、`npm test -- --run` 全過（guide-content、guide-routes、labels-structure 三個改過的測試＋copy-style、design-lint、labels-coverage、testid-baseline 五份 0）、build、說明頁 E2E 四尺寸（`guide.spec`、`axe-sweep` 0 serious、`keyboard-walk` 的 `-guide` 鍵；在 3103 埠跑，不佔 3100）；`GUIDE_SENTINELS`（`guide.hub.title`、`guide.why.lead`）逐字不變；邊界：`git diff --stat 4ed65c7 HEAD -- src/domain fixtures docs/METRICS.md src/app/api vercel.json src/application` 必須為空；不加 testid、不加 npm 依賴、不 push。
+
+**同批 labels 與測試**：`guide.zh-TW.ts` 加「── V42-G1 錨點」；新鍵 `guide.unique.fields.{before,after,meaning}`、`guide.unique.items.{traceable,judgment,loop}.{title,before,after.0-2,meaning}`、`guide.unique.items.premise.{title,after.0-1,meaning}`、`guide.tradeoffs.{lead,items.sync,items.accounts,items.judgment,closing}`、`guide.quickstart.lead`（31）；改值 `guide.hub.{intro,description}`、`guide.why.{body.0,body.1,status}`、`guide.who.{lead,also}`、`guide.who.roles.{boss,manager,operator}.{before,after}`、`guide.unique.lead`、`guide.sections.tradeoffs`（15）；刪 `guide.unique.items.{evidence,bridge,rules,scenarios,meeting,local,taiwan}.{title,body}`、`guide.tradeoffs.body`（15）；`tests/guide-content.test.ts`、`tests/guide-routes.test.tsx`、`tests/labels-structure.test.ts`；`testids-v42-added.txt` 不追加；`verification/revamp-v41/e2e-text-assertions.csv` 不加列。
+
+例外快照的產生方式（在 repo 根目錄；只保留和 v4.1.2 快照不同或 v4.1.2 沒有的 `guide.` 鍵）：
+
+```bash
+node --input-type=module -e '
+import { readFileSync, writeFileSync } from "node:fs";
+import { loadGuideLabels } from "./scripts/lib/load-labels.mjs";
+import { labelEntries } from "./scripts/lib/copy-scan.mjs";
+const v41 = JSON.parse(readFileSync("verification/revamp-v42/labels-v41.flat.json", "utf8"));
+const guide = await loadGuideLabels();
+const entries = labelEntries(guide).filter(([path, value]) => v41[path] !== value).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+writeFileSync("verification/revamp-v42/labels-guide-rewrite.flat.json", JSON.stringify(Object.fromEntries(entries), null, 2) + "\n");
+console.log(`changed ${entries.filter(([p]) => p in v41).length} added ${entries.filter(([p]) => !(p in v41)).length}`);
+'
+# 輸出：changed 15 added 31
+```
+
+**執行結果**（2026-10-22，工作樹 `worktree-wf_4f423fca-ae6-3`，基準 `4ed65c7`；commit hash 見 `git log`）：typecheck 通過；lint 0；`audit:ui`（JSON 在主流程 scratchpad `v42/g1-ui-audit.json`）copy 指標與 V42-0 相同（blacklistSynonym 12、blacklistTone 0、blacklistJargon 0、arrows 0、noticePrefix 0、l1ClauseOverLimit 0；JSX 中文 0）；`npm test -- --run` 167 檔／3,583 全過（V42-0 是 3,577；＋6＝labels-structure 的 V42-G1 護欄 5、guide-routes 1）；`npm run build` 通過；說明頁 E2E（`guide.spec`、`axe-sweep`、`keyboard-walk`，四尺寸，3103 埠，設定檔是 `playwright.config.ts` 只改埠號的副本）83 通過／0 失敗／9 略過（略過的全是 keyboard-walk 既有的尺寸限制：七頁與 `/guide` 走查只跑 1440 與 390、768 走查只跑 tablet）；axe `guide-hub` 四尺寸 serious 0、違規 0；keyboard-walk `/guide`（1440、390 相同）里程碑 開啟工作台 1、本頁目錄第一項 3、影片控制 32，`aria-hidden` 內停留點 0、原生媒體停留點 2；`GUIDE_SENTINELS`（`guide.hub.title`、`guide.why.lead`）逐字不變（labels-structure 斷言）；邊界 `git diff --stat 4ed65c7 -- src/domain fixtures docs/METRICS.md src/app/api vercel.json src/application` 為空；不加 testid、不加依賴、不 push；3103 已停。**未執行**（留給主流程收尾，寫在這裡不視為完成）：contrast-check（本批不加 CSS、不加 token）、PUBLIC_DEMO 3100 的 capture 與 15 說明首頁 × 4 的畫面基準更新、`GUIDE_MEDIA=check`、launch-check、Lighthouse、`docs/STATUS.md`、`feature-retention.csv` GH1 列、驗收文件 `verification/revamp-v42-V42-G1-acceptance.md`。
 
 ---
 
@@ -258,7 +301,7 @@
 | 群組與品類對帳 | — | V42-2a 起群組＝成員 bigint 和、分割＝全部；V42-3 起 Σ 品類＝通路、每桶 `toEqual` `analyzeProducts`；V42-4 起 C3 恆等式；每批驗收文件列結果 |
 | 假貢獻擋牆 | — | V42-3 起：鍵集合 ⊆ `PRODUCT_METRICS ∪ {units_sold}`、正規式 0 次、品類證據無階梯 |
 | 備份矩陣 | v1 到 v5 | V42-1 起 v1 到 v5 全部還原；沒有設定時位元組與 v4.1.2 相同 |
-| labels 既有字串 | v3 2,581、v4 2,839、v41（V42-0 產生） | 每批三份逐鍵逐字相同；新葉節點只在 `V42_NEW_KEY_PREFIXES` 與 `guide.` 下；`LABEL_GROUPS` 24 組 |
+| labels 既有字串 | v3 2,581、v4 2,839、v41（V42-0 產生） | 每批三份逐鍵逐字相同；新葉節點只在 `V42_NEW_KEY_PREFIXES` 與 `guide.` 下；`LABEL_GROUPS` 24 組。V42-G1（D-V42-32）：說明首頁改寫的 `guide.` 例外鍵（改值 15、新增 31、刪除 15）以 `verification/revamp-v42/labels-guide-rewrite.flat.json` 與 `V42_G1_REMOVED_KEYS` 凍結，例外清單必須等於實際差異；`labels.zh-TW.ts` 沒有任何例外 |
 | testid 刪除數 | 五份 | 每批 0；每批把新增的 testid 追加到 `testids-v42-added.txt` |
 | design-lint、copy-style、chart-lint、copy-density | v4.1 最終上限 | 每批不升；`products.perspectivesV42.*` 的「賠錢」「虧損」計入黑名單；限制句不進主層 |
 | 畫面基準 | 64 張（V41-6） | V42-1 加 17、V42-2a 加 18、V42-3 加 19、20、V42-4 加 21、22，共 88 張；每批只允許該批列出的畫面有差異（清單以本檔各批的「允許變動畫面」為準） |

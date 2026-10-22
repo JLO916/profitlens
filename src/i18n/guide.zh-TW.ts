@@ -39,10 +39,14 @@ export const guideLabels = {
     hub: {
       /** h1。 */
       title: "服務介紹與使用說明",
+      // ── V42-G1 錨點：說明首頁改寫（使用者 2026-10-20 改寫稿）
+      // 副標、meta description、為什麼做這套服務、幫哪些人解決哪些問題、獨特性（3 主張＋1 前提，固定四段）、刻意不做的事、30 秒上手引言都依改寫稿（docs/revamp-v4.2/06_BATCHES.md V42-G1；D-V42-32、33）。
+      // 改值與新增的鍵凍結在 verification/revamp-v42/labels-guide-rewrite.flat.json（tests/labels-structure.test.ts「V42-G1」）；被護欄改掉的字（最快、我們、一鍵、箭頭）與依事實改寫的句子見 docs/DECISIONS.md 2026-10-20。
+      // h1（title）、兩顆按鈕（openApp、startHere）、tocAria、why.lead（GUIDE_SENTINELS）、who.fields、scope、fits、notYet、四步、影片、功能區目錄都逐字沿用 v4.1。
       /** <meta name="description"> 與分享摘要。 */
-      description: "為什麼做這套服務、幫哪些人解決哪些問題、有什麼獨特性，以及 30 秒上手的步驟。",
-      /** h1 下的一句話：直接引用 brand.description，不另寫口號（GUIDE_CONTENT §1.0）。 */
-      intro: "{ui:brand.description}",
+      description: "EC ProfitLens 把電商週會的獲利檢討做成固定流程：匯入三份日報，算出扣廣告後貢獻，每個數字可追到來源。看它為誰而做、和一般工具差在哪，30 秒上手。",
+      /** h1 下的一句話：V42-G1 起是說明頁自己的副標（v4.1 直接引用 brand.description，不另寫一句；D-V42-32）。 */
+      intro: "匯入銷售、通路費用、廣告三份日報，算出扣廣告後貢獻、拆出兩期差額；每個數字都能追到檔名與行號，要做的事直接帶進週會。",
       /** 主要按鈕（同分頁連到工作台 /）；說明頁頂端外框也用這一條。 */
       openApp: "開啟工作台",
       /** 次要連結（頁內錨點 #quickstart）。 */
@@ -50,13 +54,13 @@ export const guideLabels = {
       /** 本頁目錄 <nav> 的可及名稱。 */
       tocAria: "本頁目錄",
     },
-    /** 說明首頁的段落標題（h2；scope、tradeoffs 是 h3）。列入 L1：每個子句 ≤ 14 字。 */
+    /** 說明首頁的段落標題（h2；scope、tradeoffs 是 h3）。列入 L1：每個子句 ≤ 14 字。V42-G1：tradeoffs 改「刻意不做的事」（改寫稿的「我們刻意不做的事」含 copy-style 語氣黑名單「我們」）；unique 不改（D-V42-33）。 */
     sections: {
       why: "為什麼做這套服務",
       who: "這套服務幫哪些人解決哪些問題？",
       scope: "適合誰，還沒涵蓋什麼",
       unique: "這套服務有什麼獨特性？",
-      tradeoffs: "這些做法的代價",
+      tradeoffs: "刻意不做的事",
       quickstart: "30 秒上手",
       areas: "各功能區的操作說明",
       // ── V41-2a 錨點：功能區頁的段落名稱（PRD §3.3）。answers、before 是 h1 下方摘要的欄名；notes、next 是 h2（頁內錨點 #notes、#next）。
@@ -65,63 +69,118 @@ export const guideLabels = {
       notes: "要注意",
       next: "下一步",
     },
-    /** 為什麼做這套服務（GUIDE_CONTENT §1.1 產品口吻；D-V41-9＝A，使用者 2026-10-14 同意用草稿，H7 再確認）。 */
+    /** 為什麼做這套服務（V42-G1 改寫稿 §2；lead 逐字沿用 v4.1，是 GUIDE_SENTINELS 之一，不改）。 */
     why: {
       lead: "淨營收漲了，扣完平台抽成、物流與廣告，到底多賺還是少賺？",
       body: [
-        "電商團隊每週開會，常卡在這一題。平台後台看得到成交金額和廣告 ROAS，平台抽成、商品成本和廣告費卻分散在不同報表；多半要有人把幾個後台的資料貼進 Excel 拼起來，數字被問到時，再回頭翻原始檔。",
-        "EC ProfitLens 把這件事做成固定的流程：匯入銷售、通路費用、廣告三份每日報表，用同一套算法一層一層扣到扣廣告後貢獻，比較兩期差在哪裡，再把要做的事帶進週會。每個數字都能點開，看到公式、檔名和行號。",
+        "電商團隊每週開會，常卡在這一題。蝦皮、momo、官網各有後台，看得到成交金額和廣告 ROAS；平台抽成、金流物流、商品成本和廣告費卻散在不同報表，有的含稅、有的未稅。多半是某個人在週會前把幾份報表貼進 Excel 拼成一張表；會議上一個數字被追問，就得回頭翻原始檔，討論停在「下次再確認」。",
+        "EC ProfitLens 把這件事做成固定流程：匯入銷售、通路費用、廣告三份每日報表，用同一套算法從淨營收一層一層扣到扣廣告後貢獻；比較兩期差在哪裡、差額來自哪個通路哪項費用；再把要做的事變成待辦，把決定記進{ui:shell.nav.meeting.headline}。每個數字都能點開，看到公式、CSV 檔名和行號，被問到時答案就在畫面上。",
       ],
-      status: "示範資料是虛構的合成資料，還沒有真實商家的試用結果，所以這裡只說明它做什麼，不談成效。",
+      /** 結語（渲染成 guide-note）：改寫稿的「最快的方法是載入示範資料」因說明頁最高級黑名單改成「直接載入示範資料」（D-V42-33）。 */
+      status: "這一頁只說明它做什麼，不談成效：示範資料是虛構的合成資料，目前還沒有真實商家的試用結果。要判斷它適不適合你，直接{ui:shell.buttons.loadDemo}，花 30 秒點開幾個數字。",
     },
-    /** 這套服務幫哪些人解決哪些問題？（GUIDE_CONTENT §1.3）。每個角色一塊，fields 是各欄的名稱；「從哪裡開始」的功能區在 src/application/guide.ts 的 GUIDE_WHO。 */
+    /** 這套服務幫哪些人解決哪些問題？（V42-G1 改寫稿 §3）。每個角色一塊，fields 是各欄的名稱（與 v4.1 相同）；「從哪裡開始」的功能區在 src/application/guide.ts 的 GUIDE_WHO（不變）。 */
     who: {
-      lead: "同一份資料，老闆、主管和執行者看的深度不同；不用切換角色，往下展開就好。",
+      lead: "同一份資料，老闆、主管和執行者要的答案不同；不用切換角色或帳號，各自往下展開就好。",
       fields: { ask: "想知道", before: "以前怎麼做", after: "在這裡怎麼做", start: "從哪裡開始" },
       roles: {
         boss: {
           role: "老闆",
           ask: "本期多賺還是少賺、差多少、最大一項是什麼。",
-          before: "看得到成交金額和廣告 ROAS，扣完費用的結果要等人整理。",
-          after: "打開{ui:shell.nav.overview.headline}，最上面是{ui:overview.snapshotUi.heading}和五個關鍵數字，下面一張瀑布圖拆出兩期差額；會後可以印{ui:exports.variantsV3.names.boss}。",
+          /** 改寫稿的「後台只有成交金額和廣告 ROAS」是對第三方後台的絕對句、產品內無法驗證，改成「看得到」（D-V42-33）。 */
+          before: "後台看得到成交金額和廣告 ROAS；扣完抽成、物流、廣告的結果要等人整理，追問一個數字就要再等一輪。",
+          after: "打開{ui:shell.nav.overview.headline}，最上面的{ui:overview.snapshotUi.heading}說本期多賺或少賺多少，五個關鍵數字各附上期與差額，一張瀑布圖把兩期差額拆成九項。開會用{ui:shell.presentV3.enter}，會後印{ui:exports.variantsV3.names.boss}。",
         },
         manager: {
           role: "主管（行銷、營運）",
           ask: "差額來自哪個通路、哪一項費用，下一步要調什麼。",
-          before: "在幾個後台和 Excel 之間對數字，週會前趕一頁摘要。",
-          after: "{ui:shell.nav.diagnosis.headline}把問題按影響金額排好；{ui:shell.nav.scenarios.headline}算出調廣告、折扣或物流費之後，扣廣告後貢獻會差多少；再{ui:actions.buttons.addToActions}、在{ui:shell.nav.meeting.headline}寫下決議，{ui:overview.snapshotUi.copy}。",
+          before: "在幾個後台和 Excel 之間對數字；週會前趕一頁摘要，會後再把決議抄進另一份文件。",
+          after: "{ui:shell.nav.diagnosis.headline}把問題依影響金額排好；{ui:shell.nav.scenarios.headline}算出調廣告、折扣或物流費後，扣廣告後貢獻差多少、{ui:scenarios.sections.scenarioBreakeven}；看完直接{ui:actions.buttons.addToActions}、{ui:meeting.buttons.selectForMeeting}，寫下決議，{ui:overview.snapshotUi.copy}貼進群組。",
         },
         operator: {
           role: "執行者（分析、營運助理）",
           ask: "三份資料對不對，哪個檔、第幾行有問題，某個數字怎麼來的。",
-          before: "各平台報表欄位不同，含稅、未稅混在一起；數字被問到時要回頭翻檔案。",
-          after: "匯入精靈四步完成，含稅報表換算成未稅；錯誤訊息寫出檔名、第幾行和修法；任何數字都能開{ui:evidence.sections.evidence}，看到公式、檔名和行號。",
+          before: "各平台報表欄位名稱不同，含稅、未稅混在一起；被問到某個數字怎麼來的，只能回頭翻檔案。",
+          /** 改寫稿的「欄位自動對照」只在欄名完全符合標準時成立，其餘對照標「請確認」、按「確認對照」才算數，改成「由系統先對照、你再確認」（D-V42-33）。 */
+          after: "匯入精靈四步完成，欄位由系統先對照、你再確認，含稅報表逐列換算成未稅；資料問題寫出檔名、第幾行和修法，缺的列不會被當成 0；任何數字都能打開{ui:evidence.sections.evidence}，看到公式、檔名和行號。",
         },
       },
-      also: "也適合代營運與電商顧問（一頁摘要有{ui:exports.variantsV3.names.client}），以及需要核對數字的財務人員。",
+      also: "也適合代營運與電商顧問：一頁摘要有{ui:exports.variantsV3.names.client}，每個數字可追到來源，客戶追問時站得住。也適合需要核對數字的財務人員：金額以分為單位計算，兩期差額拆解附平衡檢核。",
       fits: "適合單一公司、新台幣、賣實體商品，在官網與市集多通路經營的團隊。",
       notYet: "目前還沒涵蓋訂閱制、服務業、製造成本與多幣別，也沒有廣告歸因與訂單、顧客層級的指標。扣廣告後貢獻還沒扣固定費和所得稅，和公司淨利不同。",
     },
-    /** 這套服務有什麼獨特性？（GUIDE_CONTENT §1.4；D-V41-11＝A：只寫可在產品裡驗證的做法）。「在哪裡看得到」的功能區在 src/application/guide.ts 的 GUIDE_UNIQUE。 */
+    /**
+     * 這套服務有什麼獨特性？（V42-G1 改寫稿 §4：3 個主張＋1 個前提，每項固定四段；D-V41-11＝A 只寫可在產品裡驗證的做法）。
+     * 項目順序與「在哪裡看得到」的功能區在 src/components/guide/guide-hub-data.ts 的 GUIDE_HUB_CLAIMS、GUIDE_HUB_PREMISE（v4.1 的 7 項 evidence…taiwan 已刪）。
+     * 引言的兩個引述問句改成陳述句（新字串用陳述句）；「一鍵」「會議紀錄文件」「匯出 PDF」等照護欄改寫，見各欄註解。
+     */
     unique: {
-      lead: "會算扣廣告後貢獻的工具不少；EC ProfitLens 把重點放在下面幾件事。",
+      lead: "算扣廣告後貢獻，Excel 和多數儀表板都做得到。EC ProfitLens 的設計繞著算完之後的場景：週會上有人指著一個數字問這怎麼來的、所以要怎麼做。它在三件事上刻意和一般做法不同，底下還有一個前提。",
+      /** 每一項四段的欄名（前提沒有「一般做法」）；where 沿用 v4.1。 */
+      fields: { before: "一般做法", after: "在這裡", meaning: "對你的意義" },
       /** 每一項下方連到功能區頁的那一行的名稱。 */
       where: "在哪裡看得到",
       items: {
-        evidence: { title: "每個數字都查得到出處", body: "點任一金額，或圖上的柱、點、格，都能看到公式、組成項目、CSV 檔名與行號；標題下一行是到分的精確值。" },
-        bridge: { title: "兩期差額拆到分", body: "九項差額加起來剛好等於扣廣告後貢獻的差額，並附平衡檢核。金額以分為單位精確計算，畫面上的萬、元都從精確值四捨五入。" },
-        rules: { title: "固定規則健檢，不打分數", body: "用固定規則檢查各通路與費用，{ui:overview.sections.impactLegend}，資料缺漏排最前；不用健康分數，也不用 AI 自評的信心分數。" },
-        scenarios: { title: "試算只算你填的假設", body: "從這一期的實績出發，填銷量、折扣、物流費、廣告預算的增減，算出單一通路的扣廣告後貢獻；銷量範圍固定在 −90% 到 +100%，不外推、不代填。" },
-        meeting: { title: "從數字走到週會決定", body: "{ui:diagnosis.sections.diagnosisList}可以{ui:actions.buttons.addToActions}，試算方案可以{ui:meeting.buttons.selectForMeeting}；{ui:meeting.buttons.finalizeMeeting}後紀錄就固定，下次自動和上次比較。匯出格式有 PDF、Excel、PowerPoint、Markdown 與 CSV。" },
-        local: { title: "資料留在你的瀏覽器", body: "原始 CSV 只在瀏覽器裡處理，免登入、不上傳；要不要{ui:storage.buttons.saveLocal}，由你決定。公開示範站不使用 AI，所有計算與健檢照常可用。" },
-        taiwan: { title: "照台灣多通路的習慣設計", body: "含稅報表換算成未稅（預設 5%）；內建蝦皮、momo、PChome、91APP、Shopline、Cyberbiz、Meta、Google 的欄位預設，目前只有蝦皮訂單匯出以真實檔驗證，其他請自行確認對照。" },
+        traceable: {
+          title: "每個數字都經得起追問",
+          before: "儀表板給一個總數，要核對只能回去翻原始檔；拆解加起來常對不上總差額，缺的資料默默變成 0。",
+          after: [
+            "點任一金額，或圖上的柱、點、格，打開{ui:evidence.sections.evidence}：到分的精確值、一層一層的算法，最底下的原始明細每一列都寫著 CSV 檔名與行號。",
+            "兩期扣廣告後貢獻的差額拆成九項，加起來剛好等於總差額，附平衡檢核；金額以分為單位計算，畫面上的萬、元才四捨五入。",
+            "缺的列不會當成 0，畫面寫「{ui:shell.status.missing}」；{ui:shell.nav.diagnosis.headline}把資料缺漏排在最前面。",
+          ],
+          meaning: "被追問時答案在畫面上，討論不用停在「下次確認」；拆解加得回去，不用解釋為什麼對不上。",
+        },
+        judgment: {
+          title: "工具不替你下判斷",
+          before: "給一個健康分數、一條預測曲線，或讓 AI 直接說該砍哪裡的預算；結論怎麼來的看不到，錯了也找不到原因。",
+          after: [
+            "{ui:shell.nav.diagnosis.headline}用固定規則檢查各通路與費用，{ui:overview.sections.impactLegend}，可能原因標為「待確認」；沒有健康分數，也沒有 AI 自評的信心分數。",
+            /** 「才打平」依畫面用字補成「打平（扣廣告後貢獻 = 0）」（零貢獻門檻不單寫「打平」；D-V42-33）。 */
+            "{ui:shell.nav.scenarios.headline}從本期實績出發，只算你填的銷量、折扣、物流費、廣告預算增減；銷量範圍固定在 −90% 到 +100%，不外推、不代填，並算出要賣到多少才打平（扣廣告後貢獻 = 0）、多少才維持現況。",
+            "AI 不計算任何金額：所有金額由固定算法計算並有測試；公開示範站不使用 AI，計算與健檢照常可用。會議決議由人選，方案或資料改動後要重新確認。",
+          ],
+          meaning: "每個數字、每條健檢項目都看得出怎麼來的，沒有黑箱；判斷和責任留在人手上，那本來就是週會要做的事。",
+        },
+        loop: {
+          title: "檢討直接開在工作台上，數字一路走到決議",
+          before: "分析在儀表板、待辦在另一個工具、決議在{ui:shell.nav.meeting.headline}文件；三邊對不起來，下週也沒人回頭比對。",
+          after: [
+            /** 改寫稿的「一鍵加入待辦」：「一鍵」是語氣黑名單，改「可以直接」。 */
+            "{ui:diagnosis.sections.diagnosisList}可以直接{ui:actions.buttons.addToActions}，帶著當時的數字與來源；待辦寫具體動作、負責人、期限、怎麼看成效、何時喊停，置頂三項會進一頁摘要。",
+            "試算方案{ui:meeting.buttons.selectForMeeting}；{ui:meeting.sections.meetingAgenda}依會議固定的資料自動組成，{ui:shell.presentV3.enter}只留結論。{ui:meeting.buttons.finalizeMeeting}後紀錄固定、只能查看，下次會議自動和上次比較。",
+            /** 「匯出 PDF」逐字是按鈕名（exports.buttons.exportPdf），改成「匯出成 PDF、…」。 */
+            "複製純文字週會摘要貼進群組，或匯出成 PDF、Excel、PowerPoint、Markdown、CSV；一頁摘要有{ui:exports.variantsV3.names.standard}、{ui:exports.variantsV3.names.boss}、{ui:exports.variantsV3.names.client}。",
+          ],
+          /** 改寫稿的「決定有沒有兌現，下週開會時自動對帳」：系統不判斷兌現，下次議程列出上次決議與置頂待辦的狀態；「對帳」站內專指金額對帳（D-V42-33）。 */
+          meaning: "從看到問題到記下決定不用換工具；決定做到哪裡，下次開會時自動列出上次決議與置頂待辦的狀態。",
+        },
+        premise: {
+          title: "前提：為台灣多通路電商設計，資料不離開你的電腦",
+          after: [
+            "含稅報表換算成未稅（預設 5% 營業稅），原值與換算值都看得到；內建蝦皮、momo、PChome、91APP、Shopline、Cyberbiz、Meta、Google 的欄位預設，目前只有蝦皮訂單匯出以真實檔驗證，其他請自行確認對照。新台幣、台北時間。",
+            "原始 CSV 只在瀏覽器裡讀取與計算，免登入、不上傳；要不要{ui:storage.buttons.saveLocal}由你決定，換電腦用備份檔。",
+          ],
+          meaning: "銷售與成本資料不用交給任何服務商就能開始用；不用申請帳號，30 秒就能用示範資料試。",
+        },
       },
     },
+    /**
+     * 刻意不做的事（V42-G1 改寫稿 §5，取代 v4.1 的「這些做法的代價」一段）：引言、三點、結語。
+     * sync 後附「相關說明：」連到匯入資料頁（src/components/guide/guide-hub-data.ts 的 GUIDE_TRADEOFF_LINKS）：改寫稿的「有整理工具說明 → /docs/ORDER_AGGREGATION.md」含箭頭字元（copy-style 棘輪 0），而且說明首頁的站內連結只有 /、/guide/{area}，整理工具說明的連結在匯入資料頁的「開始前」。
+     */
     tradeoffs: {
-      body: "資料要自己從各平台匯出，訂單明細要先整理成每日資料；沒有自動同步、提醒、多人帳號或手機 App；一次一人操作，開會時共看。",
+      lead: "為了做到免登入、不上傳、每個數字可追到原始檔，EC ProfitLens 放掉了幾項便利。前兩項是目前的取捨，第三項是刻意的設計。",
+      items: {
+        sync: "不自動同步：資料要自己從各平台匯出，訂單明細要先整理成每日資料（整理工具的說明在{ui:shell.buttons.importData}這一頁）。",
+        accounts: "沒有帳號系統：沒有多人帳號、提醒通知，也沒有手機 App（手機瀏覽器可以用）；一次一人操作，開會時共看一個畫面。",
+        judgment: "不預測、不打分數：試算只算你填的假設，健檢只排影響金額；想要「系統直接告訴我該怎麼做」的人，這裡不會滿意。",
+      },
+      closing: "如果你需要的是自動串接後台、多人協作的雲端系統，它目前不是那個工具。",
     },
-    /** 30 秒上手（GUIDE_CONTENT §1.5）；每一步的連結在 src/application/guide.ts 的 GUIDE_QUICKSTART。 */
+    /** 30 秒上手（GUIDE_CONTENT §1.5）；每一步的連結在 src/application/guide.ts 的 GUIDE_QUICKSTART。V42-G1：4 步之前加一行引言，四步逐字沿用 v4.1。 */
     quickstart: {
+      lead: "不用登入、不用準備資料；示範資料是虛構的合成資料。",
       steps: {
         step1: "開啟工作台，按{ui:shell.buttons.loadDemo}。",
         step2: "先讀最上面的{ui:overview.snapshotUi.heading}與關鍵數字，再看{ui:overview.sections.topThree}。",

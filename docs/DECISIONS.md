@@ -1,5 +1,15 @@
 # Decision log
 
+## 2026-10-20｜Revamp v4.2 V42-G1：說明首頁改寫（使用者改寫稿；D-V42-32、33）
+
+使用者 2026-10-20 提供 `/guide` 說明首頁的改寫稿（Claude Docs 文件「EC ProfitLens /guide 改寫稿（行銷角度）」）並指示套用；以插入批 V42-G1（`docs/revamp-v4.2/06_BATCHES.md`）實作，2026-10-22 在工作樹完成。套用前先做兩份唯讀地圖：M1（結構地圖、每一道護欄、鍵對照、實作計畫）與 M2（逐句事實核對：不屬實 0 條、部分屬實 5 條、全部 8 句既有揭露保留）。
+
+- **範圍**：只有 `/guide` 一頁。副標改成說明頁自己的一句（不再引用 `brand.description`）、meta description；「為什麼做這套服務」三段與結語；「幫哪些人解決哪些問題」的引言、三個角色的「以前怎麼做」「在這裡怎麼做」、顧問／財務一句；「這套服務有什麼獨特性？」從 7 項改成 3 個主張＋1 個前提，每項固定四段「一般做法／在這裡／對你的意義／在哪裡看得到」；「這些做法的代價」改名「刻意不做的事」（引言、三點、結語）；「30 秒上手」加一行引言。H1、兩顆按鈕、本頁目錄、各功能區索引、示範影片與逐步文字、頁尾、`why.lead`（`GUIDE_SENTINELS`）、「適合誰，還沒涵蓋什麼」、四步都不動。
+- **D-V42-32＝A（例外機制）**：這是 v4.2「既有字串一字不改」的第一個例外。只對改寫鍵開例外：改值 15 鍵＋新增 31 鍵由改寫後的 `guideLabels` 產生第二份快照 `verification/revamp-v42/labels-guide-rewrite.flat.json`（只含這些鍵），刪除 15 鍵明列在 `tests/labels-structure.test.ts` 的 `V42_G1_REMOVED_KEYS`；測試要求例外清單恰好等於實際差異，改寫後的字串同樣凍結，`labels.zh-TW.ts` 的 2,842 鍵與 guide 其餘鍵仍逐字凍結。使用者提供改寫稿即是改既有字串的指示，不另等回覆。
+- **D-V42-33＝A（被護欄或事實核對改掉的字句）**：目錄第 3 項維持「這套服務有什麼獨特性？」（改寫稿列為選配）；「最快的方法是載入示範資料」→「直接載入示範資料」（說明頁最高級黑名單）；「我們刻意不做的事」→「刻意不做的事」（語氣黑名單「我們」）；「一鍵加入待辦」→「可以直接加入待辦」（語氣黑名單「一鍵」）；「有整理工具說明 → /docs/ORDER_AGGREGATION.md」→ 去箭頭、改「相關說明：匯入資料」連到 `/guide/import`（首頁站內連結只有 `/`、`/guide/{area}`；整理工具說明在匯入資料頁的「開始前」）；「後台只有成交金額和廣告 ROAS」→「看得到」；「欄位自動對照」→「由系統先對照、你再確認」；「才打平」→「才打平（扣廣告後貢獻 = 0）」；「決定有沒有兌現，下週開會時自動對帳」→「決定做到哪裡，下次開會時自動列出上次決議與置頂待辦的狀態」；「匯出 PDF、…」→「匯出成 PDF、…」；「經營總覽的貢獻變化拆解」當連結文字 → 連結文字＝「經營總覽」、href 仍 `#bridge`；引述的兩個問句改陳述句；兩處破折號改逗號；19 處介面字串改 `{ui:}` 引用（渲染後同字）。只記錄不改：「站得住」「這裡不會滿意」「30 秒就能用示範資料試」。
+- **不碰 `src/application`**：獨特性的資料常數放新檔 `src/components/guide/guide-hub-data.ts`（`GUIDE_HUB_CLAIMS`、`GUIDE_HUB_PREMISE`、`GUIDE_TRADEOFF_KEYS`、`GUIDE_TRADEOFF_LINKS`），`src/application/guide.ts` 的 `GUIDE_UNIQUE`（v4.1 的 7 項）留著但 V42-G1 起沒有頁面讀它（之後碰 `src/application` 的批次可以順手移除）。不加 testid、不加 CSS（前提用 `.guide-roles`／`.guide-role` 卡片、四段用 `.guide-summary`／`.guide-notes`／`.guide-inline-list`）、不加依賴、不 push。
+- **影響文件**：`docs/revamp-v4.2/06_BATCHES.md`（批次總表一列＋ V42-G1 節＋護欄表 labels 列）、`09_DECISIONS_PENDING.md`（「V42-G1 新出現的待決事項」D-V42-32、33）；測試 `tests/guide-content.test.ts`、`tests/guide-routes.test.tsx`、`tests/labels-structure.test.ts`。畫面基準（15 說明首頁 × 4）與 Lighthouse 的更新留給收尾，06 的「執行結果」如實寫。
+
 ## 2026-10-16｜v4.2 拍板：D-V42-1 到 23 全部依建議值
 
 使用者 2026-10-16 回覆「部署 v4.1.2」「其他都依建議」。v4.2 規劃套件（`docs/revamp-v4.2/`，commit `ebc04eb`）的 23 件需要回覆的事項全部依建議值，8 件預設沿用照表；決定欄已填。重點：

@@ -14,6 +14,7 @@ import GuideHubPage, { metadata as hubMetadata } from "@/app/guide/page";
 import GuideAreaPage, { dynamicParams, generateMetadata, generateStaticParams } from "@/app/guide/[area]/page";
 import { GuideStep } from "@/components/guide/guide-step";
 import { GuideVideo, GuideVideos, guideVideosFor, manifestVideos, type GuideVideoEntry } from "@/components/guide/guide-video";
+import { GUIDE_HUB_CLAIMS, GUIDE_HUB_PREMISE, GUIDE_TRADEOFF_KEYS, GUIDE_TRADEOFF_LINKS } from "@/components/guide/guide-hub-data";
 
 // V41-1（docs/revamp-v4.1/06_BATCHES.md V41-1 第 9 項、01_PRD.md §3.1、§3.8、§3.10）：說明頁路由。
 // 說明首頁（外框＋頁面）以 react-dom/server SSR：h1 唯一、guide-hub／guide-toc、頁內錨點都有對應 id、沒有連到還沒上線的功能區頁（不產生 404 連結）；
@@ -49,8 +50,9 @@ describe("V41-1 說明首頁 SSR", () => {
     expect(html).toContain(`<a class="skip-link" href="#main-content">${labels.shell.sidebar.skipLink}</a>`);
   });
 
-  it("一句話引用 brand.description；兩個動作：開啟工作台（同分頁連到 /）、從 30 秒上手開始（#quickstart）", () => {
-    expect(decode(html)).toContain(labels.brand.description);
+  it("一句話是說明頁自己的副標 guide.hub.intro（V42-G1 起不再引用 brand.description；D-V42-32）；兩個動作：開啟工作台（同分頁連到 /）、從 30 秒上手開始（#quickstart）", () => {
+    expect(decode(html)).toContain(`<p class="guide-intro">${text(g.hub.intro)}</p>`);
+    expect(decode(html)).not.toContain(labels.brand.description);
     expect(html).toContain(`<a class="ui-btn ui-btn-primary" href="/">${guideLabels.guide.hub.openApp}</a>`);
     expect(html).toContain(`href="#quickstart">${guideLabels.guide.hub.startHere}</a>`);
     expect(html).not.toMatch(/target="_blank"/);
@@ -64,10 +66,33 @@ describe("V41-1 說明首頁 SSR", () => {
       expect(html).not.toContain('id="areas"');
       expect(html).not.toContain('href="#areas"');
     }
-    // 7 項獨特性與「適合誰，還沒涵蓋什麼」「這些做法的代價」都是 h3。
-    for (const item of Object.values(guideLabels.guide.unique.items)) expect(html).toContain(`<h3>${item.title}</h3>`);
+    // V42-G1：3 個主張、前提（角色卡樣式，aria-labelledby）與「適合誰，還沒涵蓋什麼」「刻意不做的事」都是 h3。
+    for (const item of GUIDE_HUB_CLAIMS) expect(html).toContain(`<h3>${text(g.unique.items[item.key].title)}</h3>`);
+    expect(html).toContain(`<article class="guide-role" aria-labelledby="guide-unique-premise"><h3 id="guide-unique-premise">${text(g.unique.items.premise.title)}</h3>`);
     expect(html).toMatch(new RegExp(`<h3 class="guide-subheading">${guideLabels.guide.sections.scope}</h3>`));
     expect(html).toMatch(new RegExp(`<h3 class="guide-subheading">${guideLabels.guide.sections.tradeoffs}</h3>`));
+  });
+
+  it("V42-G1 說明首頁改寫：主張與前提各四段 dl（一般做法、在這裡、對你的意義、在哪裡看得到）；刻意不做的事＝引言、三點（第一點的相關說明連到匯入資料頁）、結語；30 秒上手的引言在 4 步之前", () => {
+    const page = decode(html);
+    const anchor = (link: { area: GuideAreaCode; hash?: string }) => `<a class="guide-link" href="/guide/${link.area}${link.hash ? `#${link.hash}` : ""}">${text(g.areas[link.area].title)}</a>`;
+    const whereLinks = (list: readonly { area: GuideAreaCode; hash?: string }[]) => `<ul class="guide-inline-list">${list.map(link => `<li>${anchor(link)}</li>`).join("")}</ul>`;
+    const bullets = (lines: readonly string[]) => `<ul class="guide-notes">${lines.map(line => `<li>${text(line)}</li>`).join("")}</ul>`;
+    const f = g.unique.fields;
+    for (const item of GUIDE_HUB_CLAIMS) {
+      const copy = g.unique.items[item.key];
+      expect(page, item.key).toContain(`<li><h3>${text(copy.title)}</h3><dl class="guide-summary"><dt>${f.before}</dt><dd>${text(copy.before)}</dd><dt>${f.after}</dt><dd>${bullets(copy.after)}</dd><dt>${f.meaning}</dt><dd>${text(copy.meaning)}</dd><dt>${g.unique.where}</dt><dd>${whereLinks(item.where)}</dd></dl></li>`);
+    }
+    // 主張是有序清單的 3 項；前提在清單之後、不編號。
+    expect(page.match(/<ol class="guide-unique">(.*?)<\/ol>/)![1].match(/<li><h3>/g)).toHaveLength(GUIDE_HUB_CLAIMS.length);
+    const premise = g.unique.items.premise;
+    expect(page).toContain(`</ol><div class="guide-roles"><article class="guide-role" aria-labelledby="guide-unique-premise"><h3 id="guide-unique-premise">${text(premise.title)}</h3><dl><dt>${f.after}</dt><dd>${bullets(premise.after)}</dd><dt>${f.meaning}</dt><dd>${text(premise.meaning)}</dd><dt>${g.unique.where}</dt><dd>${whereLinks(GUIDE_HUB_PREMISE.where)}</dd></dl></article></div>`);
+    // 刻意不做的事：引言、三點（sync 附「相關說明：匯入資料」；站內連結仍只有 /guide/{area}）、結語，到段落結尾。
+    const t = g.tradeoffs;
+    expect(GUIDE_TRADEOFF_KEYS).toEqual(["sync", "accounts", "judgment"]);
+    expect(page).toContain(`<h3 class="guide-subheading">${g.sections.tradeoffs}</h3><p>${text(t.lead)}</p><ul class="guide-notes"><li>${text(t.items.sync)}<span class="guide-note-link">${g.areaPage.seeAlso}${GUIDE_TRADEOFF_LINKS.sync!.map(anchor).join("")}</span></li><li>${text(t.items.accounts)}</li><li>${text(t.items.judgment)}</li></ul><p>${text(t.closing)}</p></section>`);
+    // 30 秒上手：h2 之後、4 步之前一行引言。
+    expect(page).toContain(`<h2 id="guide-quickstart-title">${g.sections.quickstart}</h2><p>${text(g.quickstart.lead)}</p><ol class="guide-steps">`);
   });
 
   it("每個頁內錨點（#…）都有對應的 id；沒有任何連到還沒上線的功能區頁（/guide/{area} 只在 GUIDE_AREAS 裡才是連結）", () => {
@@ -284,7 +309,7 @@ describe("V41-2a 說明頁之間的連結（說明首頁＋已上線的功能區
       }
     }
     expect(problems).toEqual([]);
-    // 說明首頁的「兩期差額拆到分」連到總覽頁的瀑布圖那一步。
+    // 說明首頁「每個數字都經得起追問」的「在哪裡看得到」連到總覽頁的瀑布圖那一步（V42-G1 之前是「兩期差額拆到分」那一項）。
     expect(hrefsOf(pages.get("/guide")!)).toContain("/guide/overview#bridge");
     expect(ids.get("/guide/overview")!.has("bridge")).toBe(true);
   });
