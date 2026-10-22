@@ -4,7 +4,8 @@ import { join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { labels } from "@/i18n";
 import { guideLabels } from "@/i18n/guide.zh-TW";
-import { GUIDE_AREA_CODES, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_VIDEOS, GUIDE_WHO, lookupUiRef, resolveUiRefs, uiRefParts } from "@/application/guide";
+import { GUIDE_AREA_CODES, GUIDE_AREA_STEPS, GUIDE_AREAS, GUIDE_GROUPS, GUIDE_QUICKSTART, GUIDE_UNIQUE, GUIDE_VIDEOS, GUIDE_WHO, lookupUiRef, resolveUiRefs, uiRefParts, type GuideAreaLink } from "@/application/guide";
+import { GUIDE_HUB_CLAIMS, GUIDE_HUB_PREMISE, GUIDE_HUB_UNIQUE_KEYS, GUIDE_TRADEOFF_KEYS, GUIDE_TRADEOFF_LINKS } from "@/components/guide/guide-hub-data";
 import { L1_KEY_PATTERNS, L1_MAX_CJK, channelAliasTerms, l1ClauseLengths, labelEntries } from "../scripts/lib/copy-scan.mjs";
 import { labelsHash } from "../verification/guide-media/labels-hash";
 import { VIDEO_MAX_BYTES, VIDEO_MAX_MS, VIDEO_SIZE, buildVtt, mp4Info, videoCueBaseline, videoCueTexts, videoFile, videoLabelsHash, videoPosterFile, videoVttFile, vttCueCount, vttTimestamp, type GuideVideoEntry } from "../verification/guide-media/vtt";
@@ -113,11 +114,43 @@ describe("V41-1 說明首頁的結構資料與 guideLabels 對得上", () => {
     expect(new Set(areas).size).toBe(areas.length);
   });
 
-  it("分組、角色、獨特性、30 秒上手的鍵都有文字", () => {
+  it("分組、角色、獨特性（V42-G1：3 主張＋1 前提）、刻意不做的事、30 秒上手的鍵都有文字", () => {
     expect(Object.keys(guideLabels.guide.groups)).toEqual([...GUIDE_GROUPS]);
     expect(Object.keys(guideLabels.guide.who.roles)).toEqual(GUIDE_WHO.map(row => row.role));
-    expect(Object.keys(guideLabels.guide.unique.items)).toEqual(GUIDE_UNIQUE.map(item => item.key));
+    // V42-G1（docs/revamp-v4.2/06_BATCHES.md V42-G1）：說明首頁的獨特性由 src/components/guide/guide-hub-data.ts 的 GUIDE_HUB_CLAIMS＋GUIDE_HUB_PREMISE 驅動；
+    // src/application/guide.ts 的 GUIDE_UNIQUE（v4.1 的 7 項）因本批對 src/application 零改動而留著，V42-G1 起沒有任何頁面讀它。
+    expect(Object.keys(guideLabels.guide.unique.items)).toEqual([...GUIDE_HUB_UNIQUE_KEYS]);
+    expect(GUIDE_HUB_CLAIMS.map(item => item.key)).toEqual(["traceable", "judgment", "loop"]);
+    expect(GUIDE_HUB_PREMISE.key).toBe("premise");
     expect(GUIDE_UNIQUE).toHaveLength(7);
+    // 「在哪裡看得到」：每項至少 2 個功能區、代號都在 GUIDE_AREA_CODES、錨點在該頁的步驟裡；traceable 連到總覽頁的 #bridge（說明首頁必須有這個連結）。
+    for (const item of [...GUIDE_HUB_CLAIMS, GUIDE_HUB_PREMISE]) {
+      const links: readonly GuideAreaLink[] = item.where;
+      expect(links.length, item.key).toBeGreaterThanOrEqual(2);
+      for (const link of links) {
+        expect(GUIDE_AREA_CODES, `${item.key}：${link.area}`).toContain(link.area);
+        if (link.hash) expect(GUIDE_AREA_STEPS[link.area]!.map(step => step.key), `${item.key}：${link.area}#${link.hash}`).toContain(link.hash);
+      }
+    }
+    expect(GUIDE_HUB_CLAIMS.find(item => item.key === "traceable")!.where).toContainEqual({ area: "overview", hash: "bridge" });
+    // 每個主張固定四段（title、before、after 3 點、meaning）；前提沒有 before、after 2 點；欄名三個。
+    for (const claim of GUIDE_HUB_CLAIMS) {
+      const copy = guideLabels.guide.unique.items[claim.key];
+      expect(Object.keys(copy).sort(), claim.key).toEqual(["after", "before", "meaning", "title"]);
+      expect(copy.after, claim.key).toHaveLength(3);
+      for (const value of [copy.title, copy.before, ...copy.after, copy.meaning]) expect(value.trim().length, claim.key).toBeGreaterThan(0);
+    }
+    const premise = guideLabels.guide.unique.items.premise;
+    expect(Object.keys(premise).sort()).toEqual(["after", "meaning", "title"]);
+    expect(premise.after).toHaveLength(2);
+    expect(Object.keys(guideLabels.guide.unique.fields)).toEqual(["before", "after", "meaning"]);
+    // 刻意不做的事：引言、三點（鍵＝GUIDE_TRADEOFF_KEYS）、結語；只有 sync 附功能區連結（匯入資料頁）。
+    expect(Object.keys(guideLabels.guide.tradeoffs)).toEqual(["lead", "items", "closing"]);
+    expect(Object.keys(guideLabels.guide.tradeoffs.items)).toEqual([...GUIDE_TRADEOFF_KEYS]);
+    expect(Object.keys(GUIDE_TRADEOFF_LINKS)).toEqual(["sync"]);
+    expect(GUIDE_TRADEOFF_LINKS.sync).toEqual([{ area: "import" }]);
+    // 30 秒上手：一行引言＋四步。
+    expect(guideLabels.guide.quickstart.lead.trim().length).toBeGreaterThan(0);
     expect(Object.keys(guideLabels.guide.quickstart.steps)).toEqual(GUIDE_QUICKSTART.map(step => step.key));
     expect(GUIDE_QUICKSTART).toHaveLength(4);
   });
