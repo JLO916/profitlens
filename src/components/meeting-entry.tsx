@@ -5,8 +5,8 @@ import { actionDocuments, type ActionExecutionStatus, type ActionWorkspace } fro
 import type { SummaryDecisionContext } from "@/application/manager-summary";
 import { exportMeetingMarkdown, lastMeeting, type Meeting } from "@/application/meeting";
 import { downloadText } from "@/application/download";
-import { channelsLabel } from "@/application/copy";
-import { makeResolver } from "@/application/channel-settings";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
+import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import type { ReviewDecisionState, ReviewSession } from "@/application/review-session";
 
@@ -22,22 +22,25 @@ export const MARKDOWN_MIME = "text/markdown;charset=utf-8";
 /** 會議紀錄 Markdown 的檔名（含會議日期）。 */
 export const meetingMarkdownFilename = (meeting: Meeting): string => `profitlens-meeting-${meeting.date}.md`;
 /** 已結束會議的 Markdown：紀錄本身含結束當時凍結的上次比較（follow_up），還原備份後輸出相同。 */
-export function downloadMeetingMarkdown(meeting: Meeting, datasetName?: string) {
-  downloadText(exportMeetingMarkdown(meeting, undefined, datasetName ? { datasetName } : {}), meetingMarkdownFilename(meeting), MARKDOWN_MIME);
+export function downloadMeetingMarkdown(meeting: Meeting, datasetName?: string, resolver?: NameResolver) {
+  // V42-1a：resolver 由呼叫端在會議與目前資料同一版本時傳入（目前快照的 channel_names）；沒給時輸出逐字不變。
+  downloadText(exportMeetingMarkdown(meeting, undefined, { ...(datasetName ? { datasetName } : {}), ...(resolver ? { resolver } : {}) }), meetingMarkdownFilename(meeting), MARKDOWN_MIME);
 }
 /**
  * 下載選單「目前檢視」列印用的決策脈絡：只帶待辦工作區的待辦（置頂最多三項，其餘進附錄），與 PPT 一頁式的置頂待辦同源；
  * 不帶會議名稱、決議、備註與選入方案。待辦引用的資料與目前檢視不同時標為過期。
  */
-export function currentViewDecisionContext(snapshot: Pick<WorkspaceSnapshot, "dataset_hash" | "filter_hash">, actions: ActionWorkspace): SummaryDecisionContext {
+export function currentViewDecisionContext(snapshot: Pick<WorkspaceSnapshot, "dataset_hash" | "filter_hash" | "report" | "channel_names">, actions: ActionWorkspace): SummaryDecisionContext {
   const ui = labels.meeting.session;
+  // V42-1a：與目前資料同一版本的待辦讀目前快照的 channel_names；引用其他資料的待辦維持該資料集的隱含預設。
+  const resolver = snapshotResolver(snapshot);
   return {
     dataset_hash: snapshot.dataset_hash, filter_hash: snapshot.filter_hash, pinnedOnly: true, scenarios: [], selectedScenarioIds: [], decisionState: page.printViewState,
     actions: actionDocuments(actions).map(doc => ({
       id: doc.id, problem: doc.problem || ui.actionProblemMissing, action: doc.action, owner: doc.owner_role, deadline: doc.deadline, risk: doc.stop_condition, pinned: doc.pinned,
       executionStatus: EXECUTION_LABELS[doc.execution_status as ActionExecutionStatus] ?? EXECUTION_LABELS.not_started, executionNotes: doc.progress_notes,
       status: doc.status === "stale" || doc.binding.dataset_hash !== snapshot.dataset_hash ? "stale" as const : doc.status === "confirmed" ? "current" as const : "draft" as const,
-      scopeLabel: fill(ui.actionScope, { channels: channelsLabel(doc.binding.scope.channels, makeResolver(undefined, doc.binding.dataset_id)), start: doc.binding.period.start, end: doc.binding.period.end }),
+      scopeLabel: fill(ui.actionScope, { channels: channelsLabel(doc.binding.scope.channels, doc.binding.dataset_hash === snapshot.dataset_hash ? resolver : makeResolver(undefined, doc.binding.dataset_id)), start: doc.binding.period.start, end: doc.binding.period.end }),
     })),
   };
 }

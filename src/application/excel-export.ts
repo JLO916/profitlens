@@ -263,14 +263,15 @@ function productSheet(rows: readonly ProductComparisonRow[], resolver: NameResol
 
 /** V3-9b F13／F14：待辦工作表最後一欄「廣告決策」（使用者自選的暫停／調整／加碼；沒標是空格）；列數與既有欄位不變。 */
 const AD_DECISION_COLUMN = { ad_decision: labels.actions.adDecisionV3.csvColumn } as const;
-function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec): ExcelSheet {
+function actionSheet(workspace: ActionWorkspace, spec: ExportVariantSpec, snapshot: WorkspaceSnapshot): ExcelSheet {
   const board = labels.actions.board;
   const records = actionDocuments(workspace).map(doc => ({
     priority: numeric(doc.priority), problem: text(doc.problem), step: text(doc.action),
     owner: text(doc.owner_role.trim() || board.unassigned), due: text(doc.deadline || board.noDeadline),
     status: text(EXECUTION_STATUS[doc.execution_status]), status_updated_at: doc.status_updated_at ? text(doc.status_updated_at) : EMPTY,
     pinned: text(doc.pinned ? copy.actions.pinned : copy.actions.notPinned), evidence_count: numeric(doc.fact_ids.length),
-    scope: text(scopeLabel(doc.binding.scope, makeResolver(undefined, doc.binding.dataset_id))),
+    // V42-1a：與活頁簿同一版本資料的待辦讀快照的 channel_names（與摘要／通路工作表同一個解析器）；引用其他資料的歷史綁定維持該資料集的隱含預設。
+    scope: text(scopeLabel(doc.binding.scope, doc.binding.dataset_hash === snapshot.dataset_hash ? snapshotResolver(snapshot) : makeResolver(undefined, doc.binding.dataset_id))),
     // 引用的是較早的資料（或舊資料待重新核對）時提醒，與待辦頁的「引用較早資料」同一句。
     caution: doc.status === "stale" || doc.evidence_relation === "historical" ? text(labels.actions.form.staleBadge) : EMPTY,
     ad_decision: doc.ad_decision ? text(lookup(labels.actions.adDecisionV3.options, doc.ad_decision)) : EMPTY,
@@ -527,7 +528,7 @@ export function buildExcelWorkbook(input: ExcelExportInput): ExcelWorkbook {
   const charts = spec.excelSheets.includes("chartData") ? chartDataSections(input) : [];
   const build: Record<ExcelSheetKey, () => ExcelSheet> = {
     summary: () => summarySheet(input, spec), channels: () => channelSheet(summary, snapshotResolver(snapshot)), bridge: () => bridgeSheet(snapshot),
-    products: () => productSheet(input.products ?? [], snapshotResolver(snapshot)), actions: () => actionSheet(input.actions, spec), basis: () => basisSheet(input, spec, charts),
+    products: () => productSheet(input.products ?? [], snapshotResolver(snapshot)), actions: () => actionSheet(input.actions, spec, snapshot), basis: () => basisSheet(input, spec, charts),
     chartData: () => chartDataSheet(charts, spec), pnl: () => pnlSheet(snapshot),
   };
   return { sheets: spec.excelSheets.map(key => build[key]()) };

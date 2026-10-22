@@ -1,7 +1,7 @@
 import { createElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { WorkspaceBackupSource } from "../src/application/workspace-backup";
+import type { RestoredWorkspace, WorkspaceBackupSource } from "../src/application/workspace-backup";
 import { WorkspaceStorage } from "../src/components/workspace-storage";
 import { fill, labels } from "../src/i18n";
 
@@ -57,10 +57,12 @@ const store = vi.hoisted(() => ({
   load: vi.fn(async (): Promise<string | null> => null),
 }));
 vi.mock("@/application/local-store", () => ({ saveLocalWorkspace: store.save, hasLocalWorkspace: store.existing, deleteLocalWorkspace: store.remove, loadLocalWorkspace: store.load }));
-const backup = vi.hoisted(() => ({ exported: [] as unknown[] }));
+const backup = vi.hoisted(() => ({ exported: [] as unknown[], restored: null as unknown }));
 vi.mock("@/application/workspace-backup", async importOriginal => ({
   ...(await importOriginal<typeof import("@/application/workspace-backup")>()),
   exportWorkspaceBackup: vi.fn(async (source: { tag: string }) => { backup.exported.push(source); return `backup:${source.tag}`; }),
+  // V42-1a：還原預覽只驗「套用後顯示什麼」，還原本身由 backup-restore-matrix 等測試負責；這裡回傳測試準備好的 RestoredWorkspace。
+  restoreWorkspaceBackup: vi.fn(async () => backup.restored),
 }));
 
 type TreeElement = ReactElement<Record<string, unknown>>;
@@ -104,13 +106,13 @@ const AT = new Date("2026-10-03T06:32:00.000Z");
 const source = (tag: string) => ({ tag }) as unknown as WorkspaceBackupSource;
 
 /** 模擬 Dashboard：version 每次變更 +1；onSaved 只在存的是最新版時記為已保存（與 dashboard.tsx 相同）。 */
-function host(options: { source?: WorkspaceBackupSource | null; consent?: boolean } = {}) {
+function host(options: { source?: WorkspaceBackupSource | null; consent?: boolean; onRestore?: Props["onRestore"] } = {}) {
   const state = { source: options.source === undefined ? source("v1") : options.source, consent: options.consent ?? false, version: 1, savedVersion: 0 };
   const onSaved = vi.fn((saved: number) => { if (saved === state.version) state.savedVersion = saved; });
   const onConsentChange = vi.fn((value: boolean) => { state.consent = value; });
   const onDeleted = vi.fn(() => { if (state.source) state.version++; });
   const view = mount(WorkspaceStorage);
-  const render = () => view.render({ source: state.source, version: state.version, dirty: state.source !== null && state.version !== state.savedVersion, consent: state.consent, onConsentChange, onSaved, onDeleted, onRestore: vi.fn() });
+  const render = () => view.render({ source: state.source, version: state.version, dirty: state.source !== null && state.version !== state.savedVersion, consent: state.consent, onConsentChange, onSaved, onDeleted, onRestore: options.onRestore ?? vi.fn() });
   return { state, render, onSaved, onConsentChange, onDeleted, unmount: view.unmount, change() { state.version++; state.source = source(`v${state.version}`); return render(); } };
 }
 const settle = () => vi.advanceTimersByTimeAsync(0);
@@ -122,7 +124,8 @@ beforeEach(() => {
   store.save.mockReset().mockImplementation(async () => undefined);
   store.existing.mockReset().mockImplementation(async () => ({ exists: false, savedAt: null }));
   store.remove.mockReset().mockImplementation(async () => undefined);
-  backup.exported = [];
+  store.load.mockReset().mockImplementation(async () => null);
+  backup.exported = []; backup.restored = null;
 });
 afterEach(async () => {
   for (const view of mounted) view.unmount();
@@ -672,5 +675,38 @@ describe("R6-6 SSR：既有 testid 與同意文案保留", () => {
     expect(html).toContain(auto.statusOn);
     expect(html).toMatch(/<input type="checkbox" data-testid="autosave-toggle" checked=""\/>/);
     expect(html).toContain(auto.toggle);
+  });
+});
+
+describe("V42-1a 套用還原的提示（06_BATCHES V42-1a 第 3 項；D-V42-9＝A）", () => {
+  /** restoreWorkspaceBackup 的結果裡本元件會讀到的欄位（其餘由 Dashboard 的 performRestore 使用，這裡不需要）。 */
+  const candidate = (dropped: string[]) => ({
+    dataset: { manifest: { dataset_id: "synthetic-4-channel-v1" } },
+    snapshot: { data_as_of: "2026-09-30", report: { dataset_id: "synthetic-4-channel-v1", scope: { channels: ["DTC", "LIVE"] }, previous: { period: { start: "2026-09-01", end: "2026-09-14" } }, current: { period: { start: "2026-09-15", end: "2026-09-28" } } } },
+    scenario_workspace: { contexts: [] }, action_workspace: { items: [] },
+    channel_settings: null, dropped_channel_codes: dropped,
+  }) as unknown as RestoredWorkspace;
+  const flush = async () => { for (let round = 0; round < 10; round++) await Promise.resolve(); };
+  /** 「載入預覽」→ 預覽區 →「套用還原」（Dashboard 接受後呼叫 accepted）→ 回傳 storage-notice 的文字。 */
+  async function applyRestore(dropped: string[]): Promise<string> {
+    backup.restored = candidate(dropped);
+    store.load.mockReset().mockImplementation(async () => "{}");
+    const onRestore = vi.fn((workspace: RestoredWorkspace, accepted?: () => void) => { expect(workspace.dropped_channel_codes).toEqual(dropped); accepted?.(); });
+    const view = track(host({ consent: true, onRestore }));
+    let tree = view.render();
+    click(button(tree, labels.storage.buttons.restorePreview));
+    await settle(); await flush();
+    tree = view.render();
+    expect(textOf(byTestId(tree, "storage-notice"))).toBe(labels.storage.workspace.previewReadyNotice);
+    click(button(tree, labels.storage.workspace.applyRestore));
+    expect(onRestore).toHaveBeenCalledTimes(1);
+    tree = view.render();
+    return textOf(byTestId(tree, "storage-notice"));
+  }
+  it("備份裡有不在資料集的通路代碼：套用後的提示寫略過幾個與代碼清單（storage.v42.droppedChannels）", async () => {
+    expect(await applyRestore(["LEGACY", "OLD"])).toBe(fill(labels.storage.v42.droppedChannels, { n: 2, codes: "LEGACY、OLD" }));
+  });
+  it("沒有略過的代碼：提示仍是既有的還原完成句", async () => {
+    expect(await applyRestore([])).toBe(labels.storage.workspace.restoredNotice);
   });
 });

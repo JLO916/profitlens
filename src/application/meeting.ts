@@ -6,7 +6,7 @@ import { fill, labels } from "../i18n";
 import { ACTION_EXECUTION_STATUSES, actionDocuments, type ActionExecutionStatus, type ActionWorkspace } from "./action-workspace";
 import { formatSavedDateTime } from "./auto-save";
 import { channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "./copy";
-import { makeResolver } from "./channel-settings";
+import { makeResolver, type NameResolver } from "./channel-settings";
 import { decisionSignature } from "./decision";
 import { diagnosisScopeLabel } from "./diagnosis-group";
 import { buildExportHeader, markdownExportHeader } from "./export-header";
@@ -413,7 +413,9 @@ const updatedText = (date: string | null): string => date ? fill(copy.statusUpda
  * V3-7 options：generatedAt 是版頭的產出時間。已結束會議的內容在結束時就固定了，預設用結束時間（finalized_at），
  * 同一筆紀錄（含還原備份後）每次下載都是同一份檔案；datasetName 預設 dataset_id。
  */
-export interface MeetingMarkdownOptions { generatedAt?: Date; datasetName?: string }
+export interface MeetingMarkdownOptions { generatedAt?: Date; datasetName?: string;
+  /** V42-1a：通路名稱解析器（呼叫端在會議與目前資料同一版本時傳 snapshotResolver(目前快照)）；沒給時用該資料集的隱含預設，輸出逐字不變。 */
+  resolver?: NameResolver }
 /**
  * 會議紀錄 Markdown：標題／固定範圍／口徑／議程六段／決議／上次比較／技術細節；所有不可信文字都經過 md()。
  * ④ 與「上次會議比較」一律讀結束當時凍結的 meeting.follow_up（還原備份後輸出相同）。comparison 為舊呼叫方式保留：
@@ -421,7 +423,7 @@ export interface MeetingMarkdownOptions { generatedAt?: Date; datasetName?: stri
  */
 export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComparison, options: MeetingMarkdownOptions = {}): string {
   const fixed = meeting.source_fixed, follow = meeting.follow_up;
-  const resolver = makeResolver(undefined, fixed.dataset_id);
+  const resolver = options.resolver ?? makeResolver(undefined, fixed.dataset_id);
   const latest = meeting.decisions.at(-1)!;
   const contribution = metricDefinitions.contribution_after_marketing.shortLabel, revenue = metricDefinitions.net_revenue.shortLabel;
   // 主文用臺北時間 YYYY-MM-DD hh:mm；ISO 原值只放技術細節。

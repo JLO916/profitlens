@@ -1,9 +1,9 @@
 "use client";
 import { useId } from 'react';
 import type { Fact } from '@/domain/types';
-import { ACTION_EXECUTION_STATUSES, AD_DECISIONS, actionDocuments, contextFor, editActionManagement, editBoundAction, evidenceAllowed, filterEvidenceChoices, moveActionUp, pinAction, removeBoundAction, setAdDecision, toggleEvidenceId, type ActionContext, type ActionWorkspace, type ActionRebindPreview, type ActionExecutionStatus, type AdDecision, type BoundAction } from '@/application/action-workspace';
+import { ACTION_EXECUTION_STATUSES, AD_DECISIONS, actionDocuments, contextFor, editActionManagement, editBoundAction, evidenceAllowed, filterEvidenceChoices, moveActionUp, pinAction, removeBoundAction, setAdDecision, toggleEvidenceId, type ActionContext, type ActionSource, type ActionWorkspace, type ActionRebindPreview, type ActionExecutionStatus, type AdDecision, type BoundAction } from '@/application/action-workspace';
 import { formatMetric, metricDefinitions, type Layer } from '@/application/presentation';
-import { channelsLabel, scopeLabel } from '@/application/copy';
+import { channelsLabel, scopeLabel, snapshotResolver } from '@/application/copy';
 import { makeResolver, type NameResolver } from '@/application/channel-settings';
 import { fill, labels } from '@/i18n';
 // V3-6（PRD §7.5 第 4–5 點、§6.3 #41）：待辦編輯器——看板的待辦編輯抽屜與清單檢視的內嵌編輯器共用同一個元件，同一頁捲動分三段（不用分頁）：
@@ -20,6 +20,10 @@ type FieldKey = typeof fields[number][0];
 export function factValue(f: Fact, layer: Layer = 'L1') { return formatMetric(f.metric, f, layer); }
 export const statusLabels: Record<ActionExecutionStatus, string> = { not_started: labels.actions.form.statuses.not_started, in_progress: labels.actions.form.statuses.in_progress, blocked: labels.actions.form.statuses.blocked, completed: labels.actions.form.statuses.done };
 export const statuses = ACTION_EXECUTION_STATUSES.map(value => [value, statusLabels[value]] as const);
+/** V42-1a：待辦綁定的通路名稱——與目前資料同一版本（dataset_hash 相同）時讀目前快照的 channel_names，否則用該資料集的隱含預設（與 v4.1.2 相同）。 */
+export function nameResolverFor(binding: { dataset_id: string; dataset_hash: string }, source?: Pick<ActionSource, 'snapshot'>): NameResolver {
+  return source && binding.dataset_hash === source.snapshot.dataset_hash ? snapshotResolver(source.snapshot) : makeResolver(undefined, binding.dataset_id);
+}
 export function factLabel(f: Fact, resolver: NameResolver) { const def = metricDefinitions[f.metric]; return fill(ui.factLabel, { start: f.period.start, end: f.period.end, metric: def.label, scope: `${channelsLabel(f.scope.channels, resolver)}${f.scope.sku ? `／${f.scope.sku}` : ''}`, scopeKind: f.scope.kind === 'all' ? labels.overview.sections.total : f.scope.kind === 'sku' ? labels.exports.csv.columns.sku : labels.exports.csv.columns.channel, value: f.value === null ? labels.shell.status.missing : factValue(f) }); }
 /** HTML ids cannot carry whitespace; every card shares the same owner list, so a sanitized collision is harmless. */
 function ownersListId(id: string) { return `action-owners-${id.replace(/[^A-Za-z0-9_-]/g, '_')}`; }
@@ -33,14 +37,16 @@ export interface EditorProps {
   /** V3-6：'list'＝清單檢視的內嵌編輯器（三段之後保留置頂、往上移、移除的按鈕列）；'drawer'＝待辦編輯抽屜（底部動作列由 ActionDrawer 提供，本元件不渲染按鈕列）。未傳入時同 'list'。 */
   variant?: 'list' | 'drawer';
   workspace: ActionWorkspace; item: BoundAction; index: number; document: ActionDocument; owners: readonly string[]; showPin: boolean;
+  /** V42-1a：待辦頁的目前資料；與綁定同一版本時範圍文字用它的快照解析通路名稱，沒給時用各資料集的隱含預設。 */
+  source?: ActionSource;
   query: string; onQuery: (query: string) => void; change: (work: () => ActionWorkspace) => void; onConfirm: () => void; onStatus: (status: ActionExecutionStatus) => void;
   busy: string | null; preview: ActionRebindPreview | null; onPrepareRebind: () => void; onCommitRebind: () => void; onCancelRebind: () => void;
   onEvidence: (fact: Fact, context: ActionContext) => void;
 }
 /** One edit form shared by the drawer (board view) and the list article; both variants render the same three sections. */
-export function ActionEditor({ variant = 'list', workspace, item, index, document, owners, showPin, query, onQuery, change, onConfirm, onStatus, busy, preview, onPrepareRebind, onCommitRebind, onCancelRebind, onEvidence }: EditorProps) {
+export function ActionEditor({ variant = 'list', workspace, item, index, document, owners, showPin, source, query, onQuery, change, onConfirm, onStatus, busy, preview, onPrepareRebind, onCommitRebind, onCancelRebind, onEvidence }: EditorProps) {
   const uid = useId(); const controlId = (key: string) => `${uid}-${key}`;
-  const context = contextFor(workspace, item); const card = item.card; const resolver = makeResolver(undefined, context.session.dataset_id);
+  const context = contextFor(workspace, item); const card = item.card; const resolver = nameResolverFor(context.session, source);
   const choices = context.session.facts.filter(f => evidenceAllowed(item.scope, f));
   const visible = filterEvidenceChoices(choices, card.fact_ids, query, f => factLabel(f, resolver));
   const diagnostic = item.diagnostic_id ? context.diagnostics.find(entry => entry.id === item.diagnostic_id) : undefined;
@@ -90,7 +96,7 @@ export function ActionEditor({ variant = 'list', workspace, item, index, documen
     {/* §7.5 第 4 點「歷史」段：引用歷史（較早的引用與看較早的明細）→ 技術細節，兩者預設收合。 */}
     <section className="action-editor-section action-editor-history" role="region" aria-label={copy.history}>
       <h3 className="action-editor-heading">{copy.history}</h3>
-      {document.binding_history.length > 0 && <details className="action-editor-details"><summary>{fill(ui.historySummary, { n: document.binding_history.length })}</summary>{document.binding_history.map(binding => { const historyResolver = makeResolver(undefined, binding.dataset_id); return <section key={binding.revision} className="action-history-entry"><h4>{ui.bindingVersion} {binding.revision}</h4><p className="action-editor-note">{fill(ui.historyLine, { dataAsOf: labels.shell.status.dataAsOf, asOf: binding.data_as_of, scope: scopeLabel(binding.scope, historyResolver), current: labels.shell.periods.current, start: binding.period.start, end: binding.period.end, confirmState: binding.evidence_confirmed ? ui.tagConfirmed : ui.tagDraft })}</p>{binding.evidence.map(fact => <button key={fact.id} type="button" className="ui-btn ui-btn-text" onClick={() => onEvidence(fact, contextFor(workspace, binding))}>{fill(ui.viewHistoryEvidence, { fact: factLabel(fact, historyResolver) })}</button>)}</section>; })}</details>}
+      {document.binding_history.length > 0 && <details className="action-editor-details"><summary>{fill(ui.historySummary, { n: document.binding_history.length })}</summary>{document.binding_history.map(binding => { const historyResolver = nameResolverFor(binding, source); return <section key={binding.revision} className="action-history-entry"><h4>{ui.bindingVersion} {binding.revision}</h4><p className="action-editor-note">{fill(ui.historyLine, { dataAsOf: labels.shell.status.dataAsOf, asOf: binding.data_as_of, scope: scopeLabel(binding.scope, historyResolver), current: labels.shell.periods.current, start: binding.period.start, end: binding.period.end, confirmState: binding.evidence_confirmed ? ui.tagConfirmed : ui.tagDraft })}</p>{binding.evidence.map(fact => <button key={fact.id} type="button" className="ui-btn ui-btn-text" onClick={() => onEvidence(fact, contextFor(workspace, binding))}>{fill(ui.viewHistoryEvidence, { fact: factLabel(fact, historyResolver) })}</button>)}</section>; })}</details>}
       <details className="action-editor-details"><summary>{labels.evidence.sections.technicalDetails}</summary><p className="note">{labels.exports.csv.columns.dataset_id} {context.session.dataset_id}</p><p className="note">{labels.exports.csv.columns.dataset_hash} {context.session.dataset_hash}；{labels.exports.csv.columns.filter_hash} {context.session.filter_hash}；{labels.exports.csv.columns.revision} {context.session.revision}；{ui.bindingVersion} {item.binding_revision ?? 1}</p><p className="note">{ui.originalRule} {item.diagnostic_id ?? ui.manualOrigin}</p><ul>{card.fact_ids.map(id => <li key={id}><code>{id}</code></li>)}</ul></details>
     </section>
     {/* §7.5 第 5 點：清單檢視在三段之後保留置頂、往上移、移除（重新核對已在「引用的數字」段）；抽屜的這三個動作在 ActionDrawer 的底部動作列。 */}

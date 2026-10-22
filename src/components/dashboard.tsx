@@ -470,12 +470,13 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     const latest = lastMeeting(meetingHistoryRef.current), review = reviewRef.current;
     setMenuExport({ busy: "md", error: null });
     try {
-      if (latest) downloadMeetingMarkdown(latest, latest.source_fixed.dataset_hash === active.snapshot.dataset_hash ? activeDatasetName(active) : undefined);
-      else if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active), undefined, { datasetName: activeDatasetName(active) }), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+      // V42-1a：人讀的 Markdown 與畫面用同一組通路名稱（目前快照的 channel_names）；會議紀錄只在與目前資料同一版本時套用。
+      if (latest) { const sameMeeting = latest.source_fixed.dataset_hash === active.snapshot.dataset_hash; downloadMeetingMarkdown(latest, sameMeeting ? activeDatasetName(active) : undefined, sameMeeting ? snapshotResolver(active.snapshot) : undefined); }
+      else if (!review) downloadText(exportManagerSummaryMarkdown(viewSummary(active), undefined, { datasetName: activeDatasetName(active), resolver: snapshotResolver(active.snapshot) }), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       else {
         const snapshot = await rebuildReviewSnapshot(review, active.channel_settings ?? null), same = active.snapshot.dataset_hash === review.dataset_hash;
         const summary = buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold, conversion: same ? active.conversion : null, targets: same ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : undefined });
-        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current, snapshotResolver(snapshot)), same ? { datasetName: activeDatasetName(active) } : {}), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
+        downloadText(exportManagerSummaryMarkdown(summary, buildReviewDecisionContext(review, scenarioRef.current, actionRef.current, snapshotResolver(snapshot)), same ? { datasetName: activeDatasetName(active), resolver: snapshotResolver(snapshot) } : { resolver: snapshotResolver(snapshot) }), "profitlens-manager-summary.md", "text/markdown;charset=utf-8");
       }
       track("export_markdown");
       setMenuExport({ busy: null, error: null });

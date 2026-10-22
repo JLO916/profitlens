@@ -5,10 +5,9 @@ import type { Fact } from '@/domain/types';
 import { ACTION_EXECUTION_STATUSES, actionDocuments, addActionDraft, boardColumns, confirmBoundAction, editActionManagement, knownOwners, moveActionUp, pinAction, previewActionRebind, commitActionRebind, removeBoundAction, taipeiToday, type ActionContext, type ActionSource, type ActionWorkspace, type ActionRebindPreview, type ActionExecutionStatus, type BoundAction } from '@/application/action-workspace';
 import { formatDateL1, metricDefinitions } from '@/application/presentation';
 import { channelsLabel } from '@/application/copy';
-import { makeResolver } from '@/application/channel-settings';
 import { fill, labels } from '@/i18n';
 import type { EvidenceSelection } from './evidence-drawer';
-import { ActionEditor, AdDecisionBadge, evidenceTag, statusLabels, statuses, type ActionDocument } from './action-editor';
+import { ActionEditor, AdDecisionBadge, evidenceTag, nameResolverFor, statusLabels, statuses, type ActionDocument } from './action-editor';
 import { ActionDrawer } from './action-drawer';
 import { ActionsDue } from './actions-due';
 import { ShellIcon } from './shell/shell-icon';
@@ -87,7 +86,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   function moveTo(id: string, status: ActionExecutionStatus, n: number) {
     try { onChange(editActionManagement(workspace, id, { execution_status: status })); pendingFocus.current = id; setNotice(fill(board.moved, { n, status: statusLabels[status] })); } catch { setNotice(ui.invalidInput); }
   }
-  function evidence(fact: Fact, context: ActionContext) { const resolver = makeResolver(undefined, context.session.dataset_id); onEvidence({ sku: fact.scope.sku, title: fill(ui.evidenceTitle, { metric: metricDefinitions[fact.metric].label }), name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: `${context.session.dataset_hash !== source.snapshot.dataset_hash || context.session.stale ? ui.historicalPrefix : ''}${fact.scope.sku ? fill(ui.skuScope, { sku: fact.scope.sku }) : channelsLabel(fact.scope.channels, resolver)}` }, context); }
+  function evidence(fact: Fact, context: ActionContext) { const resolver = nameResolverFor(context.session, source); onEvidence({ sku: fact.scope.sku, title: fill(ui.evidenceTitle, { metric: metricDefinitions[fact.metric].label }), name: fact.metric, metric: fact, period: fact.period, channels: fact.scope.channels, sources: fact.sources, scopeLabel: `${context.session.dataset_hash !== source.snapshot.dataset_hash || context.session.stale ? ui.historicalPrefix : ''}${fact.scope.sku ? fill(ui.skuScope, { sku: fact.scope.sku }) : channelsLabel(fact.scope.channels, resolver)}` }, context); }
   async function prepareRebind(id: string) {
     const ticket = ++request.current; const captured = latest.current; setPreview(null); setBusy(id); setNotice('');
     try {
@@ -112,7 +111,7 @@ export function ActionsWorkbench({ workspace, onChange, source, onEvidence, onEx
   // 看板卡已有置頂 icon，抽屜底部也有置頂、往上移、移除；在抽屜裡改狀態會把卡片移到另一欄（moveTo 讓焦點跟著卡片）。
   function editor(item: BoundAction, index: number, place: ActionsView | 'drawer') {
     const id = item.card.id;
-    return <ActionEditor variant={place === 'list' ? 'list' : 'drawer'} workspace={workspace} item={item} index={index} document={documents[index]} owners={owners} showPin={place === 'list'} query={queries[id] ?? ''} onQuery={value => setQueries({ ...queries, [id]: value })} change={change} onConfirm={() => { try { onChange(confirmBoundAction(workspace, id)); setNotice(ui.confirmDone); } catch { setNotice(ui.confirmFailed); } }} onStatus={status => place === 'list' ? change(() => editActionManagement(workspace, id, { execution_status: status })) : moveTo(id, status, index + 1)} busy={busy} preview={preview} onPrepareRebind={() => void prepareRebind(id)} onCommitRebind={() => void commitRebind()} onCancelRebind={() => { request.current++; setPreview(null); setBusy(null); }} onEvidence={evidence} />;
+    return <ActionEditor variant={place === 'list' ? 'list' : 'drawer'} source={source} workspace={workspace} item={item} index={index} document={documents[index]} owners={owners} showPin={place === 'list'} query={queries[id] ?? ''} onQuery={value => setQueries({ ...queries, [id]: value })} change={change} onConfirm={() => { try { onChange(confirmBoundAction(workspace, id)); setNotice(ui.confirmDone); } catch { setNotice(ui.confirmFailed); } }} onStatus={status => place === 'list' ? change(() => editActionManagement(workspace, id, { execution_status: status })) : moveTo(id, status, index + 1)} busy={busy} preview={preview} onPrepareRebind={() => void prepareRebind(id)} onCommitRebind={() => void commitRebind()} onCancelRebind={() => { request.current++; setPreview(null); setBusy(null); }} onEvidence={evidence} />;
   }
   const columns = boardColumns(workspace);
   const total = workspace.items.length; const pinnedCount = workspace.items.filter(x => x.pinned).length;

@@ -12,6 +12,8 @@ import { fill, labels } from "@/i18n";
 import { ShellIcon } from "./shell/shell-icon";
 
 const copy = labels.storage.workspace;
+/** V42-1a（06_BATCHES V42-1a 第 3 項）：套用還原後的提示——備份裡有不在這份資料集的通路代碼時寫略過幾個（storage.v42.droppedChannels），否則維持既有的還原完成句。 */
+const restoreNotice = (workspace: RestoredWorkspace): string => workspace.dropped_channel_codes.length ? fill(labels.storage.v42.droppedChannels, { n: workspace.dropped_channel_codes.length, codes: workspace.dropped_channel_codes.join("、") }) : copy.restoredNotice;
 const auto = labels.storage.autoSave;
 const groupCopy = labels.shell.topbarV3.storageGroups;
 
@@ -249,7 +251,7 @@ export function WorkspaceStorage({ source, version, dirty, onRestore, onSaved, o
         <p>{fill(copy.restorePeriods, { prevStart: candidate.snapshot.report.previous.period.start, prevEnd: candidate.snapshot.report.previous.period.end, curStart: candidate.snapshot.report.current.period.start, curEnd: candidate.snapshot.report.current.period.end })}</p>
         <p>{fill(copy.restoreCounts, { plans: candidate.scenario_workspace.contexts.reduce((sum, context) => sum + context.plans.length, 0), actions: candidate.action_workspace.items.length })}</p>
         {dirty && <p className="alert partial">{copy.unsavedWarning}</p>}
-        <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); openGate(); setCandidate(null); setDownloadVersion(null); setNotice(copy.restoredNotice); }); }}>{copy.applyRestore}</button><button className="button quiet" onClick={() => setCandidate(null)}>{labels.shell.buttons.cancel}</button></div>
+        <div className="button-row"><button className="button primary" onClick={() => { onRestore(candidate, () => { setConsent(false); openGate(); setCandidate(null); setDownloadVersion(null); setNotice(restoreNotice(candidate)); }); }}>{copy.applyRestore}</button><button className="button quiet" onClick={() => setCandidate(null)}>{labels.shell.buttons.cancel}</button></div>
       </section>}
       <details className="note"><summary>{labels.evidence.sections.technicalDetails}</summary><p>{copy.backupContents}</p></details>
     </section>

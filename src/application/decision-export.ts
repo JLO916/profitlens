@@ -1,5 +1,5 @@
 import { channelsLabel, csvHeader, scopeLabel } from "./copy";
-import { makeResolver } from "./channel-settings";
+import { makeResolver, type NameResolver } from "./channel-settings";
 import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario, type ScenarioReason } from "../domain/scenarios";
 import { analyzeScenarioSensitivity, type ScenarioSensitivityAnalysis } from "../domain/scenario-sensitivity";
 import type { MetricName, Period } from "../domain/types";
@@ -189,10 +189,12 @@ function mdSensitivity(sensitivity: SensitivityExport): string[] {
  * V3-7 options：generatedAt 是版頭的產出時間（預設現在）；datasetName 預設 dataset_id；amountBasis 沒給時，
  * 有 extraLimitations（目前只會是含稅換算一句，見 workspace-decision-export.ts 的 extraFor）就當作「已換算為未稅」。
  */
-export interface DecisionMarkdownOptions { generatedAt?: Date; datasetName?: string; amountBasis?: "exclusive" | "inclusive" }
+export interface DecisionMarkdownOptions { generatedAt?: Date; datasetName?: string; amountBasis?: "exclusive" | "inclusive";
+  /** V42-1a：通路名稱解析器（呼叫端在試算與目前資料同一版本時傳 snapshotResolver(目前快照)）；沒給時用該資料集的隱含預設，輸出逐字不變。 */
+  resolver?: NameResolver }
 export function exportDecisionMarkdown(session: DecisionSession, scenarios: readonly ScenarioPlan[], actions: readonly ActionCard[], actionWorkspace?: ActionWorkspace, extraLimitations: readonly string[] = [], options: DecisionMarkdownOptions = {}): string {
   const document = decisionDocument(session, scenarios, actions, actionWorkspace, extraLimitations);
-  const resolver = makeResolver(undefined, session.dataset_id);
+  const resolver = options.resolver ?? makeResolver(undefined, session.dataset_id);
   const periodText = (period: Period) => `${period.start}～${period.end}`;
   const comparisonMode = session.comparison.mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行（兩期取這份試算建立時的範圍），其後各段順序與數值不變。

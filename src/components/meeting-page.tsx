@@ -16,7 +16,7 @@ import { downloadText } from "@/application/download";
 import { track } from "@/application/analytics";
 import { deltaTone, formatAmountL1, formatAmountL2, formatDateL1, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
-import { makeResolver } from "@/application/channel-settings";
+import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import { scenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { buildReviewDecisionContext, createReviewSession, refreshReviewActionReferences, REVIEW_DECISION_LABELS, reviewScenarioId, selectReviewScenario, syncReviewPins, updateReviewSession, validateReviewSession, type ReviewDecisionState, type ReviewSession } from "@/application/review-session";
@@ -169,7 +169,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
   const comparison = useMemo(() => ready && review ? compareWithLastMeeting({ snapshot: ready.snapshot, review, actions: actionWorkspace, conversion: reviewConversion, targets: reviewTargets }, last) : null, [ready, review, actionWorkspace, reviewConversion, reviewTargets, last]);
   const statusText = finalizing ? page.finalizing : finalizeResult === "done" ? page.finalized : "";
   const status = <p className="meeting-status" role="status" aria-live="polite" data-testid="meeting-status">{statusText}</p>;
-  const historySection = <MeetingHistory history={history} onRemove={onRemoveMeeting} datasetNameFor={meeting => summaryContext && meeting.source_fixed.dataset_hash === source.snapshot.dataset_hash ? summaryContext.datasetName : undefined} />;
+  const historySection = <MeetingHistory history={history} onRemove={onRemoveMeeting} datasetNameFor={meeting => summaryContext && meeting.source_fixed.dataset_hash === source.snapshot.dataset_hash ? summaryContext.datasetName : undefined} resolverFor={meeting => meeting.source_fixed.dataset_hash === source.snapshot.dataset_hash ? snapshotResolver(source.snapshot) : undefined} />;
 
   // §6.3 #43a、C10 頁面型空狀態：還沒有會議稿（例如還原沒有會議稿的舊備份）；按鈕文字與行為同 v2，是全頁唯一的主要按鈕。
   if (!review) return <section className="meeting-page" data-testid="meeting-page">{status}<div className="ui-empty-page meeting-empty" data-testid="review-workbench"><h2>{pageV3.emptyTitle}</h2><p>{copy.createIntro}</p><button type="button" className="ui-btn ui-btn-primary" data-testid="meeting-create" onClick={() => onChange(syncReviewPins(createReviewSession(source, scenarioWorkspace.active_epoch), actionWorkspace))}>{copy.createButton}</button></div>{historySection}</section>;
@@ -256,7 +256,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
     <summary className="ui-btn ui-btn-secondary" data-testid="export-page-meeting">{pageV3.exportMenu}<ShellIcon name="chevron" size={16} className="chevron" /></summary>
     <div className="menu-panel ui-menu meeting-export-menu">
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pdf" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.exports.buttons.exportPdf} aria-describedby="meeting-pdf-hint" onClick={startPrint}><span>{labels.exports.buttons.exportPdf}</span><small id="meeting-pdf-hint">{hint(page.pdfHint)}</small></button>
-      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-markdown" disabled={!summary} aria-label={labels.exports.buttons.exportMarkdown} aria-describedby="meeting-markdown-hint" onClick={() => download(() => { if (summary) downloadText(exportManagerSummaryMarkdown(summary, context, exportDatasetName ? { datasetName: exportDatasetName } : {}), "profitlens-manager-summary.md", MARKDOWN_MIME); })}><span>{labels.exports.buttons.exportMarkdown}</span><small id="meeting-markdown-hint">{hint(pageV3.exportHints.markdown)}</small></button>
+      <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-markdown" disabled={!summary} aria-label={labels.exports.buttons.exportMarkdown} aria-describedby="meeting-markdown-hint" onClick={() => download(() => { if (summary) downloadText(exportManagerSummaryMarkdown(summary, context, { ...(exportDatasetName ? { datasetName: exportDatasetName } : {}), resolver: alias }), "profitlens-manager-summary.md", MARKDOWN_MIME); })}><span>{labels.exports.buttons.exportMarkdown}</span><small id="meeting-markdown-hint">{hint(pageV3.exportHints.markdown)}</small></button>
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-csv" disabled={!summary} aria-label={labels.exports.downloads.channelTableCsv} aria-describedby="meeting-csv-hint" onClick={() => download(() => { if (summary) downloadText(exportChannelComparisonCsv(summary), "profitlens-channel-comparison.csv"); })}><span>{labels.exports.downloads.channelTableCsv}</span><small id="meeting-csv-hint">{hint(pageV3.exportHints.channelCsv)}</small></button>
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-excel" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.exports.buttons.exportExcel} aria-describedby="meeting-excel-hint" onClick={() => startExport("excel")}><span>{labels.exports.buttons.exportExcel}</span><small id="meeting-excel-hint">{hint(pageV3.exportHints.excel)}</small></button>
       <button type="button" className="ui-menu-item" data-lines="2" data-testid="meeting-export-pptx" disabled={!summary} aria-disabled={busy || undefined} aria-label={labels.exports.buttons.exportPptx} aria-describedby="meeting-pptx-hint" onClick={() => startExport("pptx")}><span>{labels.exports.buttons.exportPptx}</span><small id="meeting-pptx-hint">{hint(pageV3.exportHints.pptx)}</small></button>
@@ -461,7 +461,7 @@ function FrozenFollowUp({ follow, title }: { follow: MeetingFollowUp; title: str
  * V4-6 整合（審查 A-4，06_BATCHES V4-6「歷史 < 2 筆等高空狀態」含 0 筆）：沒有任何已結束的會議時，v3 的空狀態區塊（meeting-history-empty，DOM 不變）之後也放 G19 的等高空狀態；
  * 兩句互補不重複——v3 區塊說「還沒有結束的會議、結束後出現在這裡」（清單），G19 說「結束兩次以上、本期不同的會議後畫出走勢」（圖）。
  */
-export function MeetingHistory({ history, onRemove, datasetNameFor }: { history: readonly Meeting[]; onRemove?: (id: string) => void; /** V3-7：該筆紀錄的版頭資料集名稱（與目前資料同一版本時才有）。 */ datasetNameFor?: (meeting: Meeting) => string | undefined }) {
+export function MeetingHistory({ history, onRemove, datasetNameFor, resolverFor }: { history: readonly Meeting[]; onRemove?: (id: string) => void; /** V3-7：該筆紀錄的版頭資料集名稱（與目前資料同一版本時才有）。 */ datasetNameFor?: (meeting: Meeting) => string | undefined; /** V42-1a：該筆紀錄 Markdown 的通路名稱解析器（與目前資料同一版本時才有；沒給時用隱含預設）。 */ resolverFor?: (meeting: Meeting) => NameResolver | undefined }) {
   const [pending, setPending] = useState<string | null>(null);
   const [removed, setRemoved] = useState("");
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -490,7 +490,7 @@ export function MeetingHistory({ history, onRemove, datasetNameFor }: { history:
         <h3>{page.historyActions}</h3>{meeting.agenda.pinned_actions.length ? <ul>{meeting.agenda.pinned_actions.map(row => <li key={row.action_id}>{fill(page.historyActionRow, { problem: row.problem || copy.actionFallback, status: EXECUTION_LABELS[row.execution_status] })}</li>)}</ul> : <p className="note">{record.noPinnedActions}</p>}
         <h3>{page.historyFollowUp}</h3><FrozenFollowUp follow={meeting.follow_up} title={title} />
       </details><div className="meeting-history-buttons">
-        <button type="button" className="button quiet" aria-label={`${labels.exports.buttons.exportMarkdown} · ${title}`} onClick={() => downloadMeetingMarkdown(meeting, datasetNameFor?.(meeting))}>{labels.exports.buttons.exportMarkdown}</button>
+        <button type="button" className="button quiet" aria-label={`${labels.exports.buttons.exportMarkdown} · ${title}`} onClick={() => downloadMeetingMarkdown(meeting, datasetNameFor?.(meeting), resolverFor?.(meeting))}>{labels.exports.buttons.exportMarkdown}</button>
         {onRemove && <button type="button" className="button quiet" data-testid={`meeting-history-remove-${meeting.id}`} aria-label={`${page.removeMeeting} · ${title}`} aria-expanded={pending === meeting.id} onClick={event => { trigger.current = event.currentTarget; setPending(meeting.id); }}>{page.removeMeeting}</button>}
       </div>
       {onRemove && pending === meeting.id && <div className="meeting-history-remove" role="group" aria-labelledby={warningId} data-testid="meeting-history-remove-confirm-region" onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); cancel(); } }}>

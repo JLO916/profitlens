@@ -231,7 +231,7 @@ export function DecisionWorkbench({ dataset, snapshot, revision, filenames, onEv
       // V4-3c：onExport 可能回傳 promise（決策匯出按下時才載入）：完成才寫通知、失敗寫 noticeExportFailed；同步的 onExport 照舊。
       if (onExport) { const pending = onExport(format); if (pending instanceof Promise) void pending.then(() => setNotice(ui.noticeDownloadedActions), () => setNotice(ui.noticeExportFailed)); else setNotice(ui.noticeDownloadedActions); return; }
       const record = refreshDecisionSession(session, snapshot, revision);
-      const body = format === "md" ? exportDecisionMarkdown(record, scenarios, actions) : format === "csv" ? exportDecisionCsv(record, scenarios, actions) : exportDecisionJson(record, scenarios, actions);
+      const body = format === "md" ? exportDecisionMarkdown(record, scenarios, actions, undefined, [], { resolver }) : format === "csv" ? exportDecisionCsv(record, scenarios, actions) : exportDecisionJson(record, scenarios, actions);
       downloadText(body, `profitlens-decision.${format}`, format === "json" ? "application/json;charset=utf-8" : format === "md" ? "text/markdown;charset=utf-8" : "text/csv;charset=utf-8");
       setNotice(stale ? ui.noticeDownloadedStale : ui.noticeDownloaded);
     } catch { setNotice(ui.noticeExportFailed); }

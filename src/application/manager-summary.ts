@@ -212,7 +212,9 @@ const actionRow = (action: SummaryAction, status: string): string => {
   });
 };
 /** V3-7：Markdown 匯出的選項。generatedAt 是版頭的產出時間（預設現在；測試注入固定時間）；datasetName 預設 dataset_id。 */
-export interface MarkdownExportOptions { generatedAt?: Date; datasetName?: string }
+export interface MarkdownExportOptions { generatedAt?: Date; datasetName?: string;
+  /** V42-1a：通路名稱解析器（呼叫端傳 snapshotResolver(目前快照)，讓範圍文字與畫面同一組名稱）；沒給時用該資料集的隱含預設，輸出與 v4.1.2 逐字相同。 */
+  resolver?: NameResolver }
 /** V3-7 §7.9：一頁摘要的版頭四行（資料集、報表名、兩期與單位、版本與產出時間）；含稅換算過時單位寫「已換算為未稅」。 */
 export function summaryExportHeader(summary: ManagerSummary, options: MarkdownExportOptions = {}) {
   return buildExportHeader({
@@ -222,7 +224,7 @@ export function summaryExportHeader(summary: ManagerSummary, options: MarkdownEx
 }
 export function exportManagerSummaryMarkdown(summary: ManagerSummary, context?: SummaryDecisionContext, options: MarkdownExportOptions = {}): string {
   const decisions = summaryDecisionState(summary, context);
-  const resolver = makeResolver(undefined, summary.dataset_id);
+  const resolver = options.resolver ?? makeResolver(undefined, summary.dataset_id);
   const contributionShort = metricDefinitions.contribution_after_marketing.shortLabel;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行，其後的資料範圍、期間、門檻與各段順序、數值都不變。
   const lines = [fill(copy.mdTitle, { brand: labels.brand.name, decision: md(decisionLabel(context?.decisionState)) }), "", ...markdownExportHeader(summaryExportHeader(summary, options)), "", fill(copy.mdMeta, { asOf: summary.data_as_of, channels: md(channelsLabel(summary.scope.channels, resolver)) }),

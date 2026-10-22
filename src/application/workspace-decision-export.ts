@@ -4,7 +4,7 @@ import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from '.
 import { validateScenarioWorkspace, type ScenarioSource, type ScenarioWorkspace, type VersionedScenarioPlan } from './scenario-workspace';
 import type { ReviewSession } from './review-session';
 import { labels } from '@/i18n';
-import { conversionSentence } from './copy';
+import { conversionSentence, snapshotResolver } from './copy';
 import type { TaxConversion } from './tax-basis';
 
 /** 版本號只屬於已計算（result 非 null）的方案；草稿的 revision 指向上一個已計算版本，不列入，另列在 draft_plan_ids。 */
@@ -21,7 +21,8 @@ export function exportWorkspaceDecision(format: 'json' | 'md' | 'csv', source: S
   const converted = conversionSentence(conversion);
   const extraFor = (session: { dataset_hash: string }): string[] => converted && session.dataset_hash === source.snapshot.dataset_hash ? [converted] : [];
   // V3-7 §7.9：版頭的資料集名稱只套在與目前資料同一版本的區段（歷史 context 可能來自另一批資料，維持 dataset_id）。
-  const nameFor = (session: { dataset_hash: string }) => datasetName && session.dataset_hash === source.snapshot.dataset_hash ? { datasetName } : {};
+  // V42-1a：通路名稱解析器也只套在同一版本的區段（歷史 context 維持該資料集的隱含預設）；沒有設定時輸出逐字不變。
+  const nameFor = (session: { dataset_hash: string }) => session.dataset_hash === source.snapshot.dataset_hash ? { ...(datasetName ? { datasetName } : {}), resolver: snapshotResolver(source.snapshot) } : {};
   const visibleChannels = source.snapshot.report.scope.channels;
   const focused = selectedContextId ? scenarios.contexts.find(context => context.id === selectedContextId && context.status === 'current' && context.epoch === scenarios.active_epoch) : undefined;
   const selected = focused ?? scenarios.contexts.find(context => context.status === 'current' && context.epoch === scenarios.active_epoch && visibleChannels.length === 1 && context.session.scope.channels[0] === visibleChannels[0]);
