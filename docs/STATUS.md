@@ -1,5 +1,19 @@
 # Status
 
+## V42-1a 通路設定：設定模組、名稱套用與備份（v4.2 第二批，2026-10-22；不改畫面）
+
+V42-1 於 2026-10-20 開工前拆成 1a／1b。使用者 2026-10-20 回覆「繼續」開工；D-V42-1 的補充問題（是否已匯入過自己的多通路資料）尚未回答，不擋本批。
+
+**內容**：新純模組 `src/application/channel-settings.ts`（`channel-settings-v1`：驗證四條規則、NFC、通路與群組之間不重複、未知代碼丟棄、與預設比對後正規化、名稱解析器、群組依成員集合解析）；`createSnapshot(dataset, filters, hash, settings?)`，快照只在有設定時才有 `channel_names`／`channel_groups`，`filter_hash`、`dataset_hash` 不變；10 個呼叫點都傳入設定；`copy.ts` 的四個函式改收解析器（`demoAlias` 移除，規則留在 `isDemoDataset`），35 個檔的呼叫點改讀快照；備份 v5 加選填 `payload.channel_settings`（與預設沒有差時不寫鍵），還原先驗設定再建快照、未知代碼以既有的 storage-notice 顯示；AI 快照負載不含名稱（測試）。本批沒有 UI 可以寫入設定，所有畫面與匯出在沒有設定時逐位元組相同（審查者比對 64 個摘要）。
+
+**驗收**（程式 `f22f7c2`）：unit 172 檔、3,622 全過；lint 0；typecheck 通過；contrast 85／85；E2E 1,143／0／29；畫面基準 64 張 0 差異；`/` First Load 521,487（+1,782，門檻 527,897；差額都在 `app/page` chunk）；說明頁 131,466；`GUIDE_SENTINELS` 0；390 TBT 五項通過（第一組中位數 1,093.0／825.4／92.9／993.2／23.8，第二組見驗收文件）；axe 28／28／28／26 全 0；`GUIDE_MEDIA=check` 47／47；launch-check 本機 13＋19；禁區與邊界五條為空。
+
+**審查**：major 5（通路寬表、Excel 待辦工作表、還原提示的顯示、Markdown 匯出與待辦的範圍文字、五個呼叫點的測試）已修；nit 9 只記錄。
+
+**沒有做**：push、部署；編輯器、對照列、E2E 在 V42-1b；H8 在 V42-2a 後；H6 待人工。
+
+驗收見 `verification/revamp-v42-V42-1a-acceptance.md`。
+
 ## V42-0 基準與護欄（v4.2 第一批，2026-10-16；不改畫面）
 
 使用者 2026-10-16 回覆「其他都依建議」（D-V42-1 到 23 依建議值）與「V42-0」。分支 `revamp/v4.2` 自 `origin/main`（v4.1.2＝`e256154`，`00584a5`）開出，不 push；CLAUDE.md 整份換成 v4.2 版。
