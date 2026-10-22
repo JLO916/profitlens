@@ -2,17 +2,16 @@
 
 ## V42-G1 說明首頁改寫（插入批，2026-10-22；使用者 2026-10-20 改寫稿；只動 `/guide` 一頁）
 
-使用者 2026-10-20 提供 `/guide` 說明首頁的改寫稿（Claude Docs 文件「EC ProfitLens /guide 改寫稿（行銷角度）」）並指示套用。插入批：不計入上線前 8 批、不依賴 V42-1a／1b、和 V42-1a 平行；工作樹分支 `worktree-wf_4f423fca-ae6-3` 自 `4ed65c7` 開出，不 push。D-V42-32（例外快照）、D-V42-33（護欄與事實改寫清單）依建議值（`docs/DECISIONS.md` 2026-10-20 那一筆）。
+使用者 2026-10-20 提供 Claude Docs 文件「EC ProfitLens /guide 改寫稿（行銷角度）」並指示依它修改網站文案。不在 v4.2 原規劃內，當成插入批處理；拍板 D-V42-32、33 依建議值。
 
-**內容**：副標 `guide.hub.intro` 改成說明頁自己的一句與 meta description；「為什麼做這套服務」三段與結語（「最快」改「直接」）；「幫哪些人解決哪些問題」的引言、三個角色的「以前怎麼做」「在這裡怎麼做」、顧問／財務一句；「這套服務有什麼獨特性？」從 7 項改成 3 個主張＋1 個前提、每項固定四段（資料常數在新檔 `src/components/guide/guide-hub-data.ts`，`src/application` 零改動）；「這些做法的代價」改名「刻意不做的事」（引言、三點、結語）；「30 秒上手」加一行引言。H1、兩顆按鈕、本頁目錄、各功能區索引、示範影片與逐步文字、頁尾、`why.lead`（`GUIDE_SENTINELS`）、11 個功能區頁都不動；`labels.zh-TW.ts` 不動。`tests/labels-structure.test.ts` 加 V42-G1 例外（改值 15、新增 31、刪除 15，凍結在 `verification/revamp-v42/labels-guide-rewrite.flat.json`，例外清單必須等於實際差異）。審查修正（2026-10-22，分支 `worktree-wf_4f423fca-ae6-6-fix`）：`guide.unique.lead` 恢復改寫稿的兩個引述問句「這怎麼來的？」「所以要怎麼做？」（沒有護欄要求說明頁字串不用問號；D-V42-33 清單去掉這一項），例外快照重產。
+**內容**：`guide.zh-TW.ts` 的說明首頁字串重寫（改值 15、新增 31、刪除 15 個 `guide.*` 鍵）：副標與 meta description、「為什麼做這套服務」、「幫哪些人解決哪些問題」的三個角色、「有什麼獨特性」改成 3 主張＋1 前提（每項：一般做法／在這裡／對你的意義／在哪裡看得到）、「這些做法的代價」改名「刻意不做的事」、「30 秒上手」加引言；目錄與段落標題、各功能區索引、影片、頁尾、H1 與兩顆按鈕不動。`page.tsx` 的獨特性改結構，新純資料檔 `src/components/guide/guide-hub-data.ts`；`labels-structure` 以例外清單與例外快照 `verification/revamp-v42/labels-guide-rewrite.flat.json` 放行並重新凍結。改寫稿約 76 條產品事實逐條核對：0 條不屬實、5 條部分屬實已改寫；12 處字句因護欄或事實改動（清單在驗收文件 §1），兩個引述問句照原稿保留。
 
-**驗收**（程式 `9cda00f`，工作樹 `worktree-wf_4f423fca-ae6-3`）：typecheck 通過；lint 0；`audit:ui` copy 指標與 V42-0 相同（blacklistSynonym 12、blacklistTone 0、blacklistJargon 0、arrows 0、noticePrefix 0、l1ClauseOverLimit 0；JSX 中文 0）；unit 167 檔、3,583 全過（V42-0 3,577＋6）；build 通過；說明頁 E2E 四尺寸（`guide.spec`、`axe-sweep`、`keyboard-walk`，3103 埠）83 通過／0 失敗／9 略過（略過的全是 keyboard-walk 既有的尺寸限制）；axe `guide-hub` 四尺寸 serious 0、違規 0；`GUIDE_SENTINELS` 逐字不變；邊界 `git diff --stat 4ed65c7 -- src/domain fixtures docs/METRICS.md src/app/api vercel.json src/application` 為空；不加 testid、不加 npm 依賴。First Load 未量測（`guide.zh-TW.ts` 只給伺服器模組 import，`/` 首載與說明頁預期不變，capture 時確認）。審查修正後重跑：typecheck 通過；lint 0；`audit:ui` copy 指標不變（blacklistSynonym 12、blacklistTone 0、blacklistJargon 0、arrows 0、noticePrefix 0、l1ClauseOverLimit 0；JSX 中文 0）；unit 167 檔、3,583 全過（工作樹先 `npm ci`，lockfile 不變）；build 通過；禁區三條與 `4ed65c7` 邊界 diff 為空；說明頁 E2E、畫面基準、`GUIDE_MEDIA=check`、Lighthouse 仍未重跑（留給收尾）；不 push。
+**驗收**（`a297175`，併入 `91c8621`）：unit 172 檔、3,628 全過；lint 0；typecheck 通過；contrast 85／85；E2E 1,143／0／29；畫面基準只有 15 說明首頁 × 4 有差異（允許）、更新後 64 張 0 差異；`GUIDE_MEDIA=check` 47／47；launch-check 本機 13＋19；說明頁 Lighthouse a11y、SEO 100、Performance 98–100；`/guide` First Load 131,466 不變；`GUIDE_SENTINELS` 0；axe 四尺寸全 0；四尺寸整頁截圖在 `verification/revamp-v42/V42-G1/screens/`；禁區與邊界五條為空。
 
-**未執行（待收尾；本批不視為完成）**：contrast-check；PUBLIC_DEMO 3100 的 capture 與 15 說明首頁 × 4 的畫面基準更新（其餘 60 張必須 0 差異）；`GUIDE_MEDIA=check`；launch-check；Lighthouse；`verification/revamp-v42/feature-retention.csv` GH1 列；驗收文件 `verification/revamp-v42-V42-G1-acceptance.md`。跑完才能在 `docs/revamp-v4.2/06_BATCHES.md` 的批次總表寫「完成」。
+**沒有做**：push、部署（公開站內容，需使用者當次同意；建議先看 preview）。
 
-**沒有做**：push、部署（每一次都要當次同意）。
+驗收見 `verification/revamp-v42-V42-G1-acceptance.md`。
 
-批次範圍與執行結果見 `docs/revamp-v4.2/06_BATCHES.md` V42-G1 節。
 ## V42-1a 通路設定：設定模組、名稱套用與備份（v4.2 第二批，2026-10-22；不改畫面）
 
 V42-1 於 2026-10-20 開工前拆成 1a／1b。使用者 2026-10-20 回覆「繼續」開工；D-V42-1 的補充問題（是否已匯入過自己的多通路資料）尚未回答，不擋本批。

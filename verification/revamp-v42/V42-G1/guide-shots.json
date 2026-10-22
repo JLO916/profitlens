@@ -1,0 +1,526 @@
+{
+  "start": {
+    "checked_at": "2026-10-22T09:15:34.846Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/start",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "start-load",
+        "src": "/guide/start/start-load.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 622,
+        "ratio": 0.534,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "start-nav",
+        "src": "/guide/start/start-nav.webp",
+        "displayedWidth": 219,
+        "naturalWidth": 219,
+        "ratio": 1,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "start-period",
+        "src": "/guide/start/start-period.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 694,
+        "ratio": 0.478,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "start-mobile-m",
+        "src": "/guide/start/start-mobile-m.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 390,
+        "ratio": 0.851,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "import": {
+    "checked_at": "2026-10-22T09:15:35.758Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/import",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "import-files",
+        "src": "/guide/import/import-files.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 942,
+        "ratio": 0.352,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "import-mapping",
+        "src": "/guide/import/import-mapping.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 600,
+        "ratio": 0.553,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "import-basis",
+        "src": "/guide/import/import-basis.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 942,
+        "ratio": 0.352,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "import-review",
+        "src": "/guide/import/import-review.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 990,
+        "ratio": 0.335,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "import-issues",
+        "src": "/guide/import/import-issues.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 942,
+        "ratio": 0.352,
+        "belowThreshold": true
+      }
+    ],
+    "belowThreshold": [
+      "import-files",
+      "import-basis",
+      "import-review",
+      "import-issues"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "overview": {
+    "checked_at": "2026-10-22T09:15:36.621Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/overview",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "overview-snapshot",
+        "src": "/guide/overview/overview-snapshot.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1204,
+        "ratio": 0.276,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "overview-top-three",
+        "src": "/guide/overview/overview-top-three.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1204,
+        "ratio": 0.276,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "overview-bridge",
+        "src": "/guide/overview/overview-bridge.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "overview-trend",
+        "src": "/guide/overview/overview-trend.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 590,
+        "ratio": 0.563,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "overview-bridge-m",
+        "src": "/guide/overview/overview-bridge-m.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 356,
+        "ratio": 0.933,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "overview-snapshot",
+      "overview-top-three",
+      "overview-bridge"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "diagnosis": {
+    "checked_at": "2026-10-22T09:15:37.343Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/diagnosis",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "diagnosis-list",
+        "src": "/guide/diagnosis/diagnosis-list.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1142,
+        "ratio": 0.291,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "diagnosis-add-action",
+        "src": "/guide/diagnosis/diagnosis-add-action.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 640,
+        "ratio": 0.519,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "diagnosis-share",
+        "src": "/guide/diagnosis/diagnosis-share.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "diagnosis-heat",
+        "src": "/guide/diagnosis/diagnosis-heat.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 800,
+        "ratio": 0.415,
+        "belowThreshold": true
+      }
+    ],
+    "belowThreshold": [
+      "diagnosis-list",
+      "diagnosis-share",
+      "diagnosis-heat"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "products": {
+    "checked_at": "2026-10-22T09:15:37.949Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/products",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "products-variance",
+        "src": "/guide/products/products-variance.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 556,
+        "ratio": 0.597,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "products-table",
+        "src": "/guide/products/products-table.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 798,
+        "ratio": 0.416,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "products-pareto",
+        "src": "/guide/products/products-pareto.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 556,
+        "ratio": 0.597,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "products-table"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "scenarios": {
+    "checked_at": "2026-10-22T09:15:38.719Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/scenarios",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "scenarios-setup",
+        "src": "/guide/scenarios/scenarios-setup.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "scenarios-inputs",
+        "src": "/guide/scenarios/scenarios-inputs.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 753,
+        "ratio": 0.441,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "scenarios-compare",
+        "src": "/guide/scenarios/scenarios-compare.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "scenarios-threshold",
+        "src": "/guide/scenarios/scenarios-threshold.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 362,
+        "ratio": 0.917,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "scenarios-setup",
+      "scenarios-inputs",
+      "scenarios-compare"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "actions": {
+    "checked_at": "2026-10-22T09:15:39.351Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/actions",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "actions-board",
+        "src": "/guide/actions/actions-board.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1204,
+        "ratio": 0.276,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "actions-edit",
+        "src": "/guide/actions/actions-edit.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 640,
+        "ratio": 0.519,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "actions-pin",
+        "src": "/guide/actions/actions-pin.webp",
+        "displayedWidth": 300,
+        "naturalWidth": 300,
+        "ratio": 1,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "actions-board"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "meeting": {
+    "checked_at": "2026-10-22T09:15:40.253Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/meeting",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "meeting-agenda",
+        "src": "/guide/meeting/meeting-agenda.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1144,
+        "ratio": 0.29,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "meeting-decision",
+        "src": "/guide/meeting/meeting-decision.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 470,
+        "ratio": 0.706,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "meeting-present",
+        "src": "/guide/meeting/meeting-present.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1440,
+        "ratio": 0.231,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "meeting-finalize",
+        "src": "/guide/meeting/meeting-finalize.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 896,
+        "ratio": 0.371,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "meeting-copy",
+        "src": "/guide/meeting/meeting-copy.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 398,
+        "ratio": 0.834,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [
+      "meeting-agenda",
+      "meeting-present",
+      "meeting-finalize"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "data": {
+    "checked_at": "2026-10-22T09:15:41.000Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/data",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "data-scope",
+        "src": "/guide/data/data-scope.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 571,
+        "ratio": 0.581,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "data-coverage",
+        "src": "/guide/data/data-coverage.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "data-issues",
+        "src": "/guide/data/data-issues.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      },
+      {
+        "mediaId": "data-preview",
+        "src": "/guide/data/data-preview.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 1188,
+        "ratio": 0.279,
+        "belowThreshold": true
+      }
+    ],
+    "belowThreshold": [
+      "data-coverage",
+      "data-issues",
+      "data-preview"
+    ],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "evidence": {
+    "checked_at": "2026-10-22T09:15:41.619Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/evidence",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "evidence-drawer",
+        "src": "/guide/evidence/evidence-drawer.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 640,
+        "ratio": 0.519,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "evidence-sources",
+        "src": "/guide/evidence/evidence-sources.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 607,
+        "ratio": 0.547,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "evidence-basis",
+        "src": "/guide/evidence/evidence-basis.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 640,
+        "ratio": 0.519,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  },
+  "export": {
+    "checked_at": "2026-10-22T09:15:42.351Z",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "path": "/guide/export",
+    "threshold": 0.45,
+    "shots": [
+      {
+        "mediaId": "export-menu",
+        "src": "/guide/export/export-menu.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 416,
+        "ratio": 0.798,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "export-save",
+        "src": "/guide/export/export-save.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 496,
+        "ratio": 0.669,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "export-backup",
+        "src": "/guide/export/export-backup.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 470,
+        "ratio": 0.706,
+        "belowThreshold": false
+      },
+      {
+        "mediaId": "export-delete",
+        "src": "/guide/export/export-delete.webp",
+        "displayedWidth": 332,
+        "naturalWidth": 470,
+        "ratio": 0.706,
+        "belowThreshold": false
+      }
+    ],
+    "belowThreshold": [],
+    "note": "V41-2a：390 寬每張圖的顯示寬度（CSS px）／naturalWidth；低於 threshold 的列進驗收文件，優先改成更窄的裁切（只記錄、不斷言）"
+  }
+}
