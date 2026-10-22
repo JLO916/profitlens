@@ -1,0 +1,73 @@
+{
+  "checked_at": "2026-10-22T10:32:15.084Z",
+  "base": "https://profitlens-tau.vercel.app",
+  "downloads": [
+    {
+      "href": "/templates/examples/sales_daily.csv",
+      "suggested": "sales_daily.csv",
+      "bytes": 298,
+      "local_bytes": 298,
+      "same": true,
+      "failure": null
+    },
+    {
+      "href": "/templates/examples/channel_costs_daily.csv",
+      "suggested": "channel_costs_daily.csv",
+      "bytes": 233,
+      "local_bytes": 233,
+      "same": true,
+      "failure": null
+    },
+    {
+      "href": "/templates/examples/ad_spend_daily.csv",
+      "suggested": "ad_spend_daily.csv",
+      "bytes": 125,
+      "local_bytes": 125,
+      "same": true,
+      "failure": null
+    }
+  ],
+  "files": [
+    {
+      "file": "/templates/examples/sales_daily.csv",
+      "status": 200,
+      "content_type": "text/csv; charset=utf-8",
+      "bytes": 298,
+      "same": true,
+      "sha256": "a5cc427327f9eec598e29d5c08c01ebcb845651e5e02c4fd7b18c99ab74df231"
+    },
+    {
+      "file": "/templates/examples/channel_costs_daily.csv",
+      "status": 200,
+      "content_type": "text/csv; charset=utf-8",
+      "bytes": 233,
+      "same": true,
+      "sha256": "fb85c7d686f34ebca9e29e3011cd9966d8d3233b1f1e529952d5805a06f034b7"
+    },
+    {
+      "file": "/templates/examples/ad_spend_daily.csv",
+      "status": 200,
+      "content_type": "text/csv; charset=utf-8",
+      "bytes": 125,
+      "same": true,
+      "sha256": "494483dcc49e72f96524c6646ffd1fda4227f26a66a124ff93910950fd0a897d"
+    },
+    {
+      "file": "/templates/examples/manifest.json",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "bytes": 628,
+      "same": true,
+      "sha256": "1bdf3f86ef923820f1f70ef37f6a6a5005fb9ba68862da58d3d1e6cdfe0475e1"
+    },
+    {
+      "file": "/docs/ORDER_AGGREGATION.md",
+      "status": 200,
+      "content_type": "text/markdown; charset=utf-8",
+      "bytes": 14353,
+      "same": true,
+      "sha256": "8e47d9de4b626a4730f2f2ec382ebcaa1db3a44599536653ae4f2dcacd8990ab"
+    }
+  ],
+  "all_passed": true
+}

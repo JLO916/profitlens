@@ -6,9 +6,9 @@
 
 發布日期：2026-10-22。
 
-**發布方式**：v4.1.2 上線後，v4.2（通路設定與群組、單一通路層、by 通路／品類／SKU 的分析視角）在分支 `revamp/v4.2` 進行，已完成 V42-0（基準與護欄）、V42-1a（通路設定模組、名稱套用與備份；沒有畫面）與插入批 V42-G1（說明首頁改寫；使用者 2026-10-20 提供改寫稿）。使用者 2026-10-22 回覆「目前的進度先做正式推送上線」，把 `revamp/v4.2` 的現況做成 v4.1.3（修正版號，D-V42-34＝A：使用者看得到的差異只有說明首頁，工作台畫面與匯出在沒有通路設定時逐位元組不變，而且還沒有介面可以建立設定）。上線步驟：經使用者當次同意後推送 `revamp/v4.2` 與 `main`（`main` 從 `00584a5` fast-forward 到發布 commit），由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.3` 指向發布 commit 並推送；對正式站跑 13 項 HTTP 與補充 19 項，並核對說明首頁的文字是改寫後的版本。這些步驟在發布 commit 之後才執行；部署完成、正式站檢查通過後，才在下一行補記 deployment 與檢查結果，並把 README 的正式站版本改成 v4.1.3。
+**發布方式**：v4.1.2 上線後，v4.2（通路設定與群組、單一通路層、by 通路／品類／SKU 的分析視角）在分支 `revamp/v4.2` 進行，已完成 V42-0（基準與護欄）、V42-1a（通路設定模組、名稱套用與備份；沒有畫面）與插入批 V42-G1（說明首頁改寫；使用者 2026-10-20 提供改寫稿）。使用者 2026-10-22 回覆「目前的進度先做正式推送上線」，把 `revamp/v4.2` 的現況做成 v4.1.3（修正版號，D-V42-34＝A：使用者看得到的差異只有說明首頁，工作台畫面與匯出在沒有通路設定時逐位元組不變，而且還沒有介面可以建立設定）。使用者當次同意正式上線：推送 `revamp/v4.2` 與 `main`（`main` 從 `00584a5` fast-forward 到發布 commit `3bb1924`），由 Vercel Git 整合部署到正式站 https://profitlens-tau.vercel.app；annotated tag `v4.1.3` 指向 `3bb1924` 並已推送。
 
-**正式站檢查**：PROD_PLACEHOLDER
+**正式站檢查**：deployment `dpl_3UR51dveY1wsfyPyG66romCQYckL`（target production，READY，`profitlens-tau.vercel.app` 指向它）。13 項 HTTP 全部通過，補充 19 項也全部通過，`live_ai_called: false`（`verification/revamp-v42/V42-G1/launch-check-production.json`）。說明首頁檢查：`/guide` 的 H1、副標、meta description、五個 h2 與獨特性的四個 h3 和「刻意不做的事」都等於 `guideLabels` 渲染後的字串，V42-G1 驗收 §1 列的三句舊字句都不出現，390 沒有橫向捲動（`verification/revamp-v42/V42-G1/production-guide-check.json`、`production-guide-hub-1440.png`、`-390.png`）。範例檔下載：無頭 Chromium 在正式站首頁空狀態實際點 3 個「範例檔」連結，下載到的檔名與位元組（298、233、125）都和 repo 相同（`verification/revamp-v42/V42-G1/production-download-check.json`）。
 
 **上線時沒有完成的事**：
 - H6（v4 可用性複測與外部盲評，含 v4.1 加的 T5、T6）仍待人工；依 D-V41-17 不擋上線。

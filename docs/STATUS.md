@@ -1,5 +1,21 @@
 # Status
 
+## EC ProfitLens v4.1.3 正式上線（2026-10-22；v4.2 進行中的現況）
+
+使用者 2026-10-22 回覆「目前的進度先做正式推送上線」（D-V42-34＝A）：把 `revamp/v4.2` 的現況（V42-0、V42-1a、插入批 V42-G1）做成修正版 v4.1.3 上線。使用者看得到的改變只有說明首頁 `/guide` 的改寫；工作台的通路設定基礎沒有介面，所有畫面與匯出在沒有設定時逐位元組不變。
+
+**上線**：
+
+- `main` 從 `00584a5` fast-forward 到發布 commit `3bb1924` 並推送（同時首次推送分支 `revamp/v4.2`，另建一個 preview）→ `dpl_3UR51dveY1wsfyPyG66romCQYckL`（production，READY，`profitlens-tau.vercel.app` 指向它）。
+- annotated tag `v4.1.3` 指向 `3bb1924`，已推送。
+- 正式站 13 項與補充 19 項全部通過；說明首頁的 H1、副標、meta description、h2／h3 與 `guideLabels` 相符、舊字句不出現、390 無橫向捲動；範例檔實際下載成功（`verification/revamp-v42/V42-G1/`）。
+- 發布 commit 的檢查：unit 172 檔、3,636 全過；lint 0；typecheck 通過；build 通過；`GUIDE_MEDIA=check` 47／47；本機 launch-check 13＋19（程式與 V42-G1 收尾 `a69d5ce` 相同，只改版本號與文件）。
+- 上線紀錄 commit 推送後正式站用同樣的程式重建一次，重建後再跑一次 launch-check，結果記在工作階段回報。
+
+**沒有完成**：H6 與匯出開檔檢查待人工；Skew Protection 沒開；v4.2 其餘批次（V42-1b 到 V42-6）未做，H8、H9 尚未發生。
+
+發布紀錄見 `docs/RELEASES.md`；驗收見 `verification/revamp-v42-V42-1a-acceptance.md`、`verification/revamp-v42-V42-G1-acceptance.md`。
+
 ## V42-G1 說明首頁改寫（插入批，2026-10-22；使用者 2026-10-20 改寫稿；只動 `/guide` 一頁）
 
 使用者 2026-10-20 提供 Claude Docs 文件「EC ProfitLens /guide 改寫稿（行銷角度）」並指示依它修改網站文案。不在 v4.2 原規劃內，當成插入批處理；拍板 D-V42-32、33 依建議值。

@@ -8,6 +8,7 @@
 - **發布文件照 v4.1.2 的上線前寫法**：RELEASES 的 v4.1.3 段落把發布方式寫成步驟、正式站檢查一行是 PROD_PLACEHOLDER、README 寫「正式站仍是 v4.1.2」；部署與正式站檢查通過後的收尾 commit 再補 deployment 與 `verification/revamp-v42/V42-G1/launch-check-production.json`，並把 README 改成「正式站已是 v4.1.3（2026-10-22）」。`tests/release-notes.test.ts` 以 README 那一句判斷上線前後；v4.1.2 段落改成一律照上線後斷言。`package.json` 與 lockfile 只改版本號三行；沒有 `src/` 改動。
 - **影響**：V42-1b 起的基準改以 v4.1.3 為正式站版本，但 labels 快照、64 張畫面基準與 First Load 門檻仍是 V42-0 從 v4.1.2 取的，不重做；D-V42-24、D-V42-29 的「v4.2 基準＝v4.1.2」文字不變；v4.2.0（D-V42-6）仍是 V42-6 的目標；H8、H9 擋 v4.2.0，不擋 v4.1.3；H6、開檔檢查、Skew Protection 照舊未完成。推送 `revamp/v4.2` 與 `main`、tag `v4.1.3` 都要使用者當次同意（D-V41-24、D-V42-26）。
 - **影響文件**：`docs/RELEASES.md`（v4.1.3 段）、`README.md`（發布紀錄）、`docs/ENGINEERING.md`（版本、`docs/revamp-v4.2/`、V42-0／V42-1a／V42-G1 驗收連結）、`docs/revamp-v4.2/09_DECISIONS_PENDING.md`（D-V42-34）、`tests/release-notes.test.ts`。
+- **上線**：發布 commit `3bb1924`、tag `v4.1.3`、正式站 `dpl_3UR51dveY1wsfyPyG66romCQYckL`；正式站 13＋19、說明首頁字串、範例檔下載都通過。`revamp/v4.2` 首次推送到 origin（之後每次 push 都會重建 preview，仍要當次同意）。
 
 ## 2026-10-20｜Revamp v4.2 V42-G1：說明首頁改寫（使用者改寫稿；D-V42-32、33）
 
