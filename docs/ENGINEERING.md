@@ -57,7 +57,7 @@ R3 的來源預設查證另見 [revamp-R3-preset-verification.md](../verificatio
 
 ## Revamp v3 批次驗收紀錄
 
-Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（2026-10-14 上線，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；v4.1 的 V41-5 起為 **4.1.0**（見 [RELEASES](RELEASES.md) 的 v4.1.0 段落；說明頁 `/guide`）；V41-3 起為 **4.1.1**（見 [RELEASES](RELEASES.md) 的 v4.1.1 段落；說明頁的 3 支示範影片與 `source-map-js` 1.2.2）；V41-6 起為 **4.1.2**（見 [RELEASES](RELEASES.md) 的 v4.1.2 段落；範例檔在正式站的修正與「操作導覽」入口）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
+Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `v2.0.0`）把產品改成「老闆 10 秒看懂、主管 3 分鐘找到原因、執行者 10 分鐘完成匯入與核對」；不新增財務口徑、不刪功能，財務核心禁區對 `82b70df` 的 diff 為空（V3-9 只允許白名單內的新增，實際沒有新增）。V3-10 把 `package.json` 版本改為 **3.0.0**（版本標籤 `v3.0.0` 指向 `625bfa5`）；Revamp v4 的 V4-11 起為 **4.0.0**（2026-10-14 上線，見 [RELEASES](RELEASES.md) 的 v4.0.0 段落）；v4.1 的 V41-5 起為 **4.1.0**（見 [RELEASES](RELEASES.md) 的 v4.1.0 段落；說明頁 `/guide`）；V41-3 起為 **4.1.1**（見 [RELEASES](RELEASES.md) 的 v4.1.1 段落；說明頁的 3 支示範影片與 `source-map-js` 1.2.2）；V41-6 起為 **4.1.2**（見 [RELEASES](RELEASES.md) 的 v4.1.2 段落；範例檔在正式站的修正與「操作導覽」入口）；V42-G1 起為 **4.1.3**（見 [RELEASES](RELEASES.md) 的 v4.1.3 段落；說明首頁改寫與通路設定基礎）；完整工作區備份目前寫出 `profitlens-workspace-v5`（V3-9a 起；v1–v4 仍可還原，欄位見 `verification/revamp-v3/backup-schema-v5.json`）。下表數字是各批結束時的真實執行結果（摘自 [STATUS](STATUS.md)），不是本次重跑。
 
 | 批次 | 內容 | 單元／整合 | E2E（四尺寸） | 驗收紀錄 |
 |---|---|---|---|---|
@@ -94,10 +94,12 @@ Revamp v3（`docs/revamp-v3/`，V3-0–V3-10，基準 v2.0.0＝`82b70df`／tag `
 | [AI_CONTRACT.md](AI_CONTRACT.md)、[M5_EVALUATION.md](M5_EVALUATION.md) | 選配 AI 的契約與評估 |
 | [PRD.md](PRD.md)、[ACCEPTANCE.md](ACCEPTANCE.md)、[TASKS.md](TASKS.md) | 原始產品規格、驗收條件與 M0–M6 關卡 |
 | [PILOT_PLAN.md](PILOT_PLAN.md)、[PILOT_WORKSHEET.md](PILOT_WORKSHEET.md) | 真實使用者試用計畫與工作表 |
-| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.1.2，2026-10-16，範例檔修正與操作導覽入口；v4.1.1 已於 2026-10-15 上線，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線，服務介紹與使用說明；v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
+| [RELEASES.md](RELEASES.md) | 發布紀錄（v4.1.3，2026-10-22，說明首頁改寫與通路設定基礎；v4.1.2 已於 2026-10-16 上線，範例檔修正與操作導覽入口；v4.1.1 已於 2026-10-15 上線，示範影片與依賴修正；v4.1.0 已於 2026-10-15 上線，服務介紹與使用說明；v4.0.0 已於 2026-10-14 上線；v3.0.0 與更早的發布） |
 | [revamp-v3/](revamp-v3/) | Revamp v3 規格套件：`00_README`、`01_PRD`、`06_BATCHES`、`09_DECISIONS_PENDING`、`GLOSSARY`、`copy-rewrite.csv`、`usability-test` |
 | [revamp-v4.1/](revamp-v4.1/) | v4.1 規格套件（服務介紹與使用說明）：[`00_README`](revamp-v4.1/00_README.md)、[`01_PRD`](revamp-v4.1/01_PRD.md)（§2.2 有成功指標的實測值）、[`GUIDE_CONTENT`](revamp-v4.1/GUIDE_CONTENT.md)、[`06_BATCHES`](revamp-v4.1/06_BATCHES.md)、[`09_DECISIONS_PENDING`](revamp-v4.1/09_DECISIONS_PENDING.md)；H6 的 T5、T6 在 [revamp-v4/usability-test.md](revamp-v4/usability-test.md) |
 | v4.1 各批驗收 | [V41-0](../verification/revamp-v41-V41-0-acceptance.md)、[V41-1](../verification/revamp-v41-V41-1-acceptance.md)、[V41-2a](../verification/revamp-v41-V41-2a-acceptance.md)、[V41-2b](../verification/revamp-v41-V41-2b-acceptance.md)、[V41-4](../verification/revamp-v41-V41-4-acceptance.md)、[V41-5](../verification/revamp-v41-V41-5-acceptance.md)、[V41-3](../verification/revamp-v41-V41-3-acceptance.md)（v4.1.0 上線後的示範影片與 v4.1.1 發布）、[V41-6](../verification/revamp-v41-V41-6-acceptance.md)（v4.1.1 上線後的修正批：範例檔與「操作導覽」入口，v4.1.2 發布）；基準、清單與每批量測在 `verification/revamp-v41/`，說明頁媒體的擷取腳本與基準 PNG 在 `verification/guide-media/` |
+| [revamp-v4.2/](revamp-v4.2/) | v4.2 規格套件（通路設定與群組、單一通路層、by 通路／品類／SKU 視角）：[`00_README`](revamp-v4.2/00_README.md)、[`01_PRD`](revamp-v4.2/01_PRD.md)、[`06_BATCHES`](revamp-v4.2/06_BATCHES.md)、[`09_DECISIONS_PENDING`](revamp-v4.2/09_DECISIONS_PENDING.md)、[`GLOSSARY`](revamp-v4.2/GLOSSARY.md)；進行中（基準 v4.1.2），現況以 v4.1.3 上線（D-V42-34） |
+| v4.2 各批驗收 | [V42-0](../verification/revamp-v42-V42-0-acceptance.md)（基準與護欄）、[V42-1a](../verification/revamp-v42-V42-1a-acceptance.md)（通路設定模組、名稱套用與備份；沒有畫面）、[V42-G1](../verification/revamp-v42-V42-G1-acceptance.md)（說明首頁改寫；之後以 v4.1.3 發布）；基準、清單與每批量測在 `verification/revamp-v42/` |
 | 使用者可見文字 | `src/i18n/labels.zh-TW.ts`（單一來源；元件、匯出、AI 預覽都從這裡取字）；說明頁 `/guide` 的文字另在 `src/i18n/guide.zh-TW.ts`（只給伺服器模組使用，不進工作台首載，D-V41-12） |
 
 ### 名詞對照（閱讀下方歷史原文用）
