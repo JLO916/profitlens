@@ -1,5 +1,19 @@
 # Status
 
+## V42-G1 說明首頁改寫（插入批，2026-10-22；使用者 2026-10-20 改寫稿；只動 `/guide` 一頁）
+
+使用者 2026-10-20 提供 `/guide` 說明首頁的改寫稿（Claude Docs 文件「EC ProfitLens /guide 改寫稿（行銷角度）」）並指示套用。插入批：不計入上線前 8 批、不依賴 V42-1a／1b、和 V42-1a 平行；工作樹分支 `worktree-wf_4f423fca-ae6-3` 自 `4ed65c7` 開出，不 push。D-V42-32（例外快照）、D-V42-33（護欄與事實改寫清單）依建議值（`docs/DECISIONS.md` 2026-10-20 那一筆）。
+
+**內容**：副標 `guide.hub.intro` 改成說明頁自己的一句與 meta description；「為什麼做這套服務」三段與結語（「最快」改「直接」）；「幫哪些人解決哪些問題」的引言、三個角色的「以前怎麼做」「在這裡怎麼做」、顧問／財務一句；「這套服務有什麼獨特性？」從 7 項改成 3 個主張＋1 個前提、每項固定四段（資料常數在新檔 `src/components/guide/guide-hub-data.ts`，`src/application` 零改動）；「這些做法的代價」改名「刻意不做的事」（引言、三點、結語）；「30 秒上手」加一行引言。H1、兩顆按鈕、本頁目錄、各功能區索引、示範影片與逐步文字、頁尾、`why.lead`（`GUIDE_SENTINELS`）、11 個功能區頁都不動；`labels.zh-TW.ts` 不動。`tests/labels-structure.test.ts` 加 V42-G1 例外（改值 15、新增 31、刪除 15，凍結在 `verification/revamp-v42/labels-guide-rewrite.flat.json`，例外清單必須等於實際差異）。審查修正（2026-10-22，分支 `worktree-wf_4f423fca-ae6-6-fix`）：`guide.unique.lead` 恢復改寫稿的兩個引述問句「這怎麼來的？」「所以要怎麼做？」（沒有護欄要求說明頁字串不用問號；D-V42-33 清單去掉這一項），例外快照重產。
+
+**驗收**（程式 `9cda00f`，工作樹 `worktree-wf_4f423fca-ae6-3`）：typecheck 通過；lint 0；`audit:ui` copy 指標與 V42-0 相同（blacklistSynonym 12、blacklistTone 0、blacklistJargon 0、arrows 0、noticePrefix 0、l1ClauseOverLimit 0；JSX 中文 0）；unit 167 檔、3,583 全過（V42-0 3,577＋6）；build 通過；說明頁 E2E 四尺寸（`guide.spec`、`axe-sweep`、`keyboard-walk`，3103 埠）83 通過／0 失敗／9 略過（略過的全是 keyboard-walk 既有的尺寸限制）；axe `guide-hub` 四尺寸 serious 0、違規 0；`GUIDE_SENTINELS` 逐字不變；邊界 `git diff --stat 4ed65c7 -- src/domain fixtures docs/METRICS.md src/app/api vercel.json src/application` 為空；不加 testid、不加 npm 依賴。First Load 未量測（`guide.zh-TW.ts` 只給伺服器模組 import，`/` 首載與說明頁預期不變，capture 時確認）。審查修正後重跑：typecheck 通過；lint 0；`audit:ui` copy 指標不變（blacklistSynonym 12、blacklistTone 0、blacklistJargon 0、arrows 0、noticePrefix 0、l1ClauseOverLimit 0；JSX 中文 0）；unit 167 檔、3,583 全過（工作樹先 `npm ci`，lockfile 不變）；build 通過；禁區三條與 `4ed65c7` 邊界 diff 為空；說明頁 E2E、畫面基準、`GUIDE_MEDIA=check`、Lighthouse 仍未重跑（留給收尾）；不 push。
+
+**未執行（待收尾；本批不視為完成）**：contrast-check；PUBLIC_DEMO 3100 的 capture 與 15 說明首頁 × 4 的畫面基準更新（其餘 60 張必須 0 差異）；`GUIDE_MEDIA=check`；launch-check；Lighthouse；`verification/revamp-v42/feature-retention.csv` GH1 列；驗收文件 `verification/revamp-v42-V42-G1-acceptance.md`。跑完才能在 `docs/revamp-v4.2/06_BATCHES.md` 的批次總表寫「完成」。
+
+**沒有做**：push、部署（每一次都要當次同意）。
+
+批次範圍與執行結果見 `docs/revamp-v4.2/06_BATCHES.md` V42-G1 節。
+
 ## V42-0 基準與護欄（v4.2 第一批，2026-10-16；不改畫面）
 
 使用者 2026-10-16 回覆「其他都依建議」（D-V42-1 到 23 依建議值）與「V42-0」。分支 `revamp/v4.2` 自 `origin/main`（v4.1.2＝`e256154`，`00584a5`）開出，不 push；CLAUDE.md 整份換成 v4.2 版。

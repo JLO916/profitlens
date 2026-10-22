@@ -33,7 +33,7 @@
   "guide.unique.items.traceable.before": "儀表板給一個總數，要核對只能回去翻原始檔；拆解加起來常對不上總差額，缺的資料默默變成 0。",
   "guide.unique.items.traceable.meaning": "被追問時答案在畫面上，討論不用停在「下次確認」；拆解加得回去，不用解釋為什麼對不上。",
   "guide.unique.items.traceable.title": "每個數字都經得起追問",
-  "guide.unique.lead": "算扣廣告後貢獻，Excel 和多數儀表板都做得到。EC ProfitLens 的設計繞著算完之後的場景：週會上有人指著一個數字問這怎麼來的、所以要怎麼做。它在三件事上刻意和一般做法不同，底下還有一個前提。",
+  "guide.unique.lead": "算扣廣告後貢獻，Excel 和多數儀表板都做得到。EC ProfitLens 的設計繞著算完之後的場景：週會上有人指著一個數字問「這怎麼來的？」「所以要怎麼做？」。它在三件事上刻意和一般做法不同，底下還有一個前提。",
   "guide.who.also": "也適合代營運與電商顧問：一頁摘要有{ui:exports.variantsV3.names.client}，每個數字可追到來源，客戶追問時站得住。也適合需要核對數字的財務人員：金額以分為單位計算，兩期差額拆解附平衡檢核。",
   "guide.who.lead": "同一份資料，老闆、主管和執行者要的答案不同；不用切換角色或帳號，各自往下展開就好。",
   "guide.who.roles.boss.after": "打開{ui:shell.nav.overview.headline}，最上面的{ui:overview.snapshotUi.heading}說本期多賺或少賺多少，五個關鍵數字各附上期與差額，一張瀑布圖把兩期差額拆成九項。開會用{ui:shell.presentV3.enter}，會後印{ui:exports.variantsV3.names.boss}。",
