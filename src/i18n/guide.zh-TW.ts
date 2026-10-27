@@ -479,6 +479,7 @@ export const guideLabels = {
         notes: ["決議由人決定；方案或資料改動後，要先{ui:meeting.buttons.updateMeetingSource}才能{ui:meeting.buttons.finalizeMeeting}。"],
       },
       data: {
+        // ── V42-1b 錨點：本批沒有新增或改動說明頁字串（通路設定區的說明步驟與截圖留到 V42-5；docs/revamp-v4.2/06_BATCHES.md V42-1b 第 4 項）。
         title: "{ui:shell.nav.data.headline}",
         answers: "{ui:shell.nav.data.explain}。",
         before: "先在首頁按「{ui:shell.buttons.loadDemo}」。第 2、3 步的截圖是缺了廣告列的合成資料；資料有缺列或問題時，才會出現這些標示。",

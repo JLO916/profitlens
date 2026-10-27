@@ -145,7 +145,7 @@ const V42_HOME_FIRST_LOAD_ALLOWANCE = 8_192;
  * V42-0 是空的；由引入該面板的批次打開：V42-1 加 '"channel-settings"'（資料來源頁的通路設定區，在 workspace-panels chunk）、V42-3 加 '"products-perspective"'（商品頁的視角切換與視角模組）、
  * V42-4 加 '"products-perspective-cross"'（交叉表）。出現就表示 v4.2 的面板被靜態匯入首載（tests/lazy-panels.test.tsx 另從原始碼的模組圖檢查）。
  */
-const V42_SPLIT_SENTINELS = [] as const;
+const V42_SPLIT_SENTINELS = ['"channel-settings"'] as const; // V42-1b 起（資料來源頁的通路設定區，src/components/data/channel-settings-editor.tsx，在 workspace-panels chunk）
 const ALL_SPLIT_SENTINELS = [...SPLIT_SENTINELS, ...V42_SPLIT_SENTINELS] as const;
 /**
  * V42-0（護欄表「B9 DOM 節點」；D-V42-5：商品頁只渲染目前的視角）：非預設視角（商品頁切到品類、SKU 跨通路合計、交叉表、綜合）的 DOM 節點基準，鍵＝`{project}.{view}`（例如 desktop.category）。

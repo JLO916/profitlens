@@ -1,0 +1,20 @@
+
+### ab421b（V42-1b 637323a 於 3100 對 v4.1.3＝錨點 d588788 於 3101，各自獨立建置；每次開跑前等 1 分鐘負載 < 3.0 最多 120 秒，六對十二次都沒等到，開跑負載 4.1–8.2）
+p1: v421b load 8.2/6.7/5.9 [1195.9, 985.4, 117.7, 1236.7, 36.5] inside=0 | v413 load 6.9/6.7/6.1 [1398.7, 956.6, 105, 1088.6, 48.2] inside=0
+p2: v421b load 4.9/6.4/6.3 [1233.8, 893.9, 103.8, 1068.5, 48.4] inside=0 | v413 load 7.4/7.1/6.4 [1315.4, 942.3, 121.9, 1190.9, 42.6] inside=0
+p3: v421b load 4.7/6/6.2 [1312.9, 929.3, 122.2, 1165.8, 81.1] inside=0 | v413 load 5.6/6.2/6.3 [1373.4, 1024.6, 117.7, 1269.3, 76.6] inside=0
+p4: v421b load 6/6.9/6.6 [1224.8, 882.3, 130.9, 1153.4, 43.7] inside=0 | v413 load 5/6.1/6.3 [1422.9, 894, 152.7, 1240.7, 97.2] inside=0
+p5: v421b load 6/6.2/6.4 [1213.2, 928, 102.6, 1221, 40.8] inside=0 | v413 load 4.1/5.3/6 [1287.9, 963.7, 106.6, 1199.7, 24.6] inside=0
+p6: v421b load 7.8/6.7/6.4 [1182.6, 966.3, 142, 1128.7, 50.5] inside=0 | v413 load 5.4/6.1/6.2 [1461.8, 854.4, 164.6, 1247.5, 56.7] inside=0
+
+== V42-1b 對 v4.1.3（d588788）：6 對 ==
+載入示範資料: v421b median 1219 | v413 median 1386 | threshold 1109.1 | mean paired diff -149.5 | median paired diff -139.9 | diffs>0: 0/6 | -> PASS(rel)
+   diffs sorted: -279.2, -202.7, -198.2, -81.6, -74.7, -60.5
+切到通路健檢: v421b median 928.7 | v413 median 949.5 | threshold 832.3 | mean paired diff -8.4 | median paired diff -23.6 | diffs>0: 2/6 | -> PASS(rel)
+   diffs sorted: -95.3, -48.4, -35.6, -11.6, 28.7, 111.9
+切到商品毛利: v421b median 120 | v413 median 119.8 | threshold 129.9 | mean paired diff -8.2 | median paired diff -11.1 | diffs>0: 2/6 | -> PASS(abs)
+   diffs sorted: -22.5, -21.9, -18.1, -4, 4.5, 12.7
+切到會議紀錄: v421b median 1159.6 | v413 median 1220.2 | threshold 1071.2 | mean paired diff -43.7 | median paired diff -95.3 | diffs>0: 2/6 | -> PASS(rel)
+   diffs sorted: -122.4, -118.8, -103.5, -87.2, 21.3, 148.1
+切到資料來源: v421b median 46.1 | v413 median 52.4 | threshold 50 | mean paired diff -7.5 | median paired diff -0.9 | diffs>0: 3/6 | -> PASS(abs)
+   diffs sorted: -53.5, -11.6, -6.2, 4.4, 5.8, 16.1
