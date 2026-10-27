@@ -2211,6 +2211,84 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       expect(select, `${name}：沒有只讀的子集選項`).not.toContain("disabled");
     });
 
+    // ── V42-2a 代理 D2：「只看這個通路」、總覽的目標限制句、編輯器「要注意」四句（docs/revamp-v4.2/06_BATCHES.md V42-2a 第 4、7 項；D-V42-2、D-V42-12）──
+    it("V42-2a「只看這個通路」（channel-drill-{code}；D-V42-2）：群組範圍的三個狀態都渲染——overview-grouped 的 G4 精簡表（channel-mix）DTC、SOCIAL 各恰好一個且整頁只有這兩個、diagnosis-grouped 的通路寬表（channel-compare）同樣、meeting-grouped 至少各一個；按鈕 class ui-btn ui-btn-text channel-drill、可見文字＝labels.diagnosis.channelsV42.drill、aria-label＝drillChannelAria 填顯示名稱、是 th[scope=row] 的最後一個子節點；其他所有狀態（示範資料的 overview、diagnosis、meeting，沒有群組或範圍是全部／單一通路）沒有任何 channel-drill-", () => {
+      const v42 = labels.diagnosis.channelsV42;
+      const label = (code: string) => SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === code)!.label!;
+      const button = (code: string) => `<button type="button" class="ui-btn ui-btn-text channel-drill" data-testid="channel-drill-${code}" aria-label="${escapeAttr(fill(v42.drillChannelAria, { channel: label(code) }))}">${escapeAttr(v42.drill)}</button>`;
+      const grouped: Record<string, { container: string; exact: boolean }> = { "overview-grouped": { container: "channel-mix", exact: true }, "diagnosis-grouped": { container: "channel-compare", exact: true }, "meeting-grouped": { container: "meeting-page", exact: false } };
+      for (const [stateName, { container, exact }] of Object.entries(grouped)) {
+        const { name, html, state } = states.find(entry => entry.name === stateName)!;
+        expect(state!.active.snapshot.channel_groups?.length, name).toBeGreaterThan(0);
+        expect(state!.active.snapshot.report.scope.channels, name).toEqual(["DTC", "SOCIAL"]);
+        const root = element(html, `data-testid="${container}"`)!;
+        const ids = testIdCounts(html);
+        for (const code of ["DTC", "SOCIAL"]) {
+          const inside = occurrences(root, `data-testid="channel-drill-${code}"`);
+          if (exact) { expect(inside, `${name} ${code}：${container} 內恰好一個`).toBe(1); expect(ids.get(`channel-drill-${code}`), `${name} ${code}：整頁只有 ${container} 內那一個`).toBe(1); }
+          else expect(inside, `${name} ${code}：至少一個`).toBeGreaterThanOrEqual(1);
+          expect(root, `${name} ${code}：按鈕 markup`).toContain(button(code));
+          // 在通路列的 th[scope=row] 內、列名（與可能的 lozenge）之後、是最後一個子節點（三個表：G4 精簡表、通路寬表 default 與 diagnosis 變體）。
+          expect(occurrences(root, `${button(code)}</th>`), `${name} ${code}：th[scope=row] 的最後一個子節點`).toBe(inside);
+        }
+        expect([...ids.keys()].filter(id => id.startsWith("channel-drill-")).sort(), `${name}：只有範圍內的兩個通路有按鈕`).toEqual(["channel-drill-DTC", "channel-drill-SOCIAL"]);
+      }
+      for (const { name, html } of loaded().filter(entry => !(entry.name in grouped))) expect(occurrences(html, 'data-testid="channel-drill-'), `${name}：沒有「只看這個通路」`).toBe(0);
+      for (const stateName of ["overview", "diagnosis", "meeting"] as const) {
+        const { html, state } = states.find(entry => entry.name === stateName)!;
+        expect(state!.active.snapshot.channel_groups, stateName).toBeUndefined();
+        expect(html, stateName).not.toContain("channel-drill");
+      }
+    });
+
+    it("V42-2a 總覽的目標限制句（kpi-targets-note；D-V42-12「目標只對全部通路或單一通路配對。」）：overview-grouped（範圍＝群組、有目標）在 KPI 帶之後恰好一句 <p class=\"note kpi-targets-note\">，沒有 testid；overview（示範資料、有目標、範圍全部通路）、overview-synthetic（沒有目標）、diagnosis-grouped（健檢頁）都沒有這句", () => {
+      const sentence = labels.diagnosis.channelsV42.limits.targets;
+      const note = `<p class="note kpi-targets-note">${escapeAttr(sentence)}</p>`;
+      const { name, html, state } = states.find(entry => entry.name === "overview-grouped")!;
+      expect(state!.active.targets, `${name}：帶目標`).toBeTruthy();
+      expect(occurrences(html, note), name).toBe(1);
+      expect(occurrences(html, "kpi-targets-note"), `${name}：只有一處`).toBe(1);
+      expect(occurrences(html, escapeAttr(sentence)), `${name}：這句只出現一次`).toBe(1);
+      const view = element(html, 'class="view-content"')!;
+      expect(view.indexOf('data-testid="kpi-band"'), `${name}：在 KPI 帶之後`).toBeLessThan(view.indexOf(note));
+      expect(element(view, 'class="note kpi-targets-note"'), `${name}：沒有 testid`).toBe(note);
+      for (const stateName of ["overview", "overview-synthetic", "diagnosis-grouped"] as const) {
+        const other = states.find(entry => entry.name === stateName)!;
+        expect(other.html, `${stateName}：沒有目標限制句`).not.toContain("kpi-targets-note");
+        expect(other.html, `${stateName}：沒有這句`).not.toContain(escapeAttr(sentence));
+      }
+      expect(states.find(entry => entry.name === "overview")!.state!.active.targets, "overview：有目標但範圍是全部通路").toBeTruthy();
+      expect(states.find(entry => entry.name === "overview-synthetic")!.state!.active.targets, "overview-synthetic：沒有目標").toBeFalsy();
+    });
+
+    it("V42-2a 通路設定區的「要注意」（details.channel-settings-notes；GLOSSARY §2）：data-channel-settings 與示範資料的 data 都恰好四個 <p>——名稱句（labels.data.channelSettingsV42.notes.names）加群組層三句限制（labels.diagnosis.channelsV42.limits 的 rules、scenario、targets），順序固定；details 收合但內容掛載（M1）", () => {
+      const ui = labels.data.channelSettingsV42, limits = labels.diagnosis.channelsV42.limits;
+      for (const stateName of ["data-channel-settings", "data"] as const) {
+        const { html } = states.find(entry => entry.name === stateName)!;
+        const editor = element(html, 'data-testid="channel-settings"')!;
+        expect(occurrences(editor, 'class="channel-settings-notes"'), stateName).toBe(1);
+        const notes = element(editor, 'class="channel-settings-notes"')!;
+        expect(openTag(notes, 'class="channel-settings-notes"'), `${stateName}：收合`).toBe('<details class="channel-settings-notes">');
+        expect(notes, stateName).toContain(`<summary>${escapeAttr(ui.notes.summary)}</summary>`);
+        expect([...notes.matchAll(/<p>([^<]*)<\/p>/g)].map(match => match[1]), `${stateName}：四句`).toEqual([ui.notes.names, limits.rules, limits.scenario, limits.targets].map(escapeAttr));
+        expect(occurrences(notes, "<p"), `${stateName}：沒有其他段落`).toBe(4);
+      }
+    });
+
+    it("V42-2a 會議頁的固定範圍一行（審查 R1-4；功能保留表第 43 列）：meeting-grouped 的 .meeting-scope-line 寫群組名「自有」（scopeChannelsLabel），示範資料的 meeting 仍列成員", () => {
+      const review = labels.meeting.review;
+      const grouped = states.find(entry => entry.name === "meeting-grouped")!;
+      const line = element(grouped.html, 'class="meeting-scope-line"')!;
+      const group = SYNTHETIC_CHANNEL_SETTINGS.groups.find(entry => entry.id === "g1")!;
+      expect(line, "meeting-grouped：群組名").toContain(escapeAttr(fill(review.sourceLine, { sourceStatus: review.sourceFixed, channels: group.label })));
+      expect(line, "meeting-grouped：不列成員清單").not.toContain(escapeAttr(`${labels.data.channelSettingsV42.columns.label}`) + "、");
+      const demo = states.find(entry => entry.name === "meeting")!;
+      const demoLine = element(demo.html, 'class="meeting-scope-line"')!;
+      // meeting 狀態用 golden 資料（沒有別名、沒有群組）：固定範圍一行列成員代碼（channelsLabel＝快照解析器的名稱，與 v4.1.3 相同）。
+      const demoChannels = channelsLabel(demo.state!.active.snapshot.report.scope.channels, snapshotResolver(demo.state!.active.snapshot));
+      expect(demoLine, "meeting：沒有群組時仍列成員").toContain(escapeAttr(fill(review.sourceLine, { sourceStatus: review.sourceFixed, channels: demoChannels })));
+    });
+
   });
 
   describe("M6：同一個控制在 DOM 只有一個實例", () => {

@@ -15,7 +15,7 @@ import type { ExcelMeeting } from "@/application/excel-export";
 import { downloadText } from "@/application/download";
 import { track } from "@/application/analytics";
 import { deltaTone, formatAmountL1, formatAmountL2, formatDateL1, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
-import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import { channelLabel, channelsLabel, scopeChannelsLabel, snapshotResolver } from "@/application/copy";
 import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import { fill, labels } from "@/i18n";
 import { scenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from "@/application/scenario-workspace";
@@ -317,12 +317,12 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
       {exporting && <p role="status">{page.exporting}</p>}
       {exportError && <p role="alert" className="ui-notice" data-tone="unfavorable">{page.exportError}</p>}
     </div>
-    {/* §7.6 第 3 點：固定範圍一行（13px 次要色）；範圍不同時改成 C22 橫幅（檢視差異、用目前資料更新會議）。技術細節保留。 */}
+    {/* §7.6 第 3 點：固定範圍一行（13px 次要色）；範圍不同時改成 C22 橫幅（檢視差異、用目前資料更新會議）。技術細節保留。V42-2a（審查 R1-4；功能保留表第 43 列）：固定範圍與差異說明的通路文字走 scopeChannelsLabel（群組名／「{群組名} · {通路名}」）。 */}
     <div className="meeting-info">
-      <p className="meeting-scope-line">{fill(copy.sourceLine, { sourceStatus: historical ? copy.sourceHistorical : copy.sourceFixed, channels: channelsLabel(scope.channels, alias) })} · {fill(pageV3.scopeLine, { previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { anchor: review.data_as_of }), current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { anchor: review.data_as_of }), asOf: formatDateL1(review.data_as_of, { anchor: review.data_as_of }) })}{!viewDiffers && <> <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.meeting.buttons.updateMeetingSource}</button></>}</p>
+      <p className="meeting-scope-line">{fill(copy.sourceLine, { sourceStatus: historical ? copy.sourceHistorical : copy.sourceFixed, channels: scopeChannelsLabel(scope.channels, alias) })} · {fill(pageV3.scopeLine, { previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { anchor: review.data_as_of }), current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { anchor: review.data_as_of }), asOf: formatDateL1(review.data_as_of, { anchor: review.data_as_of }) })}{!viewDiffers && <> <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.meeting.buttons.updateMeetingSource}</button></>}</p>
       {viewDiffers && <div className="ui-banner meeting-banner" data-testid="review-view-difference">
         <span>{pageV3.viewDifferenceBanner}</span>
-        <details className="topbar-menu auto-close meeting-banner-detail"><summary className="ui-btn ui-btn-text">{pageV3.viewDifferenceToggle}</summary><div className="ui-popover meeting-banner-popover"><p>{fill(copy.viewDifference, { meetingChannels: channelsLabel(scope.channels, alias), meetingStart: scope.current_period.start, meetingEnd: scope.current_period.end, viewChannels: channelsLabel(source.snapshot.report.scope.channels, viewAlias), viewStart: source.snapshot.report.current.period.start, viewEnd: source.snapshot.report.current.period.end, datasetNote: source.snapshot.dataset_hash !== review.dataset_hash ? copy.viewDifferenceDataset : copy.viewDifferenceScope })}</p></div></details>
+        <details className="topbar-menu auto-close meeting-banner-detail"><summary className="ui-btn ui-btn-text">{pageV3.viewDifferenceToggle}</summary><div className="ui-popover meeting-banner-popover"><p>{fill(copy.viewDifference, { meetingChannels: scopeChannelsLabel(scope.channels, alias), meetingStart: scope.current_period.start, meetingEnd: scope.current_period.end, viewChannels: channelsLabel(source.snapshot.report.scope.channels, viewAlias), viewStart: source.snapshot.report.current.period.start, viewEnd: source.snapshot.report.current.period.end, datasetNote: source.snapshot.dataset_hash !== review.dataset_hash ? copy.viewDifferenceDataset : copy.viewDifferenceScope })}</p></div></details>
         <button type="button" className="ui-btn ui-btn-text" onClick={refresh}>{labels.meeting.buttons.updateMeetingSource}</button>
       </div>}
       <details className="meeting-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><p>{copy.refreshHint}</p></details>

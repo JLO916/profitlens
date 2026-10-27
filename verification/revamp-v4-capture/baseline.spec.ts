@@ -29,7 +29,7 @@ import { FIXED_NOW, calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigat
 // V42-2a（docs/revamp-v4.2/06_BATCHES.md V42-2a「允許變動畫面」；D-V42-10、D-V42-13＝A）：再加一個畫面（元素截圖 × 4 尺寸），共 72 張：
 //   18 期間列選到群組：載入示範資料、資料來源頁的通路設定編輯器「新增群組」建「自有」＝DTC、套用，回總覽，期間列選單選「自有」（390 先開底部面板），等期間摘要的 title 出現群組名後，
 //      對 .period-bar（390 對開著的 #period-bar-panel）做元素截圖；帶 stylePath。原生 <select> 的下拉清單截不到，所以 18 的定義是「選到群組後的期間列」（選單關著）；示範資料只有兩個通路，
-//      「自有」只有一個成員，選了群組就是那個通路（channelSelection 的優先順序：恰好一個 → channel），選單停在 optgroup 自有內的「官網」、摘要寫「自有 · 官網」。獨立的測試。
+//      「自有」只有一個成員，選了群組就是那個通路（channelSelection 的優先順序：恰好一個 → channel），選單停在 optgroup 自有內的「官網」、摘要寫「自有（官網）」。獨立的測試。
 // 基準位置：verification/revamp-v4/${CAPTURE_BATCH}/snapshots/{project}/{名稱}.png（見 verification/revamp-v4.capture.config.ts）。
 // 用 expect.soft：一張不同不會擋住後面幾張，報告一次列出全部差異。
 const top = (page: Page) => page.evaluate(() => window.scrollTo(0, 0));
@@ -243,11 +243,12 @@ test("V42-2a 畫面基準 18 期間列選到群組", async ({ page }) => {
   await expect(select.locator("optgroup")).toHaveCount(2);
   await expect(select.locator("optgroup").first()).toHaveAttribute("label", GROUP_NAME);
   await expect(select.locator("optgroup").last()).toHaveAttribute("label", labels.shell.periodBarV42.ungrouped);
-  // 選 optgroup 自有內的群組選項（文字＝群組名）。「自有」只有 DTC 一個成員：套用的範圍是 [DTC]，選單的值回到那個通路（optgroup 自有內的「官網」），期間摘要寫「自有 · 官網」。
+  // 選 optgroup 自有內的群組選項（文字＝群組名）。「自有」只有 DTC 一個成員：套用的範圍是 [DTC]，選單的值回到那個通路（optgroup 自有內的「官網」），期間摘要的 title 寫「自有（官網）」。
   await select.selectOption({ label: GROUP_NAME });
   const summary = page.getByTestId("period-summary");
   await expect(summary).toHaveAttribute("title", new RegExp(GROUP_NAME));
-  await expect(summary).toHaveAttribute("title", new RegExp(fill(labels.shell.scopeV42.memberOfGroup, { group: GROUP_NAME, channel: labels.data.demoChannelAlias.DTC })));
+  // 只有一個成員的群組：範圍集合等於群組成員，scopeDetailText 先命中群組，title 寫「自有（官網）」（labels.shell.scopeV42.groupWithMembers）；選單的值依 channelSelection 的優先順序回到那個通路。
+  expect(await summary.getAttribute("title")).toContain(fill(labels.shell.scopeV42.groupWithMembers, { group: GROUP_NAME, members: labels.data.demoChannelAlias.DTC }));
   await expect(select).toHaveValue("DTC");
   await expect(page.locator(".view-content")).not.toHaveAttribute("aria-busy", "true");
   await settle(page);
