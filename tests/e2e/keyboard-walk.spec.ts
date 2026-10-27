@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { fill, labels } from "../../src/i18n";
 import { guideLabels } from "../../src/i18n/guide.zh-TW";
 import { GUIDE_AREA_STEPS, GUIDE_VIDEOS, resolveUiRefs, type GuideVideoPage } from "../../src/application/guide";
-import { closeTopbarMore, openTopbarMore } from "./replacement-helpers";
+import { closeTopbarMore, isMobile, openTopbarMore } from "./replacement-helpers";
 import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverlay, kpiLink, loadDemo, pageName, writeLaunchJson, type FocusStop, type LaunchPage } from "./launch-helpers-v310";
 
 /*
@@ -27,14 +27,24 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V41-3：兩條說明頁走查加「影片控制」里程碑；guideWalk 把同一支影片的原生控制記成各自的停留點（nativeMediaStops），不當成回到停過的元素。
  * V42-1b：資料來源頁加「通路設定 summary」里程碑（收合的 <details> channel-settings 在 data-scope 之後；D-V42-8＝A）：summary 本身是停留點、在「問題表或範圍列表」之後、
  *   不晚於 V42-1b 實測（V42_1B_CHANNEL_SETTINGS_TABS）；資料來源頁既有的兩個里程碑與基準不變。
+ * V42-2a：總覽頁加「期間列通路選單」里程碑（期間列的 <select data-testid="scope-select">，D-V42-10 的兩層選單）：Tab 順序上在「第一張 KPI」之前（期間列在 KPI 帶之前，是 PRD §2.3 B
+ *   計入 controlsBeforeFirstKpi 的控制之一），所以記在總覽里程碑的最前面；它不是該頁的第一個主要結果（beforePrimary），V4-8b 的主要里程碑比對仍取「第一張 KPI」。
+ *   390 的期間列收成一顆按鈕、底部面板關著時 select 是 display:none（globals.css），走查不開面板，手機不記這個里程碑（mobileHidden）；1440 與 768 都記。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
 const MAX_WALK = 700;
-/** 各頁的「第一個主要結果」（依序記錄每一個里程碑第一次到達的步數）。 */
-const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
+/**
+ * 各頁的「第一個主要結果」（依序記錄每一個里程碑第一次到達的步數；陣列順序＝Tab 順序）。
+ * V42-2a：beforePrimary＝殼層控制、在該頁第一個主要結果之前（不是主要結果；V4-8b 的 V4_0A_PRIMARY_TABS 取第一個沒有這個標記的里程碑）；
+ * mobileHidden＝390 以 CSS 隱藏、走查不會經過（手機不記）。
+ */
+type Milestone = { name: string; selector: string; beforePrimary?: true; mobileHidden?: true };
+const SCOPE_SELECT_MILESTONE = "期間列通路選單";
+const MILESTONES: Record<LaunchPage, Milestone[]> = {
   // V4-8b：總覽、健檢、試算、會議的「第一張圖的資料表 summary」接在各頁原有里程碑之後（總覽 G1、健檢 G10（G9 是清單內的條，沒有資料表）、試算 G15、會議 G15 會議實例）。
-  overview: [{ name: "第一張 KPI", selector: "[data-testid='kpi-band'] [data-testid^='kpi-']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='bridge-section'] > details.data-alternative > summary" }],
+  // V42-2a（06_BATCHES V42-2a 第 7 項；D-V42-10）：期間列的通路 <select>（scope-select，兩層 optgroup 選單）在 KPI 帶之前，是總覽 Tab 順序上第一個里程碑；390 底部面板關著時不可見。
+  overview: [{ name: SCOPE_SELECT_MILESTONE, selector: "[data-testid='scope-select']", beforePrimary: true, mobileHidden: true }, { name: "第一張 KPI", selector: "[data-testid='kpi-band'] [data-testid^='kpi-']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='bridge-section'] > details.data-alternative > summary" }],
   diagnosis: [{ name: "健檢第一列", selector: "[data-testid^='diagnosis-row-']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='chart-diagnosis-share'] > details.data-alternative > summary" }],
   // V4-4（06_BATCHES V4-4、CHART_CATALOG G14「鍵盤」）：加「第一張圖的資料表 summary」（示範資料是 G13，有商品毛利為負時是 G14），必須在「最差商品」之後。
   products: [{ name: "最差商品（第一個結果）", selector: "[data-testid='product-worst']" }, { name: "第一張圖的資料表 summary", selector: "section.product-highlights section.chart-section > details.data-alternative > summary" }, { name: "商品表第一列", selector: "[data-testid='product-table'] tbody tr" }],
@@ -158,7 +168,8 @@ async function walk(page: Page, id: LaunchPage): Promise<Walk> {
   // 「試算」按鈕的可及名稱取 labels，標成屬性給選擇器用（只加在測試的瀏覽器內）。
   if (id === "scenarios") await page.getByTestId("scenario-1").getByRole("button", { name: copy.calculate, exact: true }).evaluate(el => el.setAttribute("data-v310-calculate", ""));
   const startedOnMain = await focusMain(page);
-  const milestones = MILESTONES[id].map(item => ({ name: item.name, selector: item.selector, tabs: null as number | null, reachedBy: null as Position | null }));
+  // V42-2a：390 以 CSS 隱藏的里程碑（期間列底部面板內的 select）不記。
+  const milestones = MILESTONES[id].filter(item => !(item.mobileHidden && isMobile(page))).map(item => ({ name: item.name, selector: item.selector, tabs: null as number | null, reachedBy: null as Position | null }));
   const passes = (PASS_REGIONS[id] ?? []).map(item => ({ ...item, stops: 0, first: null as number | null, last: null as number | null }));
   const stops: string[] = [], invisibleStops: string[] = [], repeatedStops: string[] = [], ariaHiddenStops: string[] = [];
   const seen = new Set<string>();
@@ -374,7 +385,9 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
   expect(waterfallRegionStops(overviewWalk), "V4-1：瀑布外框 region 停留點").toEqual(testInfo.project.name === "mobile" ? WATERFALL_REGIONS : []);
   // V4-8b：總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a；總覽、健檢、試算、會議的「第一張圖的資料表 summary」在前一個里程碑之後、不晚於 V4-8b 實測；總覽 KPI 前可聚焦 ≤ 10。
   for (const [id, max] of Object.entries(V4_0A_PRIMARY_TABS[testInfo.project.name])) {
-    const primary = walks.find(item => item.page === id)!.milestones[0];
+    // V42-2a：主要里程碑＝第一個沒有 beforePrimary 標記的（總覽的「期間列通路選單」在它之前，不是主要結果）。
+    const primaryName = MILESTONES[id as LaunchPage].find(item => !item.beforePrimary)!.name;
+    const primary = walks.find(item => item.page === id)!.milestones.find(item => item.name === primaryName)!;
     expect(primary.tabs ?? Number.POSITIVE_INFINITY, `V4-8b：${id}「${primary.name}」的 Tab 數不晚於 V4-0a`).toBeLessThanOrEqual(max!);
   }
   for (const [id, max] of Object.entries(V4_8B_FIRST_TABLE_TABS[testInfo.project.name])) {
@@ -384,9 +397,23 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
     expect(milestones[index].tabs!, `V4-8b：${id}「第一張圖的資料表 summary」在「${milestones[index - 1].name}」之後`).toBeGreaterThan(milestones[index - 1].tabs!);
   }
   expect(overviewWalk.controlsBeforeFirstKpi, "V4-8b：總覽 KPI 前可聚焦的控制 ≤ 10（PRD §2.3 B）").toBeLessThanOrEqual(MAX_CONTROLS_BEFORE_KPI);
+  // V42-2a：1440 的總覽「期間列通路選單」本身是停留點、在「第一張 KPI」之前；390 不記（mobileHidden）。
+  expectScopeSelectMilestone(overviewWalk, testInfo.project.name);
   expect(flow.downloaded).toMatch(/\.csv$/);
   expect(errors).toEqual([]);
 });
+
+/**
+ * V42-2a（06_BATCHES V42-2a 第 7 項；D-V42-10）：總覽「期間列通路選單」（scope-select）——1440 與 768 時 select 本身是 Tab 停留點（reachedBy inside），步數在「第一張 KPI」之前
+ * （期間列在 KPI 帶之前；它已計入 controlsBeforeFirstKpi ≤ 10）；390 的底部面板關著時 select 不可見，走查不記這個里程碑（milestones 內沒有它）。
+ */
+function expectScopeSelectMilestone(overview: Walk, project: string) {
+  const scope = overview.milestones.find(item => item.name === SCOPE_SELECT_MILESTONE);
+  if (project === "mobile") { expect(scope, "V42-2a：390 不記「期間列通路選單」（底部面板關著時 select 不可見）").toBeUndefined(); return; }
+  expect(scope, "V42-2a：總覽里程碑含「期間列通路選單」").toBeDefined();
+  expect(scope!.reachedBy, "V42-2a：「期間列通路選單」的 select 本身是 Tab 停留點").toBe("inside");
+  expect(scope!.tabs!, "V42-2a：「期間列通路選單」在「第一張 KPI」之前").toBeLessThan(overview.milestones.find(item => item.name === "第一張 KPI")!.tabs!);
+}
 
 test("V4-1 鍵盤走查（768）：總覽沒有 aria-hidden 內的 Tab 停留點；兩張瀑布外框是 region 停留點", async ({ page }, testInfo) => {
   // 上面的七頁走查只跑 1440 與 390；06 V4-1 要求 768 寬一併確認瀑布外框的修正（768 的瀑布同樣比外框寬、在框內水平捲動）。
@@ -408,6 +435,8 @@ test("V4-1 鍵盤走查（768）：總覽沒有 aria-hidden 內的 Tab 停留點
   expect(overview.lostFocus).toBe(0);
   expect(overview.leftMainAt).not.toBeNull();
   for (const milestone of overview.milestones) expect(milestone.tabs, `Tab 要能到達「${milestone.name}」`).not.toBeNull();
+  // V42-2a：768 的期間列面板可見（≤ 767 才收成按鈕），「期間列通路選單」同樣是停留點、在「第一張 KPI」之前。
+  expectScopeSelectMilestone(overview, testInfo.project.name);
   expect(errors).toEqual([]);
 });
 
