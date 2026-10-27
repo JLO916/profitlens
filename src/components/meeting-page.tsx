@@ -218,7 +218,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
     try {
       const meeting = meetingExportInfo(review, date);
       // V4-3c：Excel／PPT 的產生程式按下時才載入（不在首載）；載入失敗與產生失敗走同一個 catch。
-      if (kind === "excel") { const { exportExcel } = await import("@/application/excel-export"); await exportExcel({ summary, snapshot: ready.snapshot, dataset: ready.dataset, actions: actionWorkspace, products: compareProducts(ready.dataset, ready.snapshot.report.scope).rows, conversion: reviewConversion, meeting, datasetName: exportDatasetName }); }
+      if (kind === "excel") { const { exportExcel } = await import("@/application/excel-export"); await exportExcel({ summary, snapshot: ready.snapshot, dataset: ready.dataset, actions: actionWorkspace, products: compareProducts(ready.dataset, ready.snapshot.report.scope).rows, conversion: reviewConversion, meeting, datasetName: exportDatasetName, channelSettings: source.channel_settings ?? null }); }
       else { const { exportPptx } = await import("@/application/pptx-export"); await exportPptx({ summary, snapshot: ready.snapshot, actions: actionWorkspace, meeting, datasetName: exportDatasetName }); }
     } catch { setExportError(true); } finally {
       working.current = false; setExporting(null);

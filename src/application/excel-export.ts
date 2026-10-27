@@ -19,7 +19,7 @@ import { channelConclusion } from "./chart-takeaways";
 import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExcelSheetKey, type ExportVariant, type ExportVariantSpec } from "./export-variants";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, scopeLabel, snapshotResolver } from "./copy";
-import { makeResolver, type NameResolver } from "./channel-settings";
+import { makeResolver, orderedChannels, type ChannelSettings, type NameResolver } from "./channel-settings";
 import { downloadBinary } from "./download";
 import { buildExportHeader } from "./export-header";
 import { argb, EXPORT_THEME } from "./export-theme";
@@ -67,6 +67,8 @@ export interface ExcelExportInput {
   generatedAt?: Date;
   /** V3-7 版頭第 1 行；預設 dataset_id。 */
   datasetName?: string;
+  /** V42-1b（D-V42-15＝A）：Active.channel_settings；只用來決定「通路設定」對照列的順序（orderedChannels）。名稱與群組仍讀 snapshot.channel_names／channel_groups；沒給時依代碼排序。 */
+  channelSettings?: ChannelSettings | null;
 }
 
 export const EXCEL_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -302,11 +304,34 @@ function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec, charts: re
     ...technical(labels.assist.breakevenV3.excelVersion, BREAKEVEN_MER_VERSION),
     ...technical(csvHeader("currency"), dataset.manifest.currency),
     ...technical(csvHeader("timezone"), dataset.manifest.timezone),
+    // V42-1b（D-V42-15＝A）：「通路設定」對照列接在技術細節之後、「圖表資料」版本列之前；快照沒有通路設定時是空陣列（既有各列與位元組不變）。
+    ...channelSettingsRows(input),
     // V4-9b（D-V4-12＝A）：「圖表資料」用到的每個 B 級版本常數（整理函式的版本），與技術細節同樣只在 spec.appendix.technical 時列（客戶報告版不列）。
     // 區塊寫「圖表資料」、放在技術細節各列之後：技術細節區的既有各列逐列不變（tests/breakeven-mer.test.ts 斷言那一區恰好 8 列）。
     ...(spec.appendix.technical ? charts.filter(chart => chart.arranged).map(chart => row(labels.exports.chartsV4.excel.sheet, fill(labels.exports.chartsV4.excel.basisVersion, { section: chart.section }), chart.version)) : []),
   ];
   return sheet(copy.sheets.basis, copy.columns.basis, records);
+}
+
+/**
+ * V42-1b（D-V42-15＝A；PRD §12）：指標定義工作表的「通路設定」對照列——只在快照帶 channel_names／channel_groups（設定與預設有差）時才有，
+ * 示範／golden 與沒有設定的匯出逐位元組不變。只加列不改欄：第一列是區塊「通路設定」（其餘兩格空），第二列是三個欄名（通路代碼、顯示名稱、群組），
+ * 之後 manifest 的每個通路一列：代碼、顯示名稱（解析器；沒有名稱就是代碼）、群組名或「未分組」。順序＝orderedChannels（input.channelSettings 的 order；沒給設定時依代碼）。
+ * 三格都是文字格：寫出時與其他文字格一樣經過 excelText（開頭是 = + - @、空白或控制字元時前面加 '），模型層保留原字串。
+ */
+function channelSettingsRows(input: ExcelExportInput): SheetRecord<typeof copy.columns.basis>[] {
+  const { snapshot, dataset } = input;
+  if (snapshot.channel_names === undefined && snapshot.channel_groups === undefined) return [];
+  const v = labels.exports.v42.channelSettings;
+  const resolver = snapshotResolver(snapshot);
+  const groupOf = new Map<string, string>();
+  for (const group of snapshot.channel_groups ?? []) for (const code of group.members) groupOf.set(code, group.label);
+  const row = (section: string, item: string, detail: string) => ({ section: text(section), item: text(item), detail: text(detail) });
+  return [
+    { section: text(v.heading), item: EMPTY, detail: EMPTY },
+    row(v.columns.code, v.columns.label, v.columns.group),
+    ...orderedChannels(input.channelSettings, dataset.manifest.channels).map(code => row(code, resolver.channel(code), groupOf.get(code) ?? v.ungrouped)),
+  ];
 }
 
 /**

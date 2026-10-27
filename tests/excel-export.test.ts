@@ -26,6 +26,8 @@ import { sharePerHundredText, shareSectionModel, shareTableCell, SHARE_TABLE_COL
 import { paretoSectionModel, PARETO_TABLE_COLUMNS, varianceSectionModel, VARIANCE_TABLE_COLUMNS, type ProductChartScope } from "@/components/products/highlight-charts";
 import { encodeCsv } from "@/application/export";
 import { downloadBinary } from "@/application/download";
+import { CHANNEL_SETTINGS_VERSION, orderedChannels, type ChannelSettings } from "@/application/channel-settings";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { buildExcelWorkbook, countCell, EXCEL_CELL_TEXT_LIMIT, EXCEL_MIME, EXCEL_NUMBER_FORMATS, excelHeader, excelSheetName, excelText, exportExcel, moneyCell, ratioCell, writeExcel, type ExcelCell, type ExcelExportInput, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
 import { formatPeriodExport, metricDefinitions, MINUS } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
@@ -793,5 +795,99 @@ describe("R6-4 downloadBinary and exportExcel (local download only)", () => {
     await expect(exportExcel({ ...input, summary: buildManagerSummary(dtc.snapshot) })).rejects.toThrow("EXCEL_SOURCE_MISMATCH");
     expect(blobs).toHaveLength(0);
     expect(link.click).not.toHaveBeenCalled();
+  });
+});
+
+// V42-1b（D-V42-15＝A；PRD §12、06_BATCHES V42-1b 第 2 項）：指標定義工作表的「通路設定」對照列——只加列不改欄、只在快照帶通路設定時出現，
+// 沒有設定時（golden、示範、合成 4 通路、設定等於預設）逐列與今天相同；人讀三格經過同一條 excelText 防注入規則。
+describe("V42-1b 指標定義工作表的「通路設定」對照列：只在快照帶通路設定時加列", () => {
+  const v = labels.exports.v42.channelSettings;
+  const FOUR = ["DTC", "LIVE", "MARKETPLACE", "SOCIAL"];
+  /** 自有＝DTC＋SOCIAL（SOCIAL 的 order 排在 DTC 前面）；MARKETPLACE 只改名；LIVE 沒改；一個顯示名稱以「=」開頭。 */
+  const SETTINGS: ChannelSettings = {
+    version: CHANNEL_SETTINGS_VERSION,
+    channels: [{ code: "DTC", label: "自有官網", group: "own", order: 1 }, { code: "SOCIAL", label: "=社群", group: "own", order: 0 }, { code: "MARKETPLACE", label: "平台商城" }],
+    groups: [{ id: "own", label: "自有", order: 0 }],
+  };
+  async function synthetic(settings: ChannelSettings | null): Promise<ExcelExportInput> {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    const snapshot = await createSnapshot(dataset, {}, await hashInput(input), settings);
+    return { summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace(), channelSettings: settings };
+  }
+  const basisRows = (book: ExcelWorkbook) => records(sheetOf(book, "basis"));
+  const triple = (row: Record<string, string | number | null>) => [row[col.basis.section], row[col.basis.item], row[col.basis.detail]];
+
+  it("有設定：區塊列「通路設定」、欄名列、每個通路一列（代碼、顯示名稱、群組或未分組），順序＝orderedChannels；接在技術細節之後、圖表資料版本列之前；其餘各列與沒有設定時逐列相同", async () => {
+    const input = await synthetic(SETTINGS);
+    expect(input.snapshot.channel_names).toBeDefined();
+    const rows = basisRows(buildExcelWorkbook(input));
+    const start = rows.findIndex(row => row[col.basis.section] === v.heading);
+    expect(start).toBeGreaterThan(0);
+    const block = rows.slice(start, start + 2 + FOUR.length).map(triple);
+    expect(block).toEqual([
+      [v.heading, null, null],
+      [v.columns.code, v.columns.label, v.columns.group],
+      ["SOCIAL", "=社群", "自有"],
+      ["DTC", "自有官網", "自有"],
+      ["LIVE", "LIVE", v.ungrouped],
+      ["MARKETPLACE", "平台商城", v.ungrouped],
+    ]);
+    expect(orderedChannels(SETTINGS, FOUR)).toEqual(["SOCIAL", "DTC", "LIVE", "MARKETPLACE"]);
+    // 位置：前一列是技術細節的最後一列（timezone），之後全部是「圖表資料」的版本列（仍在工作表最後）。
+    expect([rows[start - 1][col.basis.section], rows[start - 1][col.basis.detail]]).toEqual([copy.basis.sections.technical, "Asia/Taipei"]);
+    const after = rows.slice(start + block.length);
+    expect(after.length).toBeGreaterThan(0);
+    expect(after.every(row => row[col.basis.section] === labels.exports.chartsV4.excel.sheet)).toBe(true);
+    expect(rows.filter(row => row[col.basis.section] === v.heading)).toHaveLength(1);
+    // 只加列：拿掉這一塊之後，與沒有設定時的指標定義工作表逐列相同（技術細節仍恰好 8 列）。
+    const without = basisRows(buildExcelWorkbook(await synthetic(null)));
+    expect([...rows.slice(0, start), ...after]).toEqual(without);
+    expect(rows.filter(row => row[col.basis.section] === copy.basis.sections.technical)).toHaveLength(8);
+  });
+
+  it("沒給 channelSettings（只有快照的名稱）時順序依代碼；只改名稱沒有群組時每列都是未分組", async () => {
+    const labelsOnly: ChannelSettings = { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "SOCIAL", label: "=社群", order: 0 }], groups: [] };
+    const input = await synthetic(labelsOnly);
+    expect(input.snapshot.channel_groups).toEqual([]);
+    const rows = basisRows(buildExcelWorkbook({ ...input, channelSettings: undefined }));
+    const start = rows.findIndex(row => row[col.basis.section] === v.heading);
+    expect(start).toBeGreaterThan(0);
+    expect(rows.slice(start + 2, start + 2 + FOUR.length).map(triple)).toEqual([["DTC", "DTC", v.ungrouped], ["LIVE", "LIVE", v.ungrouped], ["MARKETPLACE", "MARKETPLACE", v.ungrouped], ["SOCIAL", "=社群", v.ungrouped]]);
+    // 有給設定時依 order（SOCIAL 在前）。
+    expect(basisRows(buildExcelWorkbook(input)).slice(start + 2, start + 3).map(triple)).toEqual([["SOCIAL", "=社群", v.ungrouped]]);
+  });
+
+  it("寫出的 .xlsx：對照列三格都是字串格，「=」開頭的顯示名稱前面加 '（與其他文字格同一條 excelText 規則），沒有公式格；模型層保留原字串", async () => {
+    const input = await synthetic(SETTINGS);
+    expect(basisRows(buildExcelWorkbook(input)).some(row => row[col.basis.item] === "=社群")).toBe(true);
+    const { book, sheetXml } = parse(await writeExcel(buildExcelWorkbook(input)));
+    for (const xml of sheetXml) expect(xml).not.toMatch(/<f[\s>]/);
+    const cells = cellsOf(book.Sheets[copy.sheets.basis]).map(({ cell }) => cell);
+    const social = cells.filter(cell => cell.v === "'=社群");
+    expect(social).toHaveLength(1);
+    expect(social[0].t).toBe("s");
+    expect(social[0].f).toBeUndefined();
+    expect(cells.some(cell => cell.v === "=社群")).toBe(false);
+    expect(excelText("=社群")).toBe("'=社群");
+    for (const value of [v.heading, v.columns.code, v.columns.label, v.columns.group, v.ungrouped, "自有官網", "自有", "平台商城"]) expect(cells.filter(cell => cell.v === value).length, value).toBeGreaterThan(0);
+  });
+
+  it("沒有設定（golden、合成 4 通路、設定等於預設）：指標定義工作表沒有「通路設定」區塊，列數與列內容和今天相同", async () => {
+    const goldenRows = basisRows(buildExcelWorkbook(await golden()));
+    expect(goldenRows.some(row => row[col.basis.section] === v.heading)).toBe(false);
+    expect(goldenRows.some(row => row[col.basis.section] === v.columns.code)).toBe(false);
+    const chartVersions = goldenRows.filter(row => row[col.basis.section] === labels.exports.chartsV4.excel.sheet).length;
+    expect(goldenRows).toHaveLength(labels.glossary.basis.items.length + 1 + 8 + chartVersions);
+    const defaults: ChannelSettings = { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "DTC" }, { code: "LIVE" }], groups: [] };
+    for (const settings of [null, defaults]) {
+      const input = await synthetic(settings);
+      expect(input.snapshot.channel_names).toBeUndefined();
+      expect(input.snapshot.channel_groups).toBeUndefined();
+      const rows = basisRows(buildExcelWorkbook(input));
+      expect(rows.some(row => row[col.basis.section] === v.heading)).toBe(false);
+      expect(rows.some(row => row[col.basis.section] === v.columns.code)).toBe(false);
+      expect(rows).toHaveLength(labels.glossary.basis.items.length + 1 + 8 + rows.filter(row => row[col.basis.section] === labels.exports.chartsV4.excel.sheet).length);
+    }
   });
 });
