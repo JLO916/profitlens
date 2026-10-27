@@ -43,7 +43,8 @@ const overviewRows = (page: Page) => page.getByTestId("channel-mix").locator("ta
 const diagnosisRows = (page: Page) => page.getByTestId("channel-compare").locator("th.channel-cell");
 async function expectDiagnosisNames(page: Page, names: string[]) {
   await expect(diagnosisRows(page)).toHaveCount(names.length);
-  expect((await diagnosisRows(page).allTextContents()).map(text => text.trim()).sort()).toEqual([...names].sort());
+  // V42-2a：有群組時通路格內多了「只看這個通路」按鈕，通路名是格內的第一個文字節點。
+  expect((await diagnosisRows(page).evaluateAll(cells => cells.map(cell => (cell.firstChild?.textContent ?? "").trim()))).sort()).toEqual([...names].sort());
 }
 const noHorizontalScroll = (page: Page) => page.evaluate(() => { const root = document.scrollingElement ?? document.documentElement; return root.scrollWidth <= root.clientWidth; });
 /** 重算中的內容區（dashboard：applyFilters 期間 .view-content 標 aria-busy，舊內容保持掛載）。 */
