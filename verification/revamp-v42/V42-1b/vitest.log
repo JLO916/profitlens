@@ -1,0 +1,13 @@
+
+> profitlens@4.1.3 test
+> vitest --run
+
+
+ RUN  v4.1.11 /Users/j-work/ProfitLens
+
+
+ Test Files  173 passed (173)
+      Tests  3655 passed (3655)
+   Start at  19:56:02
+   Duration  59.65s (transform 13.86s, setup 0ms, import 70.93s, tests 309.54s, environment 13ms)
+

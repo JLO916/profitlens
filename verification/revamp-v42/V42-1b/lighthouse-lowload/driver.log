@@ -1,0 +1,232 @@
+RUN 1 WAIT 21:10:12 loadavg { 8.01 10.08 7.50 }
+RUN 1 WAIT 21:11:12 loadavg { 6.57 9.25 7.36 }
+RUN 1 WAIT 21:12:12 loadavg { 6.88 8.86 7.34 }
+RUN 1 WAIT 21:13:12 loadavg { 8.02 8.77 7.40 }
+RUN 1 WAIT 21:14:12 loadavg { 5.15 7.79 7.13 }
+RUN 1 WAIT 21:15:12 loadavg { 6.17 7.52 7.06 }
+RUN 1 WAIT 21:16:13 loadavg { 5.02 6.95 6.88 }
+RUN 1 WAIT 21:17:13 loadavg { 5.54 6.77 6.82 }
+RUN 1 WAIT 21:18:13 loadavg { 5.51 6.50 6.71 }
+RUN 1 WAIT 21:19:13 loadavg { 5.67 6.45 6.68 }
+RUN 1 WAIT 21:20:13 loadavg { 5.37 6.15 6.54 }
+RUN 1 WAIT 21:21:13 loadavg { 5.69 6.09 6.49 }
+RUN 1 WAIT 21:22:14 loadavg { 5.29 5.87 6.38 }
+RUN 1 WAIT 21:23:14 loadavg { 4.70 5.64 6.26 }
+RUN 1 WAIT 21:24:14 loadavg { 4.81 5.53 6.18 }
+RUN 1 WAIT 21:25:14 loadavg { 4.58 5.34 6.06 }
+RUN 1 WAIT 21:26:14 loadavg { 5.18 5.38 6.03 }
+RUN 1 WAIT 21:27:14 loadavg { 5.11 5.36 5.98 }
+RUN 1 WAIT 21:28:14 loadavg { 5.06 5.27 5.90 }
+RUN 1 WAIT 21:29:15 loadavg { 5.81 5.42 5.91 }
+RUN 1 WAIT 21:30:15 loadavg { 5.69 5.35 5.84 }
+RUN 1 WAIT 21:31:15 loadavg { 5.72 5.36 5.80 }
+RUN 1 WAIT 21:32:15 loadavg { 6.19 5.54 5.84 }
+RUN 1 WAIT 21:33:15 loadavg { 5.65 5.43 5.77 }
+RUN 1 WAIT 21:34:15 loadavg { 5.45 5.38 5.73 }
+RUN 1 WAIT 21:35:15 loadavg { 4.16 5.00 5.56 }
+RUN 1 WAIT 21:36:16 loadavg { 5.41 5.23 5.60 }
+RUN 1 WAIT 21:37:16 loadavg { 5.02 5.20 5.57 }
+RUN 1 WAIT 21:38:16 loadavg { 4.88 5.14 5.52 }
+RUN 1 WAIT 21:39:16 loadavg { 3.84 4.83 5.38 }
+RUN 1 WAIT 21:40:16 loadavg { 4.36 4.81 5.33 }
+RUN 1 WAIT 21:41:16 loadavg { 5.32 4.97 5.35 }
+RUN 1 WAIT 21:42:16 loadavg { 5.77 5.13 5.39 }
+RUN 1 WAIT 21:43:16 loadavg { 6.84 5.43 5.47 }
+RUN 1 WAIT 21:44:17 loadavg { 5.68 5.41 5.46 }
+RUN 1 WAIT 21:45:17 loadavg { 4.88 5.22 5.39 }
+RUN 1 WAIT 21:46:17 loadavg { 4.71 5.16 5.35 }
+RUN 1 WAIT 21:47:17 loadavg { 5.85 5.41 5.43 }
+RUN 1 WAIT 21:48:17 loadavg { 5.50 5.43 5.44 }
+RUN 1 WAIT 21:49:17 loadavg { 6.17 5.77 5.57 }
+RUN 1 WAIT 21:50:17 loadavg { 6.97 5.99 5.66 }
+RUN 1 WAIT 21:51:18 loadavg { 7.19 6.31 5.80 }
+RUN 1 WAIT 21:52:18 loadavg { 6.17 6.18 5.79 }
+RUN 1 WAIT 21:53:18 loadavg { 4.68 5.80 5.68 }
+RUN 1 WAIT 21:54:18 loadavg { 4.44 5.50 5.57 }
+RUN 1 WAIT 21:55:18 loadavg { 4.77 5.36 5.51 }
+RUN 1 WAIT 21:56:18 loadavg { 5.30 5.31 5.47 }
+RUN 1 WAIT 21:57:18 loadavg { 5.60 5.47 5.52 }
+RUN 1 WAIT 21:58:19 loadavg { 6.21 5.69 5.60 }
+RUN 1 WAIT 21:59:19 loadavg { 4.89 5.38 5.49 }
+RUN 1 WAIT 22:00:19 loadavg { 5.47 5.40 5.48 }
+RUN 1 WAIT 22:01:19 loadavg { 4.53 5.12 5.37 }
+RUN 1 WAIT 22:02:19 loadavg { 5.64 5.49 5.50 }
+RUN 1 WAIT 22:03:19 loadavg { 5.01 5.34 5.44 }
+RUN 1 WAIT 22:04:19 loadavg { 5.79 5.60 5.54 }
+RUN 1 WAIT 22:05:19 loadavg { 5.31 5.51 5.51 }
+RUN 1 WAIT 22:06:20 loadavg { 5.23 5.46 5.49 }
+RUN 1 WAIT 22:07:20 loadavg { 4.43 5.23 5.40 }
+RUN 1 WAIT 22:08:20 loadavg { 5.73 5.47 5.48 }
+RUN 1 WAIT 22:09:20 loadavg { 5.42 5.44 5.46 }
+RUN 1 WAIT 22:10:20 loadavg { 3.79 4.91 5.26 }
+RUN 1 WAIT 22:11:20 loadavg { 4.16 4.79 5.19 }
+RUN 1 WAIT 22:12:20 loadavg { 4.18 4.67 5.11 }
+RUN 1 WAIT 22:13:21 loadavg { 4.37 4.61 5.06 }
+RUN 1 WAIT 22:14:21 loadavg { 4.28 4.54 5.00 }
+RUN 1 WAIT 22:15:21 loadavg { 3.30 4.20 4.84 }
+RUN 1 WAIT 22:16:21 loadavg { 3.89 4.23 4.80 }
+RUN 1 WAIT 22:17:21 loadavg { 3.63 4.05 4.69 }
+RUN 1 WAIT 22:18:21 loadavg { 4.12 4.17 4.70 }
+RUN 1 WAIT 22:19:21 loadavg { 5.20 4.53 4.80 }
+RUN 1 WAIT 22:20:22 loadavg { 3.50 4.17 4.65 }
+RUN 1 WAIT 22:21:22 loadavg { 3.44 4.05 4.56 }
+RUN 1 WAIT 22:22:22 loadavg { 3.24 3.88 4.47 }
+RUN 1 WAIT 22:23:22 loadavg { 3.09 3.74 4.37 }
+RUN 1 WAIT 22:24:22 loadavg { 3.22 3.70 4.32 }
+RUN 1 WAIT 22:25:22 loadavg { 2.66 3.50 4.20 }
+RUN 1 WAIT 22:26:23 loadavg { 3.09 3.49 4.15 }
+RUN 1 WAIT 22:27:23 loadavg { 3.55 3.59 4.14 }
+RUN 1 WAIT 22:28:23 loadavg { 3.32 3.52 4.08 }
+RUN 1 WAIT 22:29:23 loadavg { 3.25 3.47 4.02 }
+RUN 1 WAIT 22:30:23 loadavg { 3.03 3.38 3.94 }
+RUN 1 WAIT 22:31:23 loadavg { 3.30 3.38 3.90 }
+RUN 1 WAIT 22:32:23 loadavg { 3.29 3.38 3.87 }
+RUN 1 WAIT 22:33:24 loadavg { 3.72 3.54 3.90 }
+RUN 1 WAIT 22:34:24 loadavg { 3.76 3.56 3.88 }
+RUN 1 WAIT 22:35:24 loadavg { 3.26 3.50 3.84 }
+RUN 1 WAIT 22:36:24 loadavg { 3.88 3.66 3.87 }
+RUN 1 WAIT 22:37:24 loadavg { 4.28 3.77 3.89 }
+RUN 1 WAIT 22:38:24 loadavg { 3.86 3.81 3.90 }
+RUN 1 WAIT 22:39:24 loadavg { 3.66 3.76 3.88 }
+RUN 1 WAIT 22:40:25 loadavg { 3.18 3.61 3.81 }
+RUN 1 GATE_TIMEOUT 22:40:25 loadavg { 3.18 3.61 3.81 }
+GATE_TIMEOUT
+RESTART 22:41:06 gate 10800s
+RUN 1 WAIT 22:41:06 loadavg { 4.27 3.86 3.89 }
+RUN 1 WAIT 22:42:06 loadavg { 4.23 3.97 3.93 }
+RUN 1 WAIT 22:43:06 loadavg { 3.42 3.79 3.87 }
+RUN 1 WAIT 22:44:06 loadavg { 4.35 4.04 3.96 }
+RUN 1 WAIT 22:45:06 loadavg { 3.43 3.83 3.88 }
+RUN 1 WAIT 22:46:06 loadavg { 4.57 4.09 3.97 }
+RUN 1 WAIT 22:47:06 loadavg { 4.44 4.08 3.98 }
+RUN 1 WAIT 22:48:07 loadavg { 6.78 5.03 4.35 }
+RUN 1 WAIT 22:49:07 loadavg { 5.91 5.08 4.41 }
+RUN 1 WAIT 22:50:07 loadavg { 4.78 4.91 4.39 }
+RUN 1 WAIT 22:51:07 loadavg { 3.80 4.58 4.30 }
+RUN 1 WAIT 22:52:07 loadavg { 3.38 4.36 4.24 }
+RUN 1 WAIT 22:53:07 loadavg { 4.11 4.39 4.26 }
+RUN 1 WAIT 22:54:07 loadavg { 4.48 4.50 4.31 }
+RUN 1 WAIT 22:55:08 loadavg { 3.50 4.22 4.22 }
+RUN 1 WAIT 22:56:08 loadavg { 3.82 4.14 4.18 }
+RUN 1 WAIT 22:57:08 loadavg { 3.29 3.88 4.08 }
+RUN 1 WAIT 22:58:08 loadavg { 3.15 3.75 4.02 }
+RUN 1 WAIT 22:59:08 loadavg { 4.05 3.86 4.03 }
+RUN 1 WAIT 23:00:08 loadavg { 3.52 3.75 3.98 }
+RUN 1 WAIT 23:01:08 loadavg { 3.73 3.84 4.00 }
+RUN 1 WAIT 23:02:09 loadavg { 3.81 3.84 3.99 }
+RUN 1 WAIT 23:03:09 loadavg { 3.92 3.81 3.96 }
+RUN 1 WAIT 23:04:09 loadavg { 4.33 3.96 4.00 }
+RUN 1 WAIT 23:05:09 loadavg { 3.78 3.82 3.95 }
+RUN 1 WAIT 23:06:09 loadavg { 4.32 3.96 3.99 }
+RUN 1 WAIT 23:07:09 loadavg { 3.54 3.82 3.93 }
+RUN 1 WAIT 23:08:10 loadavg { 3.93 3.85 3.93 }
+RUN 1 WAIT 23:09:10 loadavg { 2.67 3.51 3.80 }
+RUN 1 START 23:10:10 loadavg { 2.22 3.26 3.69 }
+desktop-1440 [["首頁（空狀態，navigation）",100,99,"25/31",8,0,""],["載入示範資料（timespan）",null,null,"23/23",145.31,0,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"6/7",160.504,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"6/6",0,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"18/18",0,0.002,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"6/7",222.108,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"6/6",0,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"18/18",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+desktop-1440 lazy chunks {"count":10,"insideTimespans":[]}
+mobile-390 [["首頁（空狀態，navigation）",100,94,"24/32",167,0,""],["載入示範資料（timespan）",null,null,"20/23",1302.521,0.001,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"19/22",792.803,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"19/20",98.641,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"19/19",0,0,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"6/7",953.964,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"20/20",15.078,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"6/6",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+mobile-390 lazy chunks {"count":10,"insideTimespans":[]}
+desktop-1440 /guide [100,100,100,100,0,0,510.816,"",""]
+desktop-1440 /guide/overview [100,100,100,100,0,0,521.197,"",""]
+mobile-390 /guide [100,98,100,100,0,13,2405.087,"",""]
+mobile-390 /guide/overview [100,99,100,100,0,8,2105.711,"",""]
+RUN 1 EXIT 0 END 23:11:49 loadavg { 3.73 3.51 3.74 }
+RUN 2 WAIT 23:11:49 loadavg { 3.73 3.51 3.74 }
+RUN 2 WAIT 23:12:49 loadavg { 3.47 3.50 3.72 }
+RUN 2 WAIT 23:13:49 loadavg { 3.74 3.60 3.74 }
+RUN 2 WAIT 23:14:50 loadavg { 3.32 3.48 3.68 }
+RUN 2 WAIT 23:15:50 loadavg { 4.41 3.68 3.74 }
+RUN 2 WAIT 23:16:50 loadavg { 2.84 3.38 3.62 }
+RUN 2 WAIT 23:17:50 loadavg { 3.81 3.54 3.66 }
+RUN 2 WAIT 23:18:50 loadavg { 2.80 3.33 3.57 }
+RUN 2 WAIT 23:19:50 loadavg { 3.47 3.43 3.59 }
+RUN 2 WAIT 23:20:50 loadavg { 4.56 3.71 3.68 }
+RUN 2 WAIT 23:21:51 loadavg { 4.15 3.74 3.69 }
+RUN 2 WAIT 23:22:51 loadavg { 3.75 3.75 3.70 }
+RUN 2 WAIT 23:23:51 loadavg { 8.57 4.95 4.14 }
+RUN 2 WAIT 23:24:51 loadavg { 7.16 5.29 4.33 }
+RUN 2 WAIT 23:25:51 loadavg { 5.41 5.19 4.36 }
+RUN 2 WAIT 23:26:51 loadavg { 4.77 5.04 4.36 }
+RUN 2 WAIT 23:27:52 loadavg { 4.25 4.83 4.32 }
+RUN 2 WAIT 23:28:52 loadavg { 3.34 4.48 4.23 }
+RUN 2 WAIT 23:29:52 loadavg { 2.98 4.15 4.12 }
+RUN 2 WAIT 23:30:52 loadavg { 4.03 4.15 4.11 }
+RUN 2 WAIT 23:31:52 loadavg { 3.22 3.92 4.03 }
+RUN 2 WAIT 23:32:52 loadavg { 3.19 3.82 3.98 }
+RUN 2 WAIT 23:33:52 loadavg { 2.70 3.59 3.88 }
+RUN 2 WAIT 23:34:53 loadavg { 2.99 3.53 3.84 }
+RUN 2 WAIT 23:35:53 loadavg { 2.66 3.37 3.76 }
+RUN 2 WAIT 23:36:53 loadavg { 3.04 3.43 3.76 }
+RUN 2 WAIT 23:37:53 loadavg { 2.82 3.29 3.68 }
+RUN 2 WAIT 23:38:53 loadavg { 3.18 3.25 3.64 }
+RUN 2 WAIT 23:39:53 loadavg { 5.17 3.87 3.84 }
+RUN 2 WAIT 23:40:53 loadavg { 4.80 4.02 3.90 }
+RUN 2 WAIT 23:41:54 loadavg { 3.74 3.81 3.83 }
+RUN 2 WAIT 23:42:54 loadavg { 3.66 3.71 3.78 }
+RUN 2 WAIT 23:43:54 loadavg { 3.68 3.69 3.77 }
+RUN 2 WAIT 23:44:54 loadavg { 10.49 5.46 4.41 }
+RUN 2 WAIT 23:45:54 loadavg { 10.73 6.67 4.94 }
+RUN 2 WAIT 23:46:54 loadavg { 7.24 6.50 5.00 }
+RUN 2 WAIT 23:47:54 loadavg { 4.75 5.92 4.89 }
+RUN 2 WAIT 23:48:55 loadavg { 4.32 5.63 4.85 }
+RUN 2 WAIT 23:49:55 loadavg { 3.40 5.13 4.72 }
+RUN 2 WAIT 23:50:55 loadavg { 4.22 5.04 4.71 }
+RUN 2 WAIT 23:51:55 loadavg { 4.27 4.85 4.65 }
+RUN 2 WAIT 23:52:55 loadavg { 4.32 4.77 4.64 }
+RUN 2 WAIT 23:53:55 loadavg { 4.12 4.63 4.59 }
+RUN 2 WAIT 23:54:56 loadavg { 3.87 4.48 4.54 }
+RUN 2 WAIT 23:55:56 loadavg { 4.05 4.46 4.53 }
+RUN 2 WAIT 23:56:56 loadavg { 3.80 4.32 4.47 }
+RUN 2 WAIT 23:57:56 loadavg { 3.83 4.24 4.43 }
+RUN 2 WAIT 23:58:56 loadavg { 3.62 4.08 4.35 }
+RUN 2 WAIT 23:59:56 loadavg { 3.24 3.90 4.26 }
+RUN 2 WAIT 00:00:56 loadavg { 5.96 4.53 4.47 }
+RUN 2 WAIT 00:01:57 loadavg { 3.64 4.11 4.32 }
+RUN 2 WAIT 00:02:57 loadavg { 4.65 4.26 4.35 }
+RUN 2 WAIT 00:03:57 loadavg { 3.77 4.08 4.28 }
+RUN 2 WAIT 00:04:57 loadavg { 3.95 4.14 4.29 }
+RUN 2 WAIT 00:05:57 loadavg { 5.16 4.47 4.40 }
+RUN 2 WAIT 00:06:57 loadavg { 4.11 4.29 4.33 }
+RUN 2 WAIT 00:07:58 loadavg { 3.84 4.18 4.29 }
+RUN 2 WAIT 00:08:58 loadavg { 3.80 4.15 4.27 }
+RUN 2 WAIT 00:09:58 loadavg { 2.88 3.80 4.13 }
+RUN 2 WAIT 00:10:58 loadavg { 3.99 3.95 4.16 }
+RUN 2 WAIT 00:11:58 loadavg { 3.69 3.84 4.10 }
+RUN 2 WAIT 00:12:58 loadavg { 3.05 3.64 4.01 }
+RUN 2 WAIT 00:13:58 loadavg { 2.92 3.48 3.92 }
+RUN 2 WAIT 00:14:59 loadavg { 3.04 3.39 3.86 }
+RUN 2 WAIT 00:15:59 loadavg { 4.36 3.66 3.92 }
+RUN 2 WAIT 00:16:59 loadavg { 4.14 3.74 3.93 }
+RUN 2 WAIT 00:17:59 loadavg { 3.83 3.86 3.97 }
+RUN 2 WAIT 00:18:59 loadavg { 4.59 4.09 4.05 }
+RUN 2 WAIT 00:19:59 loadavg { 3.68 3.93 3.99 }
+RUN 2 WAIT 00:20:59 loadavg { 4.92 4.29 4.12 }
+RUN 2 WAIT 00:22:00 loadavg { 3.70 4.05 4.04 }
+RUN 2 WAIT 00:23:00 loadavg { 3.59 3.90 3.98 }
+RUN 2 WAIT 00:24:00 loadavg { 4.23 4.07 4.04 }
+RUN 2 WAIT 00:25:00 loadavg { 4.37 4.11 4.05 }
+RUN 2 WAIT 00:26:00 loadavg { 5.62 4.64 4.26 }
+RUN 2 WAIT 00:27:00 loadavg { 6.06 4.89 4.37 }
+UNGATED 00:27:58 使用者 2026-10-28 指示：負載不降就以現在負載量；閘門腳本已停 (remaining: 0)
+RUN 1 already done, skip
+RUN 2 START 00:27:58 loadavg { 6.30 5.21 4.53 } (ungated)
+desktop-1440 [["首頁（空狀態，navigation）",100,99,"24/30",14,0,""],["載入示範資料（timespan）",null,null,"22/23",194.088,0,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"6/7",273.647,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"21/21",5.13,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"18/18",0,0.002,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"19/22",440.136,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"6/6",0,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"19/19",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+desktop-1440 lazy chunks {"count":10,"insideTimespans":[]}
+mobile-390 [["首頁（空狀態，navigation）",100,97,"25/32",177,0,""],["載入示範資料（timespan）",null,null,"20/23",1394.25,0.001,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"19/22",950.116,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"19/20",104.549,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"20/20",19.017,0,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"18/20",1121.792,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"20/20",60.427,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"21/21",22.988,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+mobile-390 lazy chunks {"count":10,"insideTimespans":[]}
+desktop-1440 /guide [100,100,100,100,0,0,485.812,"",""]
+desktop-1440 /guide/overview [100,100,100,100,0,0,523.785,"",""]
+mobile-390 /guide [100,99,100,100,0,9.5,2032.682,"",""]
+mobile-390 /guide/overview [100,98,100,100,0,16.5,2492.668,"",""]
+RUN 2 EXIT 0 END 00:29:49 loadavg { 6.80 5.77 4.83 }
+RUN 3 START 00:29:49 loadavg { 6.80 5.77 4.83 } (ungated)
+desktop-1440 [["首頁（空狀態，navigation）",100,100,"26/31",3,0,""],["載入示範資料（timespan）",null,null,"22/23",158.72,0,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"6/7",175.928,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"6/6",0,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"18/18",0,0.002,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"19/22",260.436,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"6/6",0,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"18/18",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+desktop-1440 lazy chunks {"count":10,"insideTimespans":[]}
+mobile-390 [["首頁（空狀態，navigation）",100,97,"25/32",179,0,""],["載入示範資料（timespan）",null,null,"20/23",1160.229,0.001,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"19/22",893.714,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"19/20",104.417,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"20/20",24.674,0,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"18/20",1137.586,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"20/20",55.072,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"20/20",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+mobile-390 lazy chunks {"count":10,"insideTimespans":[]}
+desktop-1440 /guide [100,100,100,100,0,0,485.151,"",""]
+desktop-1440 /guide/overview [100,100,100,100,0,0,535.205,"",""]
+mobile-390 /guide [100,98,100,100,0,11.5,2333.086,"",""]
+mobile-390 /guide/overview [100,98,100,100,0,19,2496.098,"",""]
+RUN 3 EXIT 0 END 00:31:33 loadavg { 6.45 6.29 5.17 }
+ALL_DONE

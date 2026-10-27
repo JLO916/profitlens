@@ -1,5 +1,14 @@
 # Decision log
 
+## 2026-10-28｜V42-1b 的 Lighthouse 補量（使用者 2026-10-27「V42-2a 開工前先補量 Lighthouse」、2026-10-28「負載還是太高的話就先用現在的量補進去」）
+
+- **做法**：HEAD `6c3b4c9`（`src` 與 `637323a` 只差 `src/i18n/guide.zh-TW.ts` 一行「── V42-1b 錨點」註解，建置產物相同：載入示範資料的主要 chunk `794-9fe765eb012f0e09.js` 與 10-27 的報告同名）重新建置（BUILD_ID `J6sNZe2XmXB4u1ezT1s6g`）起 PUBLIC_DEMO 於 3100，`scripts/lighthouse-pages.mjs` 三次；閘門（1 分鐘負載 < 2.5）2026-10-27 21:10 起等了 90 分鐘沒開（負載 8 降到 3.2，最低 2.66；session 內以 `ps` 觀察，吃 CPU 的是 Spotlight 的 `mds_stores`、`spotlightknowledged` 與使用者的 Chrome，未存檔），延長到 3 小時後第 1 次 2026-10-27 23:10 開跑（1 分鐘負載 2.22）；之後 1 分鐘負載在 2.66 到 10.73 之間起伏（多在 3 到 5），沒有再低於 2.5，第 2、3 次依使用者指示不等閘門、2026-10-28 00:28／00:30 在負載 6.30／6.80 下量。證據 `verification/revamp-v42/V42-1b/lighthouse-lowload/`（`run1/` 含六份 HTML 報告，`run2/`、`run3/` 只留 metrics，第 2、3 次的 HTML 在摘錄後刪掉了、沒有保留；`driver.log` 是閘門與三次的紀錄）。`.gitignore` 的 `*.log` 排除了 `driver.log`，10-27 收尾引用的 `vitest.log`、`lighthouse-ab/drive.log` 也因此一直沒進 repo，三個檔本次以 `git add -f` 加入。
+- **結果**：第 1 次（低負載）通路健檢 792.8、商品毛利 98.6、會議紀錄 954.0、資料來源 15.1 在門檻內且回到 V42-0 水準（差 +1.3／+9.5／−29.0／+2.5 ms），載入示範資料 1,302.5 超過門檻 1,109.1；第 2、3 次與 10-27 的高負載三次同型態；三次中位數 1,302.5／893.7／104.4／1,121.8／55.1。a11y 48 個分數都 100，`insideTimespans` 都空。
+- **根因**：把保留的五份 390 流程報告（V42-0、V42-1a、V42-G1、10-27 第 3 次、補量第 1 次）的「載入示範資料」timespan 拆開（`bootup-time` 的 Total CPU Time、`long-tasks`、`mainthread-work-breakdown`、`environment`）：補量第 1 次對 V42-0 的 TBT 差 +221.6，Script Evaluation +232.7，其中 puppeteer 注入的 `pptr:internal` +266.7（329.1 變 595.8）、同內容雜湊的 chunk `4bd1b696` +66.6、Unattributable +58.0，主要 chunk `794-9fe765eb012f0e09.js`（四批同名＝同內容）+23.8（+2.4%）；10-27 第 3 次對 V42-0 則是 chunk 794 +85.6（+8.7%）、`pptr:internal` +70.4；長任務 4 個變 5 到 6 個；Lighthouse 開跑時量的 CPU 速度指標 `benchmarkIndex` 3,286／3,316／3,346 變成 3,129 與 2,993（低 5% 到 11%，第 1 次 1 分鐘負載最低、benchmarkIndex 反而最低）；Chrome 155 變成 156（10-27 起，兩份保留的報告可查）。本批改到的 `app/page` chunk 在五份報告的這一步都低於 `bootup-time` 50 ms 的列出門檻。變慢的都是同一份位元組或量測工具自己的腳本，所以超過門檻的是量測當下的 CPU 速度與瀏覽器版本，不是本批程式。
+- **判定**：維持「依 D-V4-47＝B 成對對照通過」；補量記為「低負載 1 次：四項回到 V42-0 水準、載入示範資料超過但差額在同內容的 chunk 與量測工具的腳本，判定為環境；另兩次依使用者指示在高負載下量」。不擋 V42-2a，不擋 H8。V42-2a 的 Lighthouse 以本批為前一批做成對對照時會再得到一組資料。
+- **新待決 D-V42-35**（`09_DECISIONS_PENDING.md`）：1 分鐘負載 < 2.5 的閘門不足以代表 CPU 速度，是否把 `benchmarkIndex` 與 Chrome 版本寫進 metrics.json 一起記錄（A，建議）、當閘門（B）或不動（C）；拍板前沿用 D-V4-47＝B。
+- **文件核對**：本段與驗收文件、STATUS、06、09 的數字以工作流核對（2 個查核、每項 1 個反方），修正 3 件 major（第 2、3 次報告未保留、`.log` 被忽略、LCP 基準引錯）與同段落的 nit；教訓：HTML 報告要等文件核對完再決定刪不刪，`verification/` 下的 `.log` 要 `git add -f`。
+
 ## 2026-10-27｜v4.2 V42-1b：通路設定編輯器、Excel 對照列與 E2E（D-V42-8、13、15 的落地）
 
 使用者 2026-10-27 回覆「開始動工」。工作流：代理 A（編輯器與 dashboard 接線）、B（Excel 對照列）並行，C（頁面狀態、M1、E2E、畫面基準 17、鍵盤走查）接在 A 之後，整合後兩個審查（規格與一致性、行為與 a11y）、一個修正；程式 `637323a`（整合 `74edece`）。
