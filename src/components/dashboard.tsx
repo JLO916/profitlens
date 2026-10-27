@@ -385,10 +385,13 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     if (!active) return;
     void applyFilters({ ...active.snapshot.report.scope }, settings);
   }
-  /** V42-2a（D-V42-2；PRD §4.2）：G4 精簡表與通路寬表的「只看這個通路」——與選單選單一通路走同一條路（applyFilters 帶該通路；A 級）；總覽、健檢、會議三處共用。 */
-  function drillChannel(channel: string) {
+  /** V42-2a（D-V42-2；PRD §4.2）：G4 精簡表與通路寬表的「只看這個通路」——與選單選單一通路走同一條路（applyFilters 帶該通路；A 級）；總覽、健檢、會議三處共用；重算後把焦點移到期間列（審查 R2-1）。 */
+  async function drillChannel(channel: string) {
     if (!active) return;
-    void applyFilters({ ...active.snapshot.report.scope, channels: [channel] });
+    await applyFilters({ ...active.snapshot.report.scope, channels: [channel] });
+    // 審查 R2-1：範圍變成單一通路後按鈕會卸載，焦點不能掉到 body——移到現在反映這個選擇的控制項：期間列的通路選單（≥ 768），390 選單在底部面板裡不可見時移到期間按鈕。
+    const target = [document.querySelector<HTMLElement>("[data-testid='scope-select']"), document.querySelector<HTMLElement>("[data-testid='period-toggle']")].find(element => element && element.getClientRects().length > 0);
+    target?.focus();
   }
   // V3-3（D-V3-10＝A）：快捷單擊就套用，與「套用」按鈕走同一個 applyFilters；只有在自訂期間裡手動改日期才需要按「套用」。
   // R4 備份 v4 的 ui_prefs：記住上次用的快捷（只記錄，還原時不自動套用）。

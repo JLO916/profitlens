@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { track } from "@/application/analytics";
 import { CHANNEL_FEE_FIELDS, CHANNEL_STRUCTURE_MAX, CHANNEL_STRUCTURE_SM_MAX, CHANNEL_STRUCTURE_VERSION, channelStructure, type ChannelStructure, type ChannelStructureRow } from "@/application/chart-structure";
 import { chartColors } from "@/application/chart-theme";
-import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver, scopeChannelsLabel } from "@/application/copy";
 import type { NameResolver } from "@/application/channel-settings";
 import { deltaTone, formatPeriodL1, metricDefinitions } from "@/application/presentation";
 import { profitWaterfall } from "@/application/waterfall";
@@ -98,7 +98,7 @@ export function shareSectionModel(snapshot: WorkspaceSnapshot, options: { resolv
 
   const notApplicable = rows.filter(row => !row.total && row.structure.status === "notApplicable").map(row => row.channel!);
   const { period } = report.current;
-  const base = fill(copy.subtitle, { section: copy.section, period: formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of }), scope: channelsLabel(channels, resolver) });
+  const base = fill(copy.subtitle, { section: copy.section, period: formatPeriodL1(period.start, period.end, { days: false, anchor: snapshot.data_as_of }), scope: scopeChannelsLabel(channels, resolver) });
   const subtitle = notApplicable.length ? fill(copy.subtitleNote, { subtitle: base, channels: channelsLabel(notApplicable, resolver) }) : base;
   return { rows, structure, chartable: channels.length <= CHANNEL_STRUCTURE_MAX, height: channels.length <= CHANNEL_STRUCTURE_SM_MAX ? "sm" : "lg", titleKind, title, subtitle, notApplicable };
 }

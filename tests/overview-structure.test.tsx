@@ -357,4 +357,20 @@ describe("V42-2a 總覽：範圍行、「只看這個通路」與目標限制句
     expect(renderLoaded(all, { targets: syntheticTargets })).not.toContain("kpi-targets-note");
     expect(render({ withTargets: true })).not.toContain("kpi-targets-note");
   });
+
+  it("審查 R2-2：「本期三件事」標題旁的 sec-scope 走 scopeChannelsLabel——群組 → 自有；群組內單一通路 → 自有 · 官網；golden → channelsLabel 的成員清單", () => {
+    const scopeOf = (html: string) => /<h2 id="top-three-title">[^<]*<\/h2><span class="sec-scope">([^<]*)<\/span>/.exec(html)![1];
+    expect(scopeOf(renderLoaded(group))).toBe(G1);
+    expect(scopeOf(renderLoaded(single))).toBe(MEMBER);
+    expect(scopeOf(render())).toBe(channelsLabel(golden.snapshot.report.scope.channels, snapshotResolver(golden.snapshot)));
+  });
+
+  it("審查 R2-3：只有一個成員的群組、範圍就是那個通路＋目標檔 → 不顯示目標限制句（單一通路照常配對，與 channelSelection 的優先順序一致）", async () => {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    const solo = { ...SYNTHETIC_CHANNEL_SETTINGS, channels: [{ code: "LIVE", label: nameOf("LIVE"), group: "g9" }], groups: [{ id: "g9", label: "只有直播", order: 0 }] };
+    const snapshot = await createSnapshot(dataset, { channels: ["LIVE"] }, await hashInput(input), solo);
+    expect(snapshot.channel_groups?.map(group => group.members)).toEqual([["LIVE"]]);
+    expect(renderLoaded({ dataset, snapshot }, { targets: syntheticTargets })).not.toContain("kpi-targets-note");
+  });
 });

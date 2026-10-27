@@ -12,7 +12,7 @@ import { fill, labels } from "../../src/i18n";
 import { synthetic4ChannelInput } from "../helpers/synthetic-4-channel";
 import { importSynthetic } from "./chart-helpers-v4";
 import { hideDevOverlay } from "./launch-helpers-v310";
-import { closePeriodSheet, closeStorage, dismissSavePrompt, navigateTo, openDetails, openMeeting, openPeriodSheet, openStorage, periodSummary, startChannelContext } from "./replacement-helpers";
+import { closePeriodSheet, closeStorage, dismissSavePrompt, isMobile, navigateTo, openDetails, openMeeting, openPeriodSheet, openStorage, periodSummary, startChannelContext } from "./replacement-helpers";
 
 /*
  * 共同前置：四步精靈匯入 4 通路合成資料（tests/fixtures/synthetic-4-channel）→ 資料來源頁「通路設定」填四個顯示名稱（官網、社群、蝦皮、直播）、建兩個群組
@@ -21,7 +21,7 @@ import { closePeriodSheet, closeStorage, dismissSavePrompt, navigateTo, openDeta
  * A. 群組範圍：KPI 帶五格的本期文字＝Node 端 createSnapshot(dataset, { channels: ["DTC","SOCIAL"] }, hash, 設定) 以 KPI 帶同一個 formatMetric(…, "L1") 格式化的值；選中的選項在 optgroup「自有」內
  *    （scope-option-group-g1）；健檢（channel-compare 的 sec-scope＝群組名）、商品毛利（product-scope 的範圍副標寫群組名）、試算（scenario-channel 只列成員、預設第一個成員）、
  *    會議（會議資料固定為成員，固定範圍一行寫群組名；議程 3 的通路寬表有「只看這個通路」）、資料來源（「目前看的通路」列成員）都在群組範圍；沒有目標時沒有目標限制句。
- *    G4 精簡表點 channel-drill-DTC → 選單選中 DTC（在 optgroup「自有」內）、期間摘要 title 寫「自有 · 官網」、單一通路範圍下沒有「只看這個通路」→ 再選「自有」。
+ *    G4 精簡表用鍵盤按 channel-drill-DTC（Enter）→ 焦點移到期間列的通路選單（390 移到期間按鈕；審查 R2-1）→ 選單選中 DTC（在 optgroup「自有」內）、期間摘要 title 寫「自有 · 官網」、單一通路範圍下沒有「只看這個通路」→ 再選「自有」。
  * B. 備份與還原：備份的 payload.channel_settings 帶四個顯示名稱與兩個群組、active.filters.channels 是成員代碼；重新開頁（記憶體清空）讀入備份後選單仍選中「自有」、仍有兩個 optgroup；
  *    把備份文字的 channel_settings.groups 清空（通路的 group 欄位一併去掉、信封 checksum 重新簽，見 withoutGroups）再還原：選單是只讀的「2 個通路」（value＝SUBSET_OPTION_VALUE、disabled、被選中）、沒有 optgroup、
  *    期間摘要 title 列出「官網、社群」、整頁沒有 channel-drill-*；再還原完整備份後在群組範圍對總覽、健檢、會議跑 axe（serious／critical 0）。不新增下載種類。
@@ -249,8 +249,13 @@ test("V42-2a 群組範圍：期間列選「自有」後 KPI 帶五格＝Node 端
 
   // 回總覽按 G4 的「只看這個通路」（DTC）：既有的單一通路篩選——選單選中 DTC（在 optgroup「自有」內的成員選項）、期間摘要寫「自有 · 官網」、單一通路範圍下沒有按鈕。
   await navigateTo(page, "overview");
-  await page.getByTestId("channel-mix").getByTestId("channel-drill-DTC").click();
+  // 鍵盤觸發（審查 R2-1）：Tab 到按鈕後按 Enter；重算後按鈕卸載，焦點要移到期間列的通路選單（≥ 768）或期間按鈕（390，選單在底部面板裡不可見）。
+  const drill = page.getByTestId("channel-mix").getByTestId("channel-drill-DTC");
+  await drill.focus();
+  await expect(drill).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(scopeSelect(page)).toHaveValue("DTC");
+  await expect(page.getByTestId(isMobile(page) ? "period-toggle" : "scope-select")).toBeFocused();
   await expect(viewContent(page)).not.toHaveAttribute("aria-busy", "true");
   expect(await selectedOption(page)).toEqual({ value: "DTC", text: NAMES.DTC, group: G1, testid: null, disabled: false });
   await expect(periodSummary(page)).toHaveAttribute("title", summaryDetail(snapshot, fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: NAMES.DTC })));

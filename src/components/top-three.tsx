@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { contributionImpact, priorityEvidence } from "@/application/manager-summary";
 import { diagnosisGroups, parseImportanceThreshold, TOP_PRIORITY_COUNT, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
-import { channelsLabel, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
+import { ruleCopy, scopeLabel, snapshotResolver, scopeChannelsLabel } from "@/application/copy";
 import { overlapping, type EventSet } from "@/application/events";
 import { deltaTone, deltaToneLabel, formatAmountL3, formatSignedDelta, metricDefinitions, type DeltaTone, type Layer } from "@/application/presentation";
 import { formatCents, parseCents } from "@/domain/money";
@@ -146,7 +146,7 @@ export function TopThree({ snapshot, onEvidence, onCreateAction, onOpenDiagnosis
   };
   return <section className="top-three" aria-labelledby="top-three-title" data-testid="top-three">
     <div className="sec-head">
-      <div className="sec-title"><h2 id="top-three-title">{title}</h2><span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, resolver)}</span></div>
+      <div className="sec-title"><h2 id="top-three-title">{title}</h2><span className="sec-scope">{scopeChannelsLabel(snapshot.report.scope.channels, resolver)}</span></div>
       <div className="sec-tools">
         <span className="sort-legend" ref={helpRef}>{labels.overview.sections.impactLegend}<button ref={helpButtonRef} type="button" className="ui-help-trigger" title={labels.overview.sections.impactLegendHelp} aria-label={alerts.sortHelpAria} aria-expanded={helpOpen} aria-controls="top-three-sort-help" onClick={() => setHelpOpen(open => !open)}><ShellIcon name="help" size={16} /></button><span id="top-three-sort-help" className="sort-help ui-popover ui-help-content" hidden={!helpOpen}>{labels.overview.sections.impactLegendHelp}</span></span>
         <details ref={thresholdRef} className="threshold-popover" onToggle={event => setThresholdOpen(event.currentTarget.open)}><summary ref={thresholdSummaryRef} className="ui-btn ui-btn-text">{labels.overview.sections.adjustThreshold}</summary>

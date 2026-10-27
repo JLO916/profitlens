@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { diagnosisGroups, summaryScopes, type DiagnosisGroup, type DiagnosisScope } from "@/application/diagnosis-group";
 import { priorityEvidence } from "@/application/manager-summary";
-import { channelsLabel, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
+import { channelsLabel, ruleCopy, scopeLabel, snapshotResolver, scopeChannelsLabel } from "@/application/copy";
 import type { NameResolver } from "@/application/channel-settings";
 import { overlapping, type EventSet } from "@/application/events";
 import { deltaTone, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
@@ -169,7 +169,7 @@ export function DiagnosisList({ snapshot, onEvidence, onCreateAction, groups, ev
   return <section className="panel diagnosis-panel" aria-labelledby="diagnosis-heading" data-testid="diagnosis-panel">
     <div className="sec-head">
       <div className="sec-title"><h2 id="diagnosis-heading">{labels.diagnosis.sections.diagnosisList}</h2>{badges.length > 0 && <span className="diagnosis-badges">{badges.map(item => <span key={item.kind} className="diagnosis-badge" data-testid={`diagnosis-count-${item.kind}`}><span className="diagnosis-badge-text" data-tone={item.tone} aria-hidden="true">{item.text}</span><span className="ui-count-badge" role="img" aria-label={fill(item.aria, { n: counts[item.kind] })}>{counts[item.kind]}</span></span>)}</span>}</div>
-      <span className="sec-scope">{channelsLabel(snapshot.report.scope.channels, resolver)}</span>
+      <span className="sec-scope">{scopeChannelsLabel(snapshot.report.scope.channels, resolver)}</span>
     </div>
     <p className="sub">{ui.diagnosisNote}</p>
     {rows.length ? <ol className="alert-list diagnosis-list" data-testid="diagnosis-list" aria-label={copy.listAria} data-impact-bars={impactBars ? "" : undefined}>{rows.map((group, index) => <DiagnosisRow key={group.rule} group={group} defaultOpen={index < DIAGNOSIS_DEFAULT_OPEN} snapshot={snapshot} eventText={eventText} onEvidence={onEvidence} onCreateAction={onCreateAction} impactBars={impactBars} />)}</ol> : <DiagnosisEmpty />}

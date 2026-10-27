@@ -456,4 +456,18 @@ describe("V42-2a 通路寬表的「只看這個通路」與健檢頁的範圍文
     expect(goldenHtml).toContain(`<span class="sec-scope">${channelsLabel(plain.report.scope.channels, snapshotResolver(plain))}</span>`);
     expect(goldenHtml).not.toContain("channel-drill");
   });
+
+  it("審查 R2-2：健檢頁兩處 sec-scope（健檢結果標題、各通路兩期比較）與 G10 副標的範圍都走 scopeChannelsLabel——群組 → 自有（兩處＋副標）；群組內單一通路 → 自有 · 官網", async () => {
+    const share = labels.diagnosis.chartsV4.share;
+    const subtitle = (snap: WorkspaceSnapshot, scope: string) => fill(share.subtitle, { section: share.section, period: formatPeriodL1(snap.report.current.period.start, snap.report.current.period.end, { days: false, anchor: snap.data_as_of }), scope });
+    const group = await scoped(["DTC", "SOCIAL"]);
+    const html = renderToStaticMarkup(<Diagnosis snapshot={group} onEvidence={noop} onDrill={noop} />);
+    expect(html.split(`<span class="sec-scope">${G1}</span>`).length - 1).toBe(2);
+    expect(html).not.toContain(`<span class="sec-scope">${channelsLabel(group.report.scope.channels, snapshotResolver(group))}</span>`);
+    expect(html).toContain(subtitle(group, G1));
+    const single = await scoped(["DTC"]);
+    const singleHtml = renderToStaticMarkup(<Diagnosis snapshot={single} onEvidence={noop} onDrill={noop} />);
+    expect(singleHtml.split(`<span class="sec-scope">${MEMBER}</span>`).length - 1).toBe(2);
+    expect(singleHtml).toContain(subtitle(single, MEMBER));
+  });
 });

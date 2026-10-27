@@ -13,7 +13,7 @@ import { ManagerSummary } from "@/components/manager-summary";
 import { MeetingPage } from "@/components/meeting-page";
 import { MultiScenarioWorkbench } from "@/components/multi-scenario-workbench";
 import { validateDataset } from "@/domain/validation";
-import { labels } from "@/i18n";
+import { fill, labels } from "@/i18n";
 import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 /*
@@ -195,5 +195,19 @@ describe("V42-1a 會議摘要的通路寬表讀快照的 channel_names（F1）",
     expect(agendaMarkup).not.toContain('<th scope="row">DTC');
     const plain = await createSnapshot(dataset, {}, hash);
     expect(renderToStaticMarkup(createElement(ManagerSummary, { snapshot: plain, onEvidence: noop }))).toContain('<th scope="row">DTC');
+  });
+
+  it("V42-2a 審查 R2-2：會議摘要（default）的脈絡句「資料到 … · {channels} · …」走 scopeChannelsLabel——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」、沒有設定時列代碼", async () => {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!, hash = await hashInput(input);
+    const grouped: ChannelSettings = { version: CHANNEL_SETTINGS_VERSION, channels: [{ code: "DTC", label: "官網", group: "g1" }, { code: "SOCIAL", label: "社群", group: "g1" }], groups: [{ id: "g1", label: "自有", order: 0 }] };
+    hooks.active = false;
+    const context = labels.meeting.managerSummary.context;
+    const group = await createSnapshot(dataset, { channels: ["DTC", "SOCIAL"] }, hash, grouped);
+    expect(renderToStaticMarkup(createElement(ManagerSummary, { snapshot: group, onEvidence: noop }))).toContain(fill(context, { asOf: group.data_as_of, channels: "自有" }));
+    const member = await createSnapshot(dataset, { channels: ["DTC"] }, hash, grouped);
+    expect(renderToStaticMarkup(createElement(ManagerSummary, { snapshot: member, onEvidence: noop }))).toContain(fill(context, { asOf: member.data_as_of, channels: fill(labels.shell.scopeV42.memberOfGroup, { group: "自有", channel: "官網" }) }));
+    const plain = await createSnapshot(dataset, { channels: ["DTC", "SOCIAL"] }, hash);
+    expect(renderToStaticMarkup(createElement(ManagerSummary, { snapshot: plain, onEvidence: noop }))).toContain(fill(context, { asOf: plain.data_as_of, channels: "DTC、SOCIAL" }));
   });
 });

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { buildManagerSummary, exportChannelComparisonCsv, exportManagerSummaryMarkdown, priorityEvidence, summaryDecisionState, withSummaryScenarioSelection, type ManagerSummary as SummaryData, type SummaryDecisionContext, type SummaryEvidence, type SummaryMetric } from "@/application/manager-summary";
-import { channelLabel, channelsLabel, formatHeadlineAmount, ruleCopy, scopeLabel, snapshotResolver } from "@/application/copy";
+import { channelLabel, formatHeadlineAmount, ruleCopy, scopeLabel, snapshotResolver, scopeChannelsLabel } from "@/application/copy";
 import { downloadText } from "@/application/download";
 import { deltaTone, deltaWord, emptyKindOf, formatAmountL1, formatAmountL2, formatAmountL3, formatEmpty, formatGrowth, formatSignedDelta, metricDefinitions, type DeltaTone } from "@/application/presentation";
 import { snapshotSentence } from "@/application/weekly-summary";
@@ -95,7 +95,7 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
   if (agenda) return <AgendaSummary summary={summary} snapshot={snapshot} agenda={agenda} threshold={thresholdInput} onThresholdInput={setThresholdInput} onThresholdSubmit={submitThreshold} error={error} persistNote={reviewControls ? copy.persistNoteManaged : copy.persistNoteLocal} amount={amount} onEvidence={onEvidence} onCreateAction={onCreateAction} onDrill={onDrill} />;
   return <section className={`panel ${styles.summary}`} data-testid="manager-summary" aria-labelledby="manager-summary-title">
     <div className="section-heading"><div><h2 id="manager-summary-title">{copy.title}</h2></div><span className="tag">{decisionContext?.decisionState ?? copy.draftDecision}</span></div>
-    <p className={styles.context}>{fill(copy.context, { asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, resolver) })}</p>
+    <p className={styles.context}>{fill(copy.context, { asOf: summary.data_as_of, channels: scopeChannelsLabel(summary.scope.channels, resolver) })}</p>
     <p className="note">{fill(copy.periodLine, periodValues(summary))}</p>
     <div className={styles.headlines}>{summary.headlines.map(row => <div key={row.metric}><h3>{metricDefinitions[row.metric].label}</h3><p className={styles.change}>{amount(row.evidence.change, true, headlineChangeText(row), deltaTone(row.metric, row.change.value, "L1"))}</p><p className="note">{amount(row.evidence.previous)} → {amount(row.evidence.current)}</p></div>)}</div>
     <p className="note">{copy.headlineNote}</p>

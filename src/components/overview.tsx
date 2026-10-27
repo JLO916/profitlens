@@ -50,7 +50,8 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
   // R4：目標只在期間完全相同時顯示達成率；檔期只標示，不改任何計算。
   const targetMatches = matchTargets(targets, { current_period: report.current.period, channels: report.scope.channels, allChannels: allChannels ?? report.scope.channels });
   // V42-2a（D-V42-12；PRD §4.3）：範圍等於某群組的成員集合且有目標檔時，KPI 帶之後一行限制句「目標只對全部通路或單一通路配對。」（targets.ts 不動，部分多選本來就配不到）。
-  const groupTargetsNote = targets !== null && findGroupByMembers(snapshot.channel_groups ?? [], report.scope.channels) !== null;
+  // 審查 R2-3：範圍只有一個通路時（只有一個成員的群組）目標照常配對，不顯示這句——與 channelSelection 的優先順序一致（單一通路先於群組）。
+  const groupTargetsNote = targets !== null && report.scope.channels.length > 1 && findGroupByMembers(snapshot.channel_groups ?? [], report.scope.channels) !== null;
   // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。V4-10：抽成函式，G8 的目標格與 KPI 帶的目標 number-link 開同一個抽屜。
   const targetEvidence = (metric: TargetMetric, row: TargetRow): EvidenceSelection => {
     const actual = report.current.metrics[metric];
