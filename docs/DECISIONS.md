@@ -10,7 +10,7 @@
 - **D-V42-12＝A 的落地**：「要注意」四句（GLOSSARY §2）；目標限制句只在範圍等於某群組且 > 1 通路、有目標檔時顯示（單一成員的群組選了就是單一通路，目標照常配對；審查 R2-3）；試算頁群組範圍只列成員；沒有 `Scope.kind "group"`、不碰 `targets.ts`。
 - **labels**：aria 鍵命名 `drillChannelAria`（不是 `drillAria`）——copy-scan 把 X／XAria 當占位符變體，兩者占位符不同就會計入 `placeholderVariantMismatch`（棘輪 0）。
 - **畫面基準 18**：原生 `<select>` 的下拉清單截不到，18 定義為「選到群組後的期間列」元素截圖（示範資料建群組「自有」＝DTC；390 截底部面板）。
-- **影響**：`/` First Load 523,697（V42-0 +3,992，門檻 527,897）；B9 不變（資料來源 +3）；Lighthouse 三次五項在門檻內（D-V42-35＝A 首次記錄 benchmarkIndex 3,349／3,350／3,371）；新增檔只有 `tests/channel-groups.test.ts`、`tests/e2e/channel-groups.spec.ts`；收尾 commit {{CLOSEOUT}}（未 push）。
+- **影響**：`/` First Load 523,697（V42-0 +3,992，門檻 527,897）；B9 不變（資料來源 +3）；Lighthouse 三次五項在門檻內（D-V42-35＝A 首次記錄 benchmarkIndex 3,349／3,350／3,371）；新增檔只有 `tests/channel-groups.test.ts`、`tests/e2e/channel-groups.spec.ts`；收尾 commit `a8fe47b`（未 push）。
 - **只記錄的 nit**（不修）：其餘仍列成員的範圍文字（R1-6；見範圍文字那條）；`evidenceSubtitle` 子字串比對；`filter_hash` 測試在兩檔重複；`period-bar.test` 的原始碼子字串斷言；40 字群組名在關閉的選單被截斷（原生 `<select>`）；有群組時 G4 列首欄變寬、390 按鈕換行 +9 px；768 期間列高度由最寬選項文字決定（既有）。
 - **流程教訓**：workflow 的 worktree 留在 `.claude/worktrees/` 時主檢出的 `eslint .` 會掃到副本，併入後先移除；完整 E2E 會重生 `verification/review-v2-a-*` 與 `revamp-R6/*` 的產物，照前例不提交、以 `git checkout --` 還原。
 
