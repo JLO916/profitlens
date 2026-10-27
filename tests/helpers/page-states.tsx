@@ -457,6 +457,24 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // 群組列 channel-settings-group-g1／g2（成員一行是顯示名稱）。filter_hash 與 dataset_hash 與 data-synthetic 相同（名稱不進雜湊）。
     "data-channel-settings": { panel: "data", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), id: "synthetic-settings", revision: 1 }; })(), status: "partial", channelSettings: SYNTHETIC_CHANNEL_SETTINGS },
 
+    // ── V42-2a 新增頁面狀態在此之後（docs/revamp-v4.2/06_BATCHES.md V42-2a 第 7 項；D-V42-2、D-V42-10、D-V42-12；同批在 tests/mounted-testids.test.tsx 的「V42-2a 新增 M1 測試」錨點後加對應測試）──
+    // 總覽、健檢、會議＋4 通路合成資料加通路設定（SYNTHETIC_CHANNEL_SETTINGS），範圍＝群組 g1「自有」的成員 {DTC, SOCIAL}：createSnapshot 帶成員清單與第 4 個參數 settings（沒有 Scope.kind "group"，
+    // 快照的 scope 是 kind "all" 加成員，channel_groups 帶 g1、g2）。期間列的 <select>（scope-select）是兩層：optgroup 自有、平台（四個通路都有群組，沒有「未分組」組），
+    // 選中值＝g1 的群組選項值（channelSelectModel／channelSelection），期間摘要的 title 與 sr-only 寫「{群組名}（成員清單）」（scopeDetailText）。
+    // overview-grouped 另帶目標（合成資料的本期、通路 ALL、與示範資料相同的四個指標與值）：群組範圍配不到任何目標（targets.ts 不動，D-V42-12「目標只對全部通路或單一通路配對。」），
+    // 讓目標限制句有地方出現；meeting-grouped 帶同一快照的 createReviewSession（會議固定範圍＝成員代碼）。三個狀態都用 partial（合成資料有缺列，與 overview-synthetic 相同）。
+    ...await (async (): Promise<Record<string, ShellState>> => {
+      const input = synthetic4ChannelInput(), dataset = validateDataset(input).dataset!;
+      const grouped: Active = { input, dataset, snapshot: await createSnapshot(dataset, { channels: ["DTC", "SOCIAL"] }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), id: "synthetic-grouped", revision: 1 };
+      const current = dataset.manifest.current_period;
+      const groupedTargets = parseTargets({ name: "targets.csv", bytes: bytes(["period_start,period_end,channel,metric,target", ...["net_revenue", "gross_profit", "contribution_after_marketing", "ad_spend"].map(metric => `${current.start},${current.end},ALL,${metric},${metric === "ad_spend" ? "-50000.00" : "100000.00"}`)].join("\n")) }, dataset.manifest.channels).set;
+      return {
+        "overview-grouped": { panel: "overview", active: { ...grouped, targets: groupedTargets }, status: "partial", channelSettings: SYNTHETIC_CHANNEL_SETTINGS },
+        "diagnosis-grouped": { panel: "diagnosis", active: grouped, status: "partial", channelSettings: SYNTHETIC_CHANNEL_SETTINGS },
+        "meeting-grouped": { panel: "meeting", active: grouped, status: "partial", review: createReviewSession(grouped, "e", "rev-grouped"), channelSettings: SYNTHETIC_CHANNEL_SETTINGS },
+      };
+    })(),
+
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
   for (const [name, state] of Object.entries(states)) out.push({ name, html: renderToStaticMarkup(shellPage(state)), state });

@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { Diagnostic, Scope } from "@/domain/types";
 import { addActionDraft, emptyActionWorkspace, setAdDecision } from "@/application/action-workspace";
-import { isDemoDataset } from "@/application/channel-settings";
+import { groupOptionValue, isDemoDataset } from "@/application/channel-settings";
 import { channelsLabel, snapshotResolver } from "@/application/copy";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
@@ -659,8 +659,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const copy = labels.assist.breakevenV3;
       const overviews = loaded().filter(({ state }) => state!.panel === "overview");
       // V3-9b A 加了 overview-yoy（兩年合成資料）狀態，V4-2 加了 overview-synthetic（4 通路合成資料），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder（示範資料）、
-      // overview-evidence-ladder-social（4 通路合成資料只選 SOCIAL），V42-0 加了 overview-many-channels（9 通路記憶體合成資料），同樣檢查。
-      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels"]);
+      // overview-evidence-ladder-social（4 通路合成資料只選 SOCIAL），V42-0 加了 overview-many-channels（9 通路記憶體合成資料），V42-2a 加了 overview-grouped（4 通路合成資料的群組範圍 DTC＋SOCIAL），同樣檢查。
+      expect(overviews.map(({ name }) => name)).toEqual(["overview", "overview-zero-ad", "overview-refund-only", "overview-yoy", "overview-synthetic", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels", "overview-grouped"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         for (const id of ["assist-breakeven-mer", "assist-breakeven-current", "assist-breakeven-previous", "assist-breakeven-note", "assist-breakeven-help", "assist-breakeven-help-trigger"]) expect(ids.get(id), `${name} ${id}`).toBe(1);
@@ -768,8 +768,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     it("V3-9b A 總覽：趨勢圖的去年同期圖例項每個狀態一份；不可用時原因句一份（在趨勢區塊內），可用時沒有原因句、資料表多兩欄", () => {
       const overviews = states.filter(entry => entry.state?.panel === "overview");
       // V4-2 加了 overview-synthetic（4 通路合成資料，去年同期不可用），V4-7b 加了開著 G23 抽屜的 overview-evidence-ladder、overview-evidence-ladder-social（去年同期都不可用），
-      // V42-0 加了 overview-many-channels（9 通路記憶體合成資料，去年同期不可用），同樣檢查。
-      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
+      // V42-0 加了 overview-many-channels（9 通路記憶體合成資料，去年同期不可用），V42-2a 加了 overview-grouped（4 通路合成資料的群組範圍，去年同期不可用），同樣檢查。
+      expect(overviews.map(entry => entry.name).sort()).toEqual(["overview", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-grouped", "overview-many-channels", "overview-refund-only", "overview-synthetic", "overview-yoy", "overview-zero-ad"]);
       for (const { name, html, state } of overviews) {
         const ids = testIdCounts(html);
         expect(ids.get("trend-legend-yoy"), name).toBe(1);
@@ -1022,7 +1022,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       }
       // V4-7b：overview-evidence-ladder（示範資料）與 overview-evidence-ladder-social（合成資料只選 SOCIAL，本期廣告費齊全）也畫。
       // V42-0：overview-many-channels（9 通路記憶體合成資料，每天每通路廣告費 100、淨營收為正）也畫。
-      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels"]);
+      // V42-2a：overview-grouped（4 通路合成資料的群組範圍 DTC＋SOCIAL：本期廣告費齊全，缺列的是 LIVE）也畫。
+      expect(withBullet, "示範資料與兩年合成資料畫 bullet；廣告費為 0、淨營收為負與 4 通路合成資料（本期實際 MER 資料待補）不畫").toEqual(["overview", "overview-yoy", "overview-evidence-ladder", "overview-evidence-ladder-social", "overview-many-channels", "overview-grouped"]);
     });
 
     // ── V4-3a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V4-3a 新增頁面狀態」錨點後；收進 <details>、投影隱藏的圖保持掛載）──
@@ -1034,8 +1035,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { shareSectionModel } = await import("@/components/diagnosis/share-section");
       const copy = labels.diagnosis.chartsV4.share;
       const states = diagnosisStates();
-      // V4-3b 核對：多了本期超過 92 天的 diagnosis-weekly（G11 週 × 通路矩陣）；G10 的斷言對它照常成立（2 通路、sm）。
-      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels", "diagnosis-weekly"]);
+      // V4-3b 核對：多了本期超過 92 天的 diagnosis-weekly（G11 週 × 通路矩陣）；G10 的斷言對它照常成立（2 通路、sm）。V42-2a：多了 diagnosis-grouped（4 通路合成資料的群組範圍 DTC＋SOCIAL，2 通路）。
+      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels", "diagnosis-weekly", "diagnosis-grouped"]);
       for (const { name, html, state } of states) {
         const model = shareSectionModel(state!.active.snapshot);
         for (const id of ["chart-diagnosis-share", "chart-diagnosis-share-table"]) expect(testIdCounts(html).get(id), `${name} ${id}`).toBe(1);
@@ -1176,7 +1177,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     it("V4-3b A 健檢：G11 chart-diagnosis-heat 全頁一份、在 G10 之後與 G12、通路寬表之前；mode=table 的框不設 aria-hidden、熱表內沒有 aria-hidden；整張熱表恰好 1 個 tabindex=0、其餘可聚焦的格 −1；每格 testid 全頁一份；本期超過 92 天是週 × 通路矩陣；通路 > 8 不輸出任何格", async () => {
       const { heatSectionModel } = await import("@/components/diagnosis/heat-section");
       const states = diagnosisStates();
-      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels", "diagnosis-weekly"]);
+      // V42-2a：多了 diagnosis-grouped（群組範圍 DTC＋SOCIAL，本期 17 天：日 × 通路熱表）。
+      expect(states.map(({ name }) => name)).toEqual(["diagnosis", "diagnosis-synthetic", "diagnosis-many-channels", "diagnosis-weekly", "diagnosis-grouped"]);
       const layouts: Record<string, string | null> = {};
       for (const { name, html, state } of states) {
         const model = heatSectionModel(state!.active.snapshot);
@@ -1213,7 +1215,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
           expect(cells.map(cell => cell.testId), `${name}：格的 key 是週起日`).toEqual(heatmap.weeks.flatMap(week => heatmap.channels.map(channel => `chart-diagnosis-heat-cell-${channel.channel}-${week.period.start}`)));
         }
       }
-      expect(layouts, "示範與合成資料是日月曆、9 通路不計算、本期 98 天改週").toEqual({ diagnosis: "daily", "diagnosis-synthetic": "daily", "diagnosis-many-channels": null, "diagnosis-weekly": "weekly" });
+      // V42-2a：diagnosis-grouped（群組範圍 DTC＋SOCIAL，本期 17 天）同樣是日月曆。
+      expect(layouts, "示範與合成資料是日月曆、9 通路不計算、本期 98 天改週").toEqual({ diagnosis: "daily", "diagnosis-synthetic": "daily", "diagnosis-many-channels": null, "diagnosis-weekly": "weekly", "diagnosis-grouped": "daily" });
     });
 
     it("V4-3b B 健檢圖區收合：G12 的 <details class=\"chart-more rates-more\"> 沒有 open，chart-diagnosis-rates 與 chart-diagnosis-rates-table 仍掛載（全頁各一份）；圖框 aria-hidden、裡面沒有 <details>、按鈕、連結、tabindex；五張子圖依序；≤ 767px 框高變數＝sm × 5", async () => {
@@ -1318,7 +1321,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
     it("V4-6 A 會議歷史：G19 chart-meeting-history 每個會議頁狀態一份、在 meeting-history 內——有歷史時在說明句之後、清單之前，沒有歷史時接在 v3 空狀態區塊之後（審查 A-4；區塊 DOM 不變）；保留不到 2 次＝等高空狀態、≥ 2 次＝有圖；inline（沒有 .panel 套 .panel）、h3；資料表 <details> 收合但掛載；圖框內沒有停留點、沒有 chartColors.current", async () => {
       const { chartColors, chartHeights } = await import("@/application/chart-theme");
       const meetings = states.filter(state => state.state?.panel === "meeting");
-      const expected: Record<string, "empty" | "ready"> = { meeting: "empty", "meeting-v2-record": "empty", "meeting-history-g19": "ready", "meeting-seven-channels": "empty" };
+      // V42-2a：meeting-grouped（4 通路合成資料的群組範圍 DTC＋SOCIAL、沒有歷史、沒有選入方案）的 G19 同樣是等高空狀態。
+      const expected: Record<string, "empty" | "ready"> = { meeting: "empty", "meeting-v2-record": "empty", "meeting-history-g19": "ready", "meeting-seven-channels": "empty", "meeting-grouped": "empty" };
       expect(meetings.map(({ name }) => name)).toEqual(Object.keys(expected));
       for (const { name, html, state } of meetings) {
         const want = expected[name], count = state!.history?.length ?? 0;
@@ -1366,7 +1370,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const { chartColors } = await import("@/application/chart-theme");
       const meetings = states.filter(state => state.state?.panel === "meeting");
       const seven = ["DTC", "MARKETPLACE", "SOCIAL", "LIVE", "B2B", "POPUP", "WHOLESALE"];
-      const bars: Record<string, string[]> = { meeting: ["p"], "meeting-v2-record": ["p"], "meeting-history-g19": ["p"], "meeting-seven-channels": [] };
+      // V42-2a：meeting-grouped（群組範圍 DTC＋SOCIAL，review 剛建立、沒有選入方案）：G15 會議實例仍掛載（空狀態、0 根、資料表 0 列），沒有每通路選入列。
+      const bars: Record<string, string[]> = { meeting: ["p"], "meeting-v2-record": ["p"], "meeting-history-g19": ["p"], "meeting-seven-channels": [], "meeting-grouped": [] };
       for (const { name, html, state } of meetings) {
         const scope = state!.review!.meeting_filters.channels;
         const want = name === "meeting-seven-channels" ? scope.slice(0, 6).map(channel => `plan-${channel}`) : bars[name];
@@ -1376,7 +1381,9 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         const five = element(html, 'data-testid="meeting-agenda-5"')!;
         const section = element(five, 'data-testid="chart-meeting-scenarios"')!;
         expect(five.indexOf(section), `${name}：說明句之後`).toBeGreaterThan(five.indexOf(escapeAttr(labels.meeting.page.scenariosNote)));
-        expect(five.indexOf(section) + section.length, `${name}：每通路選入列之前`).toBeLessThanOrEqual(five.indexOf('data-testid="meeting-scenario-results"'));
+        const results = five.indexOf('data-testid="meeting-scenario-results"');
+        if (state!.review!.selected_scenarios.length > 0) expect(five.indexOf(section) + section.length, `${name}：每通路選入列之前`).toBeLessThanOrEqual(results);
+        else expect(results, `${name}：沒有選入方案時沒有每通路選入列`).toBe(-1);
         expect(openTag(section, "<section"), name).toMatch(/^<section class="chart-section is-inline meeting-scenarios-chart" aria-labelledby="meeting-scenarios-title" aria-describedby="meeting-scenarios-sub"/);
         expect(section, `${name}：標題 h4`).toContain('<h4 id="meeting-scenarios-title">');
         expect([...element(html, 'data-testid="meeting-agenda"')!.matchAll(/class="[^"]*\bpanel\b[^"]*"/g)].length, `${name}：議程內沒有 .panel 套 .panel`).toBeLessThanOrEqual(1);
@@ -1387,7 +1394,8 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         const details = element(section, '<details class="data-alternative"')!;
         expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
         const frame = element(section, 'class="chart-frame sm"')!;
-        expect(openTag(section, 'class="chart-frame sm"'), name).toContain('aria-hidden="true"');
+        // 有柱時框 aria-hidden（語意在資料表）；V42-2a：沒有選入方案（meeting-grouped）時框是一句說明的空狀態（data-state="empty"），不藏。
+        expect(openTag(section, 'class="chart-frame sm"'), name).toContain(state!.review!.selected_scenarios.length > 0 ? 'aria-hidden="true"' : 'data-state="empty"');
         expect(frame, `${name}：柱不可點、圖框內沒有停留點`).not.toMatch(/tabindex|<button|<a\s|<details|<input|<select|ranked-hit|is-clickable/);
         expect(section, `${name}：不是 number-link`).not.toContain("number-link");
         expect(section, `${name}：沒有強調色`).not.toContain(chartColors.current);
@@ -2135,6 +2143,72 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
         expect(ids.get("channel-settings"), name).toBe(1);
         expect([...ids.keys()].filter(id => id.startsWith("channel-settings-row-")).sort(), name).toEqual(state!.active.dataset.manifest.channels.map(code => `channel-settings-row-${code}`).sort());
       }
+    });
+
+    // ── V42-2a 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V42-2a 新增頁面狀態」錨點後；docs/revamp-v4.2/06_BATCHES.md V42-2a 第 1、2、7 項；D-V42-10）──
+    // 「只看這個通路」（channel-drill-{code}）與總覽的目標限制句由同批的稽核修法加入，對應的 M1 斷言在那之後補（代理 D2），這裡只斷言期間列與期間摘要。
+    it("V42-2a 群組範圍的三個狀態（overview-grouped、diagnosis-grouped、meeting-grouped）：範圍＝g1 的成員、快照帶 channel_groups；期間列 scope-select 是兩層 <optgroup>（自有、平台，依群組順序；四個通路都有群組，沒有「未分組」組、沒有只讀的子集選項）、選中值＝g1 的群組選項值且只有它帶 selected、scope-option-group-g1／g2 各一份、成員在自己的 optgroup 內（manifest 順序、顯示名稱）；期間摘要的 title 與 sr-only 寫「{群組名}（成員清單）」（labels.shell.scopeV42.groupWithMembers）", () => {
+      const settings = SYNTHETIC_CHANNEL_SETTINGS;
+      const g1 = settings.groups.find(group => group.id === "g1")!, g2 = settings.groups.find(group => group.id === "g2")!;
+      const label = (code: string) => settings.channels.find(entry => entry.code === code)!.label!;
+      for (const stateName of ["overview-grouped", "diagnosis-grouped", "meeting-grouped"] as const) {
+        const { name, html, state } = states.find(entry => entry.name === stateName)!;
+        expect(state!.channelSettings, name).toBe(settings);
+        expect(state!.active.snapshot.report.scope.channels, name).toEqual(["DTC", "SOCIAL"]);
+        expect(state!.active.snapshot.channel_groups, name).toEqual([{ id: "g1", label: g1.label, members: ["DTC", "SOCIAL"] }, { id: "g2", label: g2.label, members: ["LIVE", "MARKETPLACE"] }]);
+        const ids = testIdCounts(html);
+        expect(ids.get("scope-select"), name).toBe(1);
+        expect(ids.get("scope-option-group-g1"), name).toBe(1);
+        expect(ids.get("scope-option-group-g2"), name).toBe(1);
+        const periodBar = element(html, 'data-testid="period-bar"')!;
+        const select = element(periodBar, 'data-testid="scope-select"')!;
+        // 第一個選項仍是「全部通路」（沒有被選中）；兩個 optgroup 依群組順序；沒有「未分組」組（四個通路都有群組）；沒有只讀的「{n} 個通路」（範圍對到群組）。
+        expect(select, name).toContain(`<option value="">${escapeAttr(labels.shell.periodBar.filter.allChannels)}</option>`);
+        expect([...select.matchAll(/<optgroup label="([^"]*)"/g)].map(match => match[1]), `${name}：optgroup 依群組順序`).toEqual([g1.label, g2.label]);
+        expect(select, `${name}：沒有「未分組」組`).not.toContain(`<optgroup label="${escapeAttr(labels.shell.periodBarV42.ungrouped)}"`);
+        expect(select, `${name}：沒有只讀的子集選項`).not.toContain("disabled");
+        // 選中值＝g1 的群組選項值（帶控制字元前綴）：只有 scope-option-group-g1 帶 selected。
+        const g1Option = openTag(select, 'data-testid="scope-option-group-g1"')!;
+        expect(g1Option, name).toContain(`value="${escapeAttr(groupOptionValue("g1"))}"`);
+        expect(g1Option, name).toContain('selected=""');
+        expect(openTag(select, 'data-testid="scope-option-group-g2"'), name).not.toContain('selected=""');
+        expect(occurrences(select, 'selected=""'), `${name}：只有一個選項被選中`).toBe(1);
+        // 每個 optgroup：第一個選項是群組本身，之後是成員（manifest 順序 DTC、LIVE、MARKETPLACE、SOCIAL 過濾後）、文字是顯示名稱。
+        const options = (group: typeof g1) => [...element(select, `<optgroup label="${escapeAttr(group.label)}"`)!.matchAll(/<option [^>]*>([^<]*)<\/option>/g)].map(match => match[1]);
+        expect(options(g1), `${name} g1`).toEqual([g1.label, label("DTC"), label("SOCIAL")]);
+        expect(options(g2), `${name} g2`).toEqual([g2.label, label("LIVE"), label("MARKETPLACE")]);
+        // 期間摘要：title 與 sr-only 的 {channels}＝「自有（官網、社群）」（scopeDetailText；成員清單用 channelsLabel＋快照的解析器）。
+        const resolver = snapshotResolver(state!.active.snapshot);
+        const members = channelsLabel(["DTC", "SOCIAL"], resolver);
+        expect(members, name).toBe(`${label("DTC")}、${label("SOCIAL")}`);
+        const detail = fill(labels.shell.scopeV42.groupWithMembers, { group: g1.label, members });
+        const summary = element(periodBar, 'data-testid="period-summary"')!;
+        expect(openTag(summary, 'data-testid="period-summary"'), `${name}：title`).toContain(escapeAttr(detail));
+        expect(element(summary, 'class="sr-only"'), `${name}：sr-only`).toContain(escapeAttr(detail));
+        expect(occurrences(summary, escapeAttr(detail)), `${name}：title 與 sr-only 各一次`).toBe(2);
+        expect(summary, `${name}：可見文字不列成員`).not.toContain(`>${escapeAttr(detail)}<`);
+      }
+    });
+
+    it("V42-2a 沒有群組的狀態（示範資料的 overview、diagnosis、meeting）：scope-select 沒有 <optgroup>、沒有 scope-option-group-*，選中「全部通路」；每個有資料的狀態恰好一份 scope-select；有群組但範圍是全部通路的 data-channel-settings：有兩個 optgroup、選中「全部通路」、群組選項都沒有 selected", () => {
+      for (const stateName of ["overview", "diagnosis", "meeting"] as const) {
+        const { name, html, state } = states.find(entry => entry.name === stateName)!;
+        expect(state!.active.snapshot.channel_groups, name).toBeUndefined();
+        const select = element(html, 'data-testid="scope-select"')!;
+        expect(select, name).not.toContain("<optgroup");
+        expect(select, name).not.toContain('data-testid="scope-option-group-');
+        expect(select, name).toContain(`<option value="" selected="">${escapeAttr(labels.shell.periodBar.filter.allChannels)}</option>`);
+        expect(occurrences(select, 'selected=""'), name).toBe(1);
+      }
+      for (const { name, html } of loaded()) expect(testIdCounts(html).get("scope-select"), `${name}：期間列的通路選單一份`).toBe(1);
+      const { name, html, state } = states.find(entry => entry.name === "data-channel-settings")!;
+      expect(state!.active.snapshot.report.scope.channels, name).toEqual(state!.active.dataset.manifest.channels);
+      const select = element(html, 'data-testid="scope-select"')!;
+      expect([...select.matchAll(/<optgroup label="([^"]*)"/g)].map(match => match[1]), name).toEqual(SYNTHETIC_CHANNEL_SETTINGS.groups.map(group => group.label));
+      expect(select, name).toContain(`<option value="" selected="">${escapeAttr(labels.shell.periodBar.filter.allChannels)}</option>`);
+      for (const group of SYNTHETIC_CHANNEL_SETTINGS.groups) expect(openTag(select, `data-testid="scope-option-group-${group.id}"`), `${name} ${group.id}`).not.toContain('selected=""');
+      expect(occurrences(select, 'selected=""'), name).toBe(1);
+      expect(select, `${name}：沒有只讀的子集選項`).not.toContain("disabled");
     });
 
   });

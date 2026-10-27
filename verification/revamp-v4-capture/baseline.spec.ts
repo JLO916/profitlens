@@ -1,7 +1,8 @@
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { labels } from "../../src/i18n";
+import { fill, labels } from "../../src/i18n";
 import { confirmAndCheck, confirmMappingIfShown, chooseBasis, nextFromFiles, openWizard, setWizardFiles } from "../../tests/e2e/import-wizard-helpers";
+import { isMobile, openPeriodSheet } from "../../tests/e2e/replacement-helpers";
 import { FIXED_NOW, calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigateTo, noOverlayStylePath, readTargets } from "./shared";
 
 // V4-0a 第 9 項：四尺寸 toHaveScreenshot 基準，12 畫面 × 4 尺寸＝48 張，再加 13 KPI 帶元素截圖 4 張，共 52 張。
@@ -25,6 +26,10 @@ import { FIXED_NOW, calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigat
 // V42-1b（docs/revamp-v4.2/06_BATCHES.md V42-1b「允許變動畫面」；D-V42-8＝A）：再加一個畫面（元素截圖 × 4 尺寸），共 68 張：
 //   17 通路設定編輯器展開：載入示範資料、切到資料來源、點開「通路設定」<details>（channel-settings；預設收合，09 只多一行 summary；示範資料的顯示名稱起始值是隱含預設的別名、沒有群組），
 //      對 details 做元素截圖；帶 stylePath（同 10–13）；獨立的測試。v4.2 的基準位置在 verification/revamp-v42/${CAPTURE_BATCH}/snapshots/（verification/revamp-v42.capture.config.ts）。
+// V42-2a（docs/revamp-v4.2/06_BATCHES.md V42-2a「允許變動畫面」；D-V42-10、D-V42-13＝A）：再加一個畫面（元素截圖 × 4 尺寸），共 72 張：
+//   18 期間列選到群組：載入示範資料、資料來源頁的通路設定編輯器「新增群組」建「自有」＝DTC、套用，回總覽，期間列選單選「自有」（390 先開底部面板），等期間摘要的 title 出現群組名後，
+//      對 .period-bar（390 對開著的 #period-bar-panel）做元素截圖；帶 stylePath。原生 <select> 的下拉清單截不到，所以 18 的定義是「選到群組後的期間列」（選單關著）；示範資料只有兩個通路，
+//      「自有」只有一個成員，選了群組就是那個通路（channelSelection 的優先順序：恰好一個 → channel），選單停在 optgroup 自有內的「官網」、摘要寫「自有 · 官網」。獨立的測試。
 // 基準位置：verification/revamp-v4/${CAPTURE_BATCH}/snapshots/{project}/{名稱}.png（見 verification/revamp-v4.capture.config.ts）。
 // 用 expect.soft：一張不同不會擋住後面幾張，報告一次列出全部差異。
 const top = (page: Page) => page.evaluate(() => window.scrollTo(0, 0));
@@ -206,6 +211,49 @@ test("V42-1b 畫面基準 17 通路設定編輯器展開", async ({ page }) => {
   await expect(editor.getByTestId("channel-settings-row-MARKETPLACE")).toBeVisible();
   await settle(page);
   await expect.soft(editor).toHaveScreenshot("17-channel-settings.png", { stylePath: await noOverlayStylePath() });
+
+  expect(errors, `${errors.length} console／page errors`).toEqual([]);
+});
+
+test("V42-2a 畫面基準 18 期間列選到群組", async ({ page }) => {
+  const errors = collectErrors(page);
+  const ui = labels.data.channelSettingsV42;
+  // 使用者輸入的群組名是字面值（同 tests/e2e/channel-settings.spec.ts）；控制項的可及名稱取 labels。
+  const GROUP_NAME = "自有";
+  await loadDemo(page);
+  await goTo(page, "data", page.getByTestId("targets-entry"));
+  const editor = page.getByTestId("channel-settings");
+  await expect(editor).not.toHaveAttribute("open", "");
+  await editor.locator(":scope > summary").click();
+  await expect(editor).toHaveAttribute("open", "");
+  // 「新增群組」→ 第 1 個群組命名「自有」→ DTC 指派到 g1 → 套用（狀態句「已套用通路設定。」、沒有問題清單）。
+  await editor.getByRole("button", { name: ui.buttons.addGroup, exact: true }).click();
+  await expect(editor.getByTestId("channel-settings-group-g1")).toBeVisible();
+  await editor.getByLabel(fill(ui.groups.nameLabel, { n: 1 }), { exact: true }).fill(GROUP_NAME);
+  await editor.getByLabel(fill(ui.rowAria.group, { code: "DTC" }), { exact: true }).selectOption("g1");
+  await editor.getByRole("button", { name: ui.buttons.apply, exact: true }).click();
+  await expect(editor.locator(".channel-settings-status")).toHaveText(ui.applied);
+  await expect(editor.getByRole("alert")).toHaveCount(0);
+
+  await goTo(page, "overview", page.getByTestId("kpi-band"));
+  // 390：期間列收成一顆按鈕，先開底部面板（桌機、筆電、平板是 no-op）。
+  await openPeriodSheet(page);
+  const select = page.getByTestId("scope-select");
+  // 兩層選單：optgroup 自有（群組本身＋DTC）與最後一組「未分組」（MARKETPLACE）。
+  await expect(select.locator("optgroup")).toHaveCount(2);
+  await expect(select.locator("optgroup").first()).toHaveAttribute("label", GROUP_NAME);
+  await expect(select.locator("optgroup").last()).toHaveAttribute("label", labels.shell.periodBarV42.ungrouped);
+  // 選 optgroup 自有內的群組選項（文字＝群組名）。「自有」只有 DTC 一個成員：套用的範圍是 [DTC]，選單的值回到那個通路（optgroup 自有內的「官網」），期間摘要寫「自有 · 官網」。
+  await select.selectOption({ label: GROUP_NAME });
+  const summary = page.getByTestId("period-summary");
+  await expect(summary).toHaveAttribute("title", new RegExp(GROUP_NAME));
+  await expect(summary).toHaveAttribute("title", new RegExp(fill(labels.shell.scopeV42.memberOfGroup, { group: GROUP_NAME, channel: labels.data.demoChannelAlias.DTC })));
+  await expect(select).toHaveValue("DTC");
+  await expect(page.locator(".view-content")).not.toHaveAttribute("aria-busy", "true");
+  await settle(page);
+  const target = isMobile(page) ? page.locator("#period-bar-panel") : page.locator(".period-bar");
+  await expect(target).toBeVisible();
+  await expect.soft(target).toHaveScreenshot("18-period-bar-group.png", { stylePath: await noOverlayStylePath() });
 
   expect(errors, `${errors.length} console／page errors`).toEqual([]);
 });
