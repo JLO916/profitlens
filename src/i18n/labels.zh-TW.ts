@@ -2963,6 +2963,17 @@ export const exportLabels = {
       columns: { bar: "柱名", start: "起點", end: "終點" },
     },
   },
+  // ── V42-1b 錨點：Excel「指標定義」工作表的「通路設定」對照列（D-V42-15＝A）。只在快照帶 channel_names／channel_groups（設定與預設有差）時加列；沒有設定時工作表逐位元組不變。
+  v42: {
+    channelSettings: {
+      /** 對照列的區塊名：接在技術細節各列之後、「圖表資料」版本列之前；這一列只有區塊格。 */
+      heading: "通路設定",
+      /** 區塊列的下一列放三個欄名（區塊、項目、內容三格依序），之後每個通路一列：代碼、顯示名稱（沒有名稱就是代碼）、群組名。順序＝通路設定的 order（orderedChannels）。 */
+      columns: { code: "通路代碼", label: "顯示名稱", group: "群組" },
+      /** 沒有指派群組的通路，群組格寫這個。 */
+      ungrouped: "未分組",
+    },
+  },
 } as const;
 
 // ── storage：保存：自動保存、本機保存與備份、替換前確認

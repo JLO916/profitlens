@@ -457,7 +457,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     try {
       const summary = viewSummary(active);
       // V4-3c：Excel／PPT 的產生程式按下時才載入；載入失敗與產生失敗走同一個 catch（選單顯示 export 錯誤）。
-      if (kind === "excel") { const { exportExcel } = await import("@/application/excel-export"); await exportExcel({ variant, summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active) }); }
+      if (kind === "excel") { const { exportExcel } = await import("@/application/excel-export"); await exportExcel({ variant, summary, snapshot: active.snapshot, dataset: active.dataset, actions: actionRef.current, products: compareProducts(active.dataset, active.snapshot.report.scope).rows, conversion: active.conversion ?? null, meeting: null, datasetName: activeDatasetName(active), channelSettings: active.channel_settings ?? null }); }
       else { const { exportPptx } = await import("@/application/pptx-export"); await exportPptx({ variant, summary, snapshot: active.snapshot, actions: actionRef.current, meeting: null, datasetName: activeDatasetName(active) }); }
       track(kind === "excel" ? "export_excel" : "export_pptx");
       setMenuExport({ busy: null, error: null });
