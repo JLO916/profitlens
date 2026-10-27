@@ -890,4 +890,17 @@ describe("V42-1b 指標定義工作表的「通路設定」對照列：只在快
       expect(rows).toHaveLength(labels.glossary.basis.items.length + 1 + 8 + rows.filter(row => row[col.basis.section] === labels.exports.chartsV4.excel.sheet).length);
     }
   });
+
+  it("客戶報告版（spec.appendix.technical＝false）：帶設定時也沒有「通路設定」區塊——對照列與技術細節、圖表資料版本列同一個閘門；列數與列內容和沒有設定時的客戶版相同", async () => {
+    const withSettings = basisRows(buildExcelWorkbook({ ...(await synthetic(SETTINGS)), variant: "client" }));
+    const without = basisRows(buildExcelWorkbook({ ...(await synthetic(null)), variant: "client" }));
+    expect(withSettings.some(row => row[col.basis.section] === v.heading)).toBe(false);
+    expect(withSettings.some(row => row[col.basis.section] === v.columns.code)).toBe(false);
+    expect(withSettings.some(row => row[col.basis.section] === copy.basis.sections.technical)).toBe(false);
+    expect(JSON.stringify(withSettings)).not.toContain("DTC");
+    expect(withSettings).toEqual(without);
+    expect(withSettings).toHaveLength(labels.glossary.basis.items.length + 1);
+    // 同一份輸入的標準版仍有對照列（閘門只擋客戶報告版）。
+    expect(basisRows(buildExcelWorkbook({ ...(await synthetic(SETTINGS)), variant: "standard" })).some(row => row[col.basis.section] === v.heading)).toBe(true);
+  });
 });

@@ -12,8 +12,11 @@ import { closeStorage, dismissSavePrompt, navigateTo, openDetails, openStorage }
  *    狀態句「已套用通路設定。」、沒有 role=alert、草稿重建後值不變；「範圍與金額基準」的兩列通路文字與期間列的通路選項換成顯示名稱；
  *    總覽 G4 緊湊表（manifest 順序）與通路健檢的通路寬表（表自己的排序）列名換成顯示名稱；下載備份：payload.channel_settings 帶顯示名稱與群組（active.filters.channels 仍是通路代碼）；
  *    重新開頁（記憶體裡的工作區清空）後讀入備份：還原預覽、期間列、編輯器的每列與群組列都再出現顯示名稱與群組。展開編輯器後頁面不橫向捲動（390 每列直向堆疊）。
- * B. 不合規則的名稱（前面有空格）：role=alert 列出規則句、狀態句空白、草稿保留使用者打的字（不修剪）、不套用（範圍文字與期間列仍是示範別名）；改成合規的名稱後再套用就通過。
- * 字串一律取 labels；通路代碼、使用者輸入的名稱與 testid 是字面值。備份與還原的 helper 比照 tests/e2e/workspace-storage.spec.ts。
+ * B. 不合規則的名稱（前面有空格）：role=alert 列出規則句、狀態句空白、草稿保留使用者打的字（不修剪）、不套用（範圍文字與期間列仍是示範別名）；問題清單出現時跑 axe（serious／critical 0；
+ *    live role 在外層 div、<ul> 仍是 list）；201 字沒有空白的名稱：規則句折行、頁面不橫向捲動；改成合規的名稱後再套用就通過。
+ * C. 套用之後、重算完成之前繼續打字（頁面時鐘暫停讓 applyFilters 等的 requestAnimationFrame 不來）：父層傳回剛套用的那份設定時草稿不重建，打到一半的字還在；
+ *    套用成功時沒有成員的群組當場從草稿去掉（提示句「沒有成員的群組在套用時會被去掉」）。
+ * 字串一律取 labels；通路代碼、使用者輸入的名稱與 testid 是字面值。備份與還原的 helper 比照 tests/e2e/workspace-storage.spec.ts；axe 比照 tests/e2e/axe-sweep.spec.ts（node_modules 既有的 axe-core）。
  */
 test.describe.configure({ timeout: 90_000 });
 const ui = labels.data.channelSettingsV42;
@@ -43,6 +46,22 @@ async function expectDiagnosisNames(page: Page, names: string[]) {
   expect((await diagnosisRows(page).allTextContents()).map(text => text.trim()).sort()).toEqual([...names].sort());
 }
 const noHorizontalScroll = (page: Page) => page.evaluate(() => { const root = document.scrollingElement ?? document.documentElement; return root.scrollWidth <= root.clientWidth; });
+/** 重算中的內容區（dashboard：applyFilters 期間 .view-content 標 aria-busy，舊內容保持掛載）。 */
+const viewContent = (page: Page) => page.locator(".view-content");
+const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+interface AxeRow { id: string; impact: string | null; targets: string[] }
+/** 目前狀態的 serious／critical 違規（axe-core 來自 node_modules，與 axe-sweep 同一個來源與標籤）；找不到 axe-core 時回 null。 */
+async function axeSeriousViolations(page: Page): Promise<AxeRow[] | null> {
+  let path: string;
+  try { path = require.resolve("axe-core/axe.min.js"); } catch { return null; }
+  if (!await page.evaluate(() => "axe" in window)) await page.addScriptTag({ path });
+  const rows = await page.evaluate(async tags => {
+    const axe = (window as unknown as { axe: { run: (context: unknown, options: unknown) => Promise<{ violations: { id: string; impact: string | null; nodes: { target: unknown[] }[] }[] }> } }).axe;
+    const result = await axe.run({ exclude: [["nextjs-portal"]] }, { runOnly: { type: "tag", values: tags }, resultTypes: ["violations"] });
+    return result.violations.map(item => ({ id: item.id, impact: item.impact, targets: item.nodes.slice(0, 5).map(node => JSON.stringify(node.target)) }));
+  }, AXE_TAGS);
+  return rows.filter(row => row.impact === "serious" || row.impact === "critical");
+}
 
 /** 切到資料來源頁、點開預設收合的「通路設定」。 */
 async function openEditor(page: Page) {
@@ -154,9 +173,51 @@ test("V42-1b 通路設定：不合規則的名稱（前面有空格）列出規�
   await expect(labelInput(page, "DTC")).toHaveValue(bad);
   await expect(metaValue(page, labels.data.panel.meta.scopeChannels)).toHaveText(DEMO_NAMES);
   await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, labels.data.demoChannelAlias.DTC, labels.data.demoChannelAlias.MARKETPLACE]);
+  // 問題清單出現的狀態跑 axe：live role 在外層 div、<ul> 仍是 list（li 的父層是 list），serious／critical 都是 0。
+  const violations = await axeSeriousViolations(page);
+  if (violations === null) test.info().annotations.push({ type: "axe", description: "node_modules 沒有 axe-core，這一步略過" });
+  else expect(violations, JSON.stringify(violations)).toEqual([]);
+  // 201 字、沒有空白的名稱：規則句原樣引出名稱，問題清單要折行、頁面不橫向捲動。
+  const long = "x".repeat(201);
+  await labelInput(page, "DTC").fill(long);
+  await applyButton(page).click();
+  await expect(problems(page)).toHaveText([fill(ui.validation.invalidName, { name: long })]);
+  await expect(statusLine(page)).toHaveText("");
+  expect(await noHorizontalScroll(page), "長名稱的規則句不造成橫向捲動").toBe(true);
   await labelInput(page, "DTC").fill(DTC_NAME);
   await applyButton(page).click();
   await expect(editor(page).getByRole("alert")).toHaveCount(0);
   await expect(statusLine(page)).toHaveText(ui.applied);
   await expect(metaValue(page, labels.data.panel.meta.scopeChannels)).toHaveText(`${DTC_NAME}、${labels.data.demoChannelAlias.MARKETPLACE}`);
+});
+
+test("V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉", async ({ page }) => {
+  await openEditor(page);
+  await labelInput(page, "DTC").fill(DTC_NAME);
+  // 暫停頁面的時鐘：applyFilters 先等一個 requestAnimationFrame（afterPaint）才重算，暫停時這個 frame 不會來、aria-busy 一直掛著；Playwright 自己的等待不受頁面時鐘影響。
+  await page.clock.install();
+  await page.clock.pauseAt(Date.now() + 1_000);
+  await applyButton(page).click();
+  await expect(statusLine(page)).toHaveText(ui.applied);
+  await expect(viewContent(page)).toHaveAttribute("aria-busy", "true");
+  await labelInput(page, "MARKETPLACE").fill(MARKETPLACE_NAME);
+  await expect(viewContent(page)).toHaveAttribute("aria-busy", "true");
+  await page.clock.resume();
+  await expect(viewContent(page)).not.toHaveAttribute("aria-busy", "true");
+  // 父層傳回的是剛套用的那份設定：草稿不重建，MARKETPLACE 打到一半的名稱還在（狀態句因為有未套用的改動而空白）；DTC 已生效、MARKETPLACE 仍是示範別名。
+  await expect(labelInput(page, "MARKETPLACE")).toHaveValue(MARKETPLACE_NAME);
+  await expect(labelInput(page, "DTC")).toHaveValue(DTC_NAME);
+  await expect(statusLine(page)).toHaveText("");
+  await expect(metaValue(page, labels.data.panel.meta.scopeChannels)).toHaveText(`${DTC_NAME}、${labels.data.demoChannelAlias.MARKETPLACE}`);
+  await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, DTC_NAME, labels.data.demoChannelAlias.MARKETPLACE]);
+  // 再套用：MARKETPLACE 的名稱生效；一起新增一個沒有成員的群組，套用當下群組列就從草稿去掉。
+  await editor(page).getByRole("button", { name: ui.buttons.addGroup, exact: true }).click();
+  await expect(groupRows(page)).toHaveCount(1);
+  await applyButton(page).click();
+  await expect(groupRows(page)).toHaveCount(0);
+  await expect(editor(page)).toContainText(ui.groups.empty);
+  await expect(statusLine(page)).toHaveText(ui.applied);
+  await expect(labelInput(page, "MARKETPLACE")).toHaveValue(MARKETPLACE_NAME);
+  await expect(metaValue(page, labels.data.panel.meta.scopeChannels)).toHaveText(NEW_NAMES);
+  await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, DTC_NAME, MARKETPLACE_NAME]);
 });

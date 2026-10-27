@@ -13,7 +13,8 @@ import { fixture } from "./helpers/fixtures";
 
 // V42-1b 代理 A（D-V42-8＝A；PRD §3.1、§3.2、§9；06_BATCHES V42-1b 第 1 項）：資料來源頁「通路設定」區。
 // SSR（node 環境沒有 DOM）：每個 manifest 通路一列、示範資料的起始值是隱含預設的別名、收合、label for 指到唯一 id、放在 data-scope 之後；
-// 草稿 → 設定的純函式：沒有改動回 null、有效改動回正規化後的設定、不合規則與同名逐句列出且不套用、沒有成員的群組去掉、群組 id 不重用。
+// 草稿 → 設定的純函式：沒有改動回 null、有效改動回正規化後的設定、不合規則與同名逐句列出且不套用、沒有成員的群組去掉、群組 id 不重用；
+// 空白的顯示名稱＝畫面顯示通路代碼（示範資料寫成 label＝代碼、蓋掉隱含預設的別名；與提示句「顯示名稱空白時，畫面顯示通路代碼。」和 placeholder 一致）。
 // 按鈕點擊與套用後的狀態句由 tests/e2e/channel-groups.spec.ts（V42-1b 代理 C）在瀏覽器四尺寸驗證。
 
 const ui = labels.data.channelSettingsV42;
@@ -124,10 +125,17 @@ describe("V42-1b 草稿 → 設定（initialDraft、settingsFromDraft）", () =>
     expect(rebuilt).toEqual({ ...draft, nextGroupId: 3 });
   });
 
-  it("示範資料只改一個通路：等於預設的別名不寫進設定，只剩改掉的那一筆；把顯示名稱改成自己的代碼也算改動", () => {
+  it("示範資料只改一個通路：等於預設的別名不寫進設定，只剩改掉的那一筆；把顯示名稱改成自己的代碼也算改動；清空顯示名稱＝畫面顯示代碼，寫成 label＝代碼（不是回到示範別名）", () => {
     const draft = withRow(initialDraft(null, DEMO_ID, DEMO), "MARKETPLACE", { label: "蝦皮" });
     expect(settingsFromDraft(draft, DEMO_ID, DEMO)).toEqual({ problems: [], settings: settingsOf([{ code: "MARKETPLACE", label: "蝦皮" }]) });
     expect(settingsFromDraft(withRow(initialDraft(null, DEMO_ID, DEMO), "DTC", { label: "DTC" }), DEMO_ID, DEMO)).toEqual({ problems: [], settings: settingsOf([{ code: "DTC", label: "DTC" }]) });
+    // 清空：示範資料的隱含預設別名被 label＝代碼蓋掉（備份只多這一筆），解析器與重建後的草稿都顯示代碼——與提示句、placeholder 一致。
+    const blank = withRow(initialDraft(null, DEMO_ID, DEMO), "DTC", { label: "" });
+    const outcome = settingsFromDraft(blank, DEMO_ID, DEMO);
+    expect(outcome).toEqual({ problems: [], settings: settingsOf([{ code: "DTC", label: "DTC" }]) });
+    expect(initialDraft(outcome.settings, DEMO_ID, DEMO).rows.map(row => row.label)).toEqual(["DTC", labels.data.demoChannelAlias.MARKETPLACE]);
+    // 非示範資料沒有預設別名：清空不寫 label（沒有其他改動就是 null）。
+    expect(settingsFromDraft(withRow(initialDraft(null, LOCAL_ID, FOUR), "DTC", { label: "" }), LOCAL_ID, FOUR)).toEqual({ problems: [], settings: null });
   });
 
   it("名稱不合規則：前後空格不修剪、空白字串、超過 200 字、控制字元各一句（去重）；順序不是整數一句；有成員但沒名稱的群組一句；有問題就沒有設定", () => {
@@ -162,9 +170,12 @@ describe("V42-1b 草稿 → 設定（initialDraft、settingsFromDraft）", () =>
     expect(settingsFromDraft(otherCode, LOCAL_ID, FOUR)).toEqual({ problems: [fill(ui.validation.duplicateName, { name: "DTC" })], settings: undefined });
     const groupSame = withRow(withRow(withGroup(initialDraft(null, LOCAL_ID, FOUR), "官網"), "DTC", { label: "官網" }), "SOCIAL", { group: "g1" });
     expect(settingsFromDraft(groupSame, LOCAL_ID, FOUR)).toEqual({ problems: [fill(ui.validation.duplicateName, { name: "官網" })], settings: undefined });
-    // 示範資料：DTC 的顯示名稱留空（＝隱含預設「官網 · DTC」）、MARKETPLACE 改成同一個字串，仍擋下（隱含預設也算進查重）。
-    const demoClash = withRow(withRow(initialDraft(null, DEMO_ID, DEMO), "DTC", { label: "" }), "MARKETPLACE", { label: labels.data.demoChannelAlias.DTC });
+    // 示範資料：DTC 保留隱含預設的別名「官網 · DTC」（起始值）、MARKETPLACE 改成同一個字串，擋下（生效中的別名也算進查重）。
+    const demoClash = withRow(initialDraft(null, DEMO_ID, DEMO), "MARKETPLACE", { label: labels.data.demoChannelAlias.DTC });
     expect(settingsFromDraft(demoClash, DEMO_ID, DEMO)).toEqual({ problems: [fill(ui.validation.duplicateName, { name: labels.data.demoChannelAlias.DTC })], settings: undefined });
+    // DTC 清空（＝顯示代碼，別名不再生效）後，MARKETPLACE 用那個字串就不衝突：DTC 寫成 label＝代碼、MARKETPLACE 寫成那個名稱。
+    const demoFreed = withRow(demoClash, "DTC", { label: "" });
+    expect(settingsFromDraft(demoFreed, DEMO_ID, DEMO)).toEqual({ problems: [], settings: settingsOf([{ code: "DTC", label: "DTC" }, { code: "MARKETPLACE", label: labels.data.demoChannelAlias.DTC }]) });
     // NFC：組合字與預組字視為同一個名稱。
     const nfc = withRow(withRow(initialDraft(null, LOCAL_ID, FOUR), "DTC", { label: "café" }), "LIVE", { label: "café" });
     expect(settingsFromDraft(nfc, LOCAL_ID, FOUR).problems).toEqual([fill(ui.validation.duplicateName, { name: "café" })]);

@@ -305,7 +305,8 @@ function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec, charts: re
     ...technical(csvHeader("currency"), dataset.manifest.currency),
     ...technical(csvHeader("timezone"), dataset.manifest.timezone),
     // V42-1b（D-V42-15＝A）：「通路設定」對照列接在技術細節之後、「圖表資料」版本列之前；快照沒有通路設定時是空陣列（既有各列與位元組不變）。
-    ...channelSettingsRows(input),
+    // 與技術細節、圖表資料版本列同一個閘門（spec.appendix.technical；C34 的做法）：客戶報告版本來就不列技術細節，含通路代碼的對照列也不列。
+    ...(spec.appendix.technical ? channelSettingsRows(input) : []),
     // V4-9b（D-V4-12＝A）：「圖表資料」用到的每個 B 級版本常數（整理函式的版本），與技術細節同樣只在 spec.appendix.technical 時列（客戶報告版不列）。
     // 區塊寫「圖表資料」、放在技術細節各列之後：技術細節區的既有各列逐列不變（tests/breakeven-mer.test.ts 斷言那一區恰好 8 列）。
     ...(spec.appendix.technical ? charts.filter(chart => chart.arranged).map(chart => row(labels.exports.chartsV4.excel.sheet, fill(labels.exports.chartsV4.excel.basisVersion, { section: chart.section }), chart.version)) : []),
@@ -314,7 +315,7 @@ function basisSheet(input: ExcelExportInput, spec: ExportVariantSpec, charts: re
 }
 
 /**
- * V42-1b（D-V42-15＝A；PRD §12）：指標定義工作表的「通路設定」對照列——只在快照帶 channel_names／channel_groups（設定與預設有差）時才有，
+ * V42-1b（D-V42-15＝A；PRD §12）：指標定義工作表的「通路設定」對照列——只在快照帶 channel_names／channel_groups（設定與預設有差）且 spec.appendix.technical（標準版；客戶報告版不列）時才有，
  * 示範／golden 與沒有設定的匯出逐位元組不變。只加列不改欄：第一列是區塊「通路設定」（其餘兩格空），第二列是三個欄名（通路代碼、顯示名稱、群組），
  * 之後 manifest 的每個通路一列：代碼、顯示名稱（解析器；沒有名稱就是代碼）、群組名或「未分組」。順序＝orderedChannels（input.channelSettings 的 order；沒給設定時依代碼）。
  * 三格都是文字格：寫出時與其他文字格一樣經過 excelText（開頭是 = + - @、空白或控制字元時前面加 '），模型層保留原字串。

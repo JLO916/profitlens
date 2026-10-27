@@ -3173,9 +3173,11 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 .channel-settings-group { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--space-2) var(--space-3); align-items: end; padding-bottom: var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); }
 .channel-settings-group-members { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); overflow-wrap: anywhere; }
 .channel-settings-actions { flex-wrap: wrap; margin-top: var(--space-3); }
-.channel-settings-problems { display: grid; gap: var(--space-1); margin: var(--space-3) 0 0; padding-left: var(--space-5); }
+/* 規則句原樣引出使用者輸入的名稱：長而沒有空白的名稱要能折行（不橫向捲動）。 */
+.channel-settings-problems { display: grid; gap: var(--space-1); margin: var(--space-3) 0 0; padding-left: var(--space-5); overflow-wrap: anywhere; }
 .channel-settings-status { margin: var(--space-2) 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
-.channel-settings-status:empty { display: none; }
+/* 空字串時只收掉上邊距（空的 p 本來就 0 高）：role=status 的 live region 一直留在可及樹，內容換成句子時才會被唸出；不用 display: none（比照 .meeting-status:empty）。 */
+.channel-settings-status:empty { margin: 0; }
 .channel-settings-notes { margin-top: var(--space-3); }
 .channel-settings-notes > summary { cursor: pointer; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
 .channel-settings-notes[open] > summary { margin-bottom: var(--space-1); }
