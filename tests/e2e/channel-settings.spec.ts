@@ -124,7 +124,11 @@ test("V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在�
   await expect(groupNameInput(page, 1)).toHaveValue(GROUP_NAME);
   await expect(metaValue(page, labels.data.panel.meta.channels)).toHaveText(NEW_NAMES);
   await expect(metaValue(page, labels.data.panel.meta.scopeChannels)).toHaveText(NEW_NAMES);
-  await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, DTC_NAME, MARKETPLACE_NAME]);
+  // V42-2a（D-V42-10）：有群組時選單是兩層——optgroup「自有」（群組選項＋官網直營）與最後一組「未分組」（蝦皮商城）。
+  await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, GROUP_NAME, DTC_NAME, MARKETPLACE_NAME]);
+  await expect(channelFilter(page).locator("optgroup")).toHaveCount(2);
+  await expect(channelFilter(page).locator("optgroup").first()).toHaveAttribute("label", GROUP_NAME);
+  await expect(channelFilter(page).locator("optgroup").last()).toHaveAttribute("label", labels.shell.periodBarV42.ungrouped);
 
   await navigateTo(page, "overview");
   await expect(overviewRows(page)).toContainText([DTC_NAME, MARKETPLACE_NAME]);
@@ -148,7 +152,11 @@ test("V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在�
   await expect(storage(page).getByTestId("storage-notice")).toHaveText(storageCopy.restoredNotice);
   await closeStorage(page);
   await dismissSavePrompt(page);
-  await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, DTC_NAME, MARKETPLACE_NAME]);
+  // V42-2a（D-V42-10）：有群組時選單是兩層——optgroup「自有」（群組選項＋官網直營）與最後一組「未分組」（蝦皮商城）。
+  await expect(channelFilter(page).locator("option")).toHaveText([labels.shell.periodBar.filter.allChannels, GROUP_NAME, DTC_NAME, MARKETPLACE_NAME]);
+  await expect(channelFilter(page).locator("optgroup")).toHaveCount(2);
+  await expect(channelFilter(page).locator("optgroup").first()).toHaveAttribute("label", GROUP_NAME);
+  await expect(channelFilter(page).locator("optgroup").last()).toHaveAttribute("label", labels.shell.periodBarV42.ungrouped);
   await openEditor(page);
   await expect(labelInput(page, "DTC")).toHaveValue(DTC_NAME);
   await expect(labelInput(page, "MARKETPLACE")).toHaveValue(MARKETPLACE_NAME);

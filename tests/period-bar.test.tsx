@@ -319,7 +319,10 @@ describe("V42-2a channelSelectModel 與 channelsForOption（synthetic-4-channel 
     expect(source).toContain("const channelModel = active ? channelSelectModel({ snapshot: active.snapshot, manifestChannels: active.dataset.manifest.channels })");
     expect(source).toContain("channel={{ value: channelModel.value, options: channelModel.options, groups: channelModel.groups, subset: channelModel.subset, onChange: value => { const channels = channelsForOption(value, channelModel, active.dataset.manifest.channels); if (channels) void applyFilters({ ...active.snapshot.report.scope, channels }); } }}");
     expect(source).toContain("channelsText: channelModel.channelsText");
-    expect(source).toContain("void applyFilters({ ...active.snapshot.report.scope, channels: [channel] });");
+    expect(source).toContain("await applyFilters({ ...active.snapshot.report.scope, channels: [channel] });");
+    // 審查 R2-1：重算後把焦點移到期間列的通路選單（390 移到期間按鈕）。
+    expect(source).toContain("[data-testid='scope-select']");
+    expect(source).toContain("[data-testid='period-toggle']");
     expect(source.match(/onDrill=\{drillChannel\}/g)).toHaveLength(3);
     const helper = readFileSync(resolve("tests/helpers/page-states.tsx"), "utf8");
     expect(helper).toContain("const channelModel = channelSelectModel({ snapshot: active.snapshot, manifestChannels: active.dataset.manifest.channels });");
