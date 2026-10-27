@@ -22,6 +22,9 @@ import { FIXED_NOW, calculateKeepPreset, evidenceDrawer, goTo, loadDemo, navigat
 // 14、15 也各自是獨立的測試。
 // V41-2a（docs/revamp-v4.1/06_BATCHES.md V41-2a 第 5 項；01_PRD.md §3.10「畫面基準」）：再加一個畫面（視窗截圖 × 4 尺寸），共 64 張：
 //   16 功能區頁首屏：固定時鐘（同 14、15）開 /guide/overview（伺服器元件的靜態頁）；等視窗內的截圖都載入完成（第一張不 lazy，其餘 lazy 的若在視窗內也要載完）再拍，獨立的測試。
+// V42-1b（docs/revamp-v4.2/06_BATCHES.md V42-1b「允許變動畫面」；D-V42-8＝A）：再加一個畫面（元素截圖 × 4 尺寸），共 68 張：
+//   17 通路設定編輯器展開：載入示範資料、切到資料來源、點開「通路設定」<details>（channel-settings；預設收合，09 只多一行 summary；示範資料的顯示名稱起始值是隱含預設的別名、沒有群組），
+//      對 details 做元素截圖；帶 stylePath（同 10–13）；獨立的測試。v4.2 的基準位置在 verification/revamp-v42/${CAPTURE_BATCH}/snapshots/（verification/revamp-v42.capture.config.ts）。
 // 基準位置：verification/revamp-v4/${CAPTURE_BATCH}/snapshots/{project}/{名稱}.png（見 verification/revamp-v4.capture.config.ts）。
 // 用 expect.soft：一張不同不會擋住後面幾張，報告一次列出全部差異。
 const top = (page: Page) => page.evaluate(() => window.scrollTo(0, 0));
@@ -186,6 +189,23 @@ test("V41-2a 畫面基準 16 功能區頁首屏（/guide/overview）", async ({ 
   // 視窗內（與視窗相交）的每張截圖都載入完成、有像素，畫面才穩定；視窗外的 lazy 圖不影響視窗截圖。
   await expect.poll(() => page.evaluate(() => [...document.querySelectorAll("main img")].filter(img => { const rect = img.getBoundingClientRect(); return rect.bottom > 0 && rect.top < window.innerHeight; }).every(img => (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0)), { message: "視窗內的截圖都載入完成" }).toBe(true);
   await expect.soft(page).toHaveScreenshot("16-guide-overview.png");
+
+  expect(errors, `${errors.length} console／page errors`).toEqual([]);
+});
+
+test("V42-1b 畫面基準 17 通路設定編輯器展開", async ({ page }) => {
+  const errors = collectErrors(page);
+  await loadDemo(page);
+  await goTo(page, "data", page.getByTestId("targets-entry"));
+  const editor = page.getByTestId("channel-settings");
+  // 預設收合（畫面 09 只多一行 summary）；點 summary 展開後每個通路一列（示範資料：DTC、MARKETPLACE）。
+  await expect(editor).not.toHaveAttribute("open", "");
+  await editor.locator(":scope > summary").click();
+  await expect(editor).toHaveAttribute("open", "");
+  await expect(editor.getByTestId("channel-settings-row-DTC")).toBeVisible();
+  await expect(editor.getByTestId("channel-settings-row-MARKETPLACE")).toBeVisible();
+  await settle(page);
+  await expect.soft(editor).toHaveScreenshot("17-channel-settings.png", { stylePath: await noOverlayStylePath() });
 
   expect(errors, `${errors.length} console／page errors`).toEqual([]);
 });

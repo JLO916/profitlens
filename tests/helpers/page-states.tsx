@@ -16,6 +16,7 @@ import { parseEvents, type EventSet } from "@/application/events";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
+import { CHANNEL_SETTINGS_VERSION, type ChannelSettings } from "@/application/channel-settings";
 import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
 import { metricDefinitions } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
@@ -84,6 +85,8 @@ export type ShellState = {
   evidence?: EvidenceSelection;
   /** V4-8b（D-V4-44 B）：這一頁的程式 chunk 還在載入（loading，骨架＋main aria-busy）或載入失敗（failed，錯誤狀態）；有值時頁面內容不掛載（dashboard 的 ready＝false）。 */
   chunk?: "loading" | "failed";
+  /** V42-1b（D-V42-8＝A）：目前生效的通路設定（dashboard 的 Active.channel_settings → DataWorkspace 的 channelSettings）；沒給時 null，與 v4.1.3 相同。 */
+  channelSettings?: ChannelSettings | null;
 };
 
 const datasetNames: Record<string, string> = { demo: labels.shell.devValidation.datasets.demo, golden: labels.shell.devValidation.datasets.golden, "missing-cogs": labels.shell.devValidation.datasets.missingCogs };
@@ -119,7 +122,7 @@ export function shellPage(state: ShellState): ReactElement {
       case "meeting": return <MeetingPage source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={review} history={history} onChange={noop} onEvidence={noop} onRefreshSource={noop} onCreateAction={noop} onFinalize={asyncNoop} onRemoveMeeting={noop} />;
       case "diagnosis": return <><Diagnosis snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} events={active.events} /><AiCollapse capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }}><AiPanel capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }} snapshot={active.snapshot} revision={active.revision} onEvidence={noop} /></AiCollapse></>;
       case "products": return <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={noop} filenames={active.filenames} conversion={active.conversion} />;
-      case "data": return <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={[]} eventIssues={[]} onTargets={noop} onEvents={noop} onRemoveTargets={noop} onRemoveEvents={noop} onRemoveTargetRow={noop} onRemoveEventRow={noop} />;
+      case "data": return <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={[]} eventIssues={[]} channelSettings={state.channelSettings ?? null} onApplyChannelSettings={noop} onTargets={noop} onEvents={noop} onRemoveTargets={noop} onRemoveEvents={noop} onRemoveTargetRow={noop} onRemoveEventRow={noop} />;
       default: return null;
     }
   })();
@@ -198,6 +201,16 @@ async function manyChannelsActive(id: string): Promise<Active> {
   const dataset = validateDataset(input).dataset!;
   return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input)), id, revision: 1 };
 }
+
+/**
+ * V42-1b（D-V42-8＝A、D-V42-13＝A；docs/revamp-v4.2/06_BATCHES.md V42-1b 第 3 項）：4 通路合成資料的通路設定——顯示名稱 DTC 官網、SOCIAL 社群、MARKETPLACE 蝦皮、LIVE 直播；
+ * 群組 g1「自有」＝DTC＋SOCIAL、g2「平台」＝MARKETPLACE＋LIVE（id 是編輯器配的 g{n} 形式）。只給頁面狀態 data-channel-settings 與它的 M1 測試用，不進產品示範。
+ */
+export const SYNTHETIC_CHANNEL_SETTINGS: ChannelSettings = {
+  version: CHANNEL_SETTINGS_VERSION,
+  channels: [{ code: "DTC", label: "官網", group: "g1" }, { code: "SOCIAL", label: "社群", group: "g1" }, { code: "MARKETPLACE", label: "蝦皮", group: "g2" }, { code: "LIVE", label: "直播", group: "g2" }],
+  groups: [{ id: "g1", label: "自有", order: 0 }, { id: "g2", label: "平台", order: 1 }],
+};
 
 export type StateMarkup = { name: string; html: string; state: ShellState | null };
 export async function pageStates(): Promise<StateMarkup[]> {
@@ -437,6 +450,12 @@ export async function pageStates(): Promise<StateMarkup[]> {
     // G4 的固定高框是 .chart-frame.sm（180 px），通路數沒有上限（G7b、G10、G11 的 > 8 退化只在健檢頁）——9 列雙長條擠在同一個框內；緊湊表與資料表各 9 列、差額條 9 條
     // （chart-overview-channels-bar-CH01…CH09）。本狀態只給目視與 M1／M6，不改畫面；擁擠程度的量測見 verification/revamp-v42/V42-0-baseline.md。
     "overview-many-channels": { panel: "overview", active: await manyChannelsActive("many-channels"), status: "ready" },
+
+    // ── V42-1b 新增頁面狀態在此之後（docs/revamp-v4.2/06_BATCHES.md V42-1b 第 3 項；同批在 tests/mounted-testids.test.tsx 的「V42-1b 新增 M1 測試」錨點後加對應測試）──
+    // 資料來源＋4 通路合成資料加通路設定（D-V42-8＝A；SYNTHETIC_CHANNEL_SETTINGS：自有＝DTC＋SOCIAL、平台＝MARKETPLACE＋LIVE）：createSnapshot 帶第 4 個參數 settings，快照有 channel_names／channel_groups，
+    // 期間列的通路選項與「範圍與金額基準」的通路文字是顯示名稱；「通路設定」區（channel-settings）仍收合、內容掛載（M1），每列的顯示名稱欄＝設定的 label、群組 select 選到 g1／g2、
+    // 群組列 channel-settings-group-g1／g2（成員一行是顯示名稱）。filter_hash 與 dataset_hash 與 data-synthetic 相同（名稱不進雜湊）。
+    "data-channel-settings": { panel: "data", active: await (async () => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { input, dataset, snapshot: await createSnapshot(dataset, {}, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), id: "synthetic-settings", revision: 1 }; })(), status: "partial", channelSettings: SYNTHETIC_CHANNEL_SETTINGS },
 
   };
   const out: StateMarkup[] = [{ name: "shell-empty", html: renderToStaticMarkup(createElement(Dashboard, { analytics: true })), state: null }];
