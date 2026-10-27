@@ -126,10 +126,12 @@ export interface MeetingPageProps {
   targets?: Targets;
   /** V3-8（§7.10 表「會議沒有選入方案」）：「前往假設試算」切頁；沒給就只顯示標題與說明。 */
   onGoToScenarios?: () => void;
+  /** V42-2a（D-V42-2）：議程 3 通路寬表通路格的「只看這個通路」——dashboard 以該通路重算目前檢視（applyFilters）；傳給 ManagerSummary，按鈕只在資料集有群組時渲染。 */
+  onDrill?: (channel: string) => void;
 }
 type FocusTarget = { focus: () => void } | null;
 
-export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review, history, onChange, onEvidence, onCreateAction, onRefreshSource, onFinalize, onRemoveMeeting, summaryContext, conversion = null, targets = null, onGoToScenarios }: MeetingPageProps) {
+export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review, history, onChange, onEvidence, onCreateAction, onRefreshSource, onFinalize, onRemoveMeeting, summaryContext, conversion = null, targets = null, onGoToScenarios, onDrill }: MeetingPageProps) {
   const [error, setError] = useState<{ at: "basics" | "scenarios" | "decision"; text: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
@@ -339,7 +341,7 @@ export function MeetingPage({ source, scenarioWorkspace, actionWorkspace, review
         <section className="meeting-agenda" data-testid="meeting-agenda" aria-labelledby="meeting-agenda-title">
           <div className="meeting-agenda-head"><h2 id="meeting-agenda-title">{labels.meeting.sections.meetingAgenda}</h2><p className="meeting-agenda-note">{page.agendaNote}</p></div>
           <ol className="meeting-agenda-list" data-testid={ready ? "manager-summary" : undefined}>
-            {ready ? <ManagerSummary key={`${review.id}-${ready.key}`} snapshot={ready.snapshot} conversion={reviewConversion} targets={reviewTargets} decisionContext={context} selectionManaged outputs={false} decisions={false} agenda={{ kpis: record.agenda.kpis, priorities: record.agenda.priorities, channels: record.agenda.channels, channelSummary: pageV3.fullChannelTable, missingItems: ready.dataset.issues.length }} meeting={{ name: review.name, date }} reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange: value => apply({ importance_threshold: value }, "basics") }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} />
+            {ready ? <ManagerSummary key={`${review.id}-${ready.key}`} snapshot={ready.snapshot} conversion={reviewConversion} targets={reviewTargets} decisionContext={context} selectionManaged outputs={false} decisions={false} agenda={{ kpis: record.agenda.kpis, priorities: record.agenda.priorities, channels: record.agenda.channels, channelSummary: pageV3.fullChannelTable, missingItems: ready.dataset.issues.length }} meeting={{ name: review.name, date }} reviewControls={{ importanceThreshold: review.importance_threshold, onThresholdChange: value => apply({ importance_threshold: value }, "basics") }} onEvidence={selection => onEvidence(selection, review)} onCreateAction={onCreateAction ? diagnostic => onCreateAction(diagnostic, review) : undefined} onDrill={onDrill} />
               : AGENDA_TITLES.slice(0, 3).map((title, index) => <AgendaItem key={title} n={index + 1} title={title}>{index > 0 ? <p className="meeting-agenda-note">{failed ? copy.sourceRebuildError : copy.rebuilding}</p> : failed ? <p role="alert">{copy.sourceRebuildError}</p> : <p role="status">{copy.rebuilding}</p>}</AgendaItem>)}
             {/* 4 上次決議追蹤（C3 列）：即時比較用 compareWithLastMeeting。 */}
             <AgendaItem n={4} title={record.agenda.followUp}>{comparison ? comparison.last ? <FollowUp name={comparison.last.name} date={comparison.last.date} decisions={comparison.decisions} actions={comparison.actions} testId="meeting-followup" /> : <p className="meeting-agenda-note">{record.noLastMeeting}</p> : failed ? <p className="meeting-agenda-note">{copy.sourceRebuildError}</p> : <p role="status">{copy.rebuilding}</p>}</AgendaItem>

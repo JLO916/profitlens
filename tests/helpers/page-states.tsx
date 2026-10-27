@@ -17,7 +17,6 @@ import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { CHANNEL_SETTINGS_VERSION, type ChannelSettings } from "@/application/channel-settings";
-import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
 import { metricDefinitions } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
 import type { WorkspaceBackupSource } from "@/application/workspace-backup";
@@ -27,7 +26,7 @@ import { ShellFrame, type ShellPanel } from "@/components/shell/shell-frame";
 import { ExportMenu } from "@/components/shell/export-menu";
 import { PageHeader, ShellFooter } from "@/components/shell/page-chrome";
 import { ErrorState, FirstRunState, PanelErrorState, PanelLoadingState } from "@/components/shell/page-states";
-import { NeedsAttention, PeriodBar } from "@/components/shell/period-bar";
+import { channelSelectModel, NeedsAttention, PeriodBar } from "@/components/shell/period-bar";
 import { Overview } from "@/components/overview";
 import { Diagnosis, DataWorkspace } from "@/components/workspace-panels";
 import { AiPanel } from "@/components/ai-panel";
@@ -103,8 +102,9 @@ export function shellPage(state: ShellState): ReactElement {
   // V4-8b：dashboard 的 usePanelReady／panelWaiting（這裡沒有匯入中的 chunk 狀態）。
   const ready = !state.chunk;
   const local = active.dataset.manifest.source_type === "user_provided";
-  const resolver = snapshotResolver(active.snapshot);
   const report = active.snapshot.report;
+  // V42-2a（D-V42-10）：期間列的通路選單模型與 dashboard 同一個函式（有群組的快照——data-channel-settings 等狀態——SSR 才會畫出 <optgroup>）。
+  const channelModel = channelSelectModel({ snapshot: active.snapshot, manifestChannels: active.dataset.manifest.channels });
   // performLoad／activate：表單日期與比較方式取自快照。
   const dates = { previousStart: report.previous.period.start, previousEnd: report.previous.period.end, currentStart: report.current.period.start, currentEnd: report.current.period.end };
   const comparisonMode = report.scope.comparison_mode;
@@ -118,9 +118,9 @@ export function shellPage(state: ShellState): ReactElement {
   const yoyReason = presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null;
   const content = (() => {
     switch (panel) {
-      case "overview": return <Overview snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} periodOpen={false} onPeriodToggle={noop} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={noop} onNavigate={noop} datasetName={datasetName} missingItems={active.dataset.issues.length} actionsSummary={{ pending: actionWorkspace.items.filter(item => item.execution_status !== "completed").length, pinned: actionWorkspace.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) }} meetingEntry={<MeetingEntry review={review} history={history} datasetHash={active.snapshot.dataset_hash} onOpen={noop} />} />;
-      case "meeting": return <MeetingPage source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={review} history={history} onChange={noop} onEvidence={noop} onRefreshSource={noop} onCreateAction={noop} onFinalize={asyncNoop} onRemoveMeeting={noop} />;
-      case "diagnosis": return <><Diagnosis snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} events={active.events} /><AiCollapse capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }}><AiPanel capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }} snapshot={active.snapshot} revision={active.revision} onEvidence={noop} /></AiCollapse></>;
+      case "overview": return <Overview snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} periodOpen={false} onPeriodToggle={noop} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={noop} onNavigate={noop} datasetName={datasetName} missingItems={active.dataset.issues.length} actionsSummary={{ pending: actionWorkspace.items.filter(item => item.execution_status !== "completed").length, pinned: actionWorkspace.items.filter(item => item.pinned).slice(0, 3).map(item => ({ problem: item.card.problem, owner: item.card.owner_role, deadline: item.card.deadline })) }} meetingEntry={<MeetingEntry review={review} history={history} datasetHash={active.snapshot.dataset_hash} onOpen={noop} />} onDrill={noop} />;
+      case "meeting": return <MeetingPage source={active} conversion={active.conversion} targets={{ set: active.targets ?? null, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={review} history={history} onChange={noop} onEvidence={noop} onRefreshSource={noop} onCreateAction={noop} onFinalize={asyncNoop} onRemoveMeeting={noop} onDrill={noop} />;
+      case "diagnosis": return <><Diagnosis snapshot={active.snapshot} onEvidence={noop} onCreateAction={noop} events={active.events} onDrill={noop} /><AiCollapse capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }}><AiPanel capability={{ available: false, reason: "PUBLIC_DEMO", provider: "openai" }} snapshot={active.snapshot} revision={active.revision} onEvidence={noop} /></AiCollapse></>;
       case "products": return <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={noop} filenames={active.filenames} conversion={active.conversion} />;
       case "data": return <DataWorkspace dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={[]} eventIssues={[]} channelSettings={state.channelSettings ?? null} onApplyChannelSettings={noop} onTargets={noop} onEvents={noop} onRemoveTargets={noop} onRemoveEvents={noop} onRemoveTargetRow={noop} onRemoveEventRow={noop} />;
       default: return null;
@@ -140,10 +140,10 @@ export function shellPage(state: ShellState): ReactElement {
         <PageHeader title={panelCopy(panel).headline} description={panelCopy(panel).explain} isData={panel === "data"} showLoadDemo onLoadDemo={noop} onImport={noop} presentToggle={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary" data-testid="present-toggle" onClick={noop}>{labels.shell.presentV3.enter}</button> : undefined} presentSwitch={panel === "overview" || panel === "meeting" ? <button type="button" className="ui-btn ui-btn-secondary present-switch" data-testid="present-switch" onClick={noop}>{labels.shell.nav[panel === "meeting" ? "overview" : "meeting"].headline}</button> : undefined} />
         {state.showImport && <div hidden={panel !== "data"}><ImportWizard onCommit={asyncNoop} onCancel={noop} busy={false} localSaveConsented={state.consent ?? true} initialState={state.wizardState} /></div>}
         <PeriodBar
-          channel={{ value: report.scope.channels.length > 1 ? "" : report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, resolver) })), onChange: noop }}
+          channel={{ value: channelModel.value, options: channelModel.options, groups: channelModel.groups, subset: channelModel.subset, onChange: noop }}
           presets={presets} isPressed={presetMatches} onPreset={noop}
           comparisonMode={comparisonMode} onComparisonMode={noop} dates={dates} onDates={noop} onSubmit={noop}
-          scope={{ previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channelsLabel(report.scope.channels, resolver), dataAsOf: active.snapshot.data_as_of }} />
+          scope={{ previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channelModel.channelsText, dataAsOf: active.snapshot.data_as_of }} />
         <NeedsAttention filterError={state.filterError ?? ""} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={noop} yoyReason={yoyReason} />
         {state.chunk === "loading" && <PanelLoadingState />}
         {state.chunk === "failed" && <PanelErrorState onRetry={noop} />}

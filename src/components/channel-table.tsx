@@ -21,7 +21,9 @@ export type ChannelTableVariant = "default" | "diagnosis";
 
 interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: EvidenceSelection) => void; ariaLabel: string; caption: string; variant?: ChannelTableVariant;
   /** V4-3a（G7b，代理 B 接線）：健檢頁傳入快照，通路寬表 diagnosis 變體的「近 {n} 週」由它在元件內 useMemo 計算；會議摘要不傳。 */
-  snapshot?: WorkspaceSnapshot }
+  snapshot?: WorkspaceSnapshot;
+  /** V42-2a（D-V42-2；PRD §4.2）：通路格的「只看這個通路」（channel-drill-{code}）；兩個變體都只在傳入的 snapshot.channel_groups 有群組且範圍通路數 > 1 時渲染（沒傳快照就不渲染）。接線先到，按鈕由同批的稽核修法一併加。 */
+  onDrill?: (channel: string) => void }
 
 /**
  * 通路寬表（上期／本期／差額）。R1 起同時用於通路健檢頁頂與會議摘要；數字一律可開「計算與來源」。欄名由 labels.shell.periods 與 metricDefinitions 組成，示範資料的通路名僅在顯示層套 alias。
@@ -30,8 +32,8 @@ interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: E
  * V4-3a G7b：diagnosis 變體在傳入 snapshot 時，扣廣告後貢獻欄群組與備註欄之間多一欄「近 {n} 週」sparkline，表格之後多一個收合的「各通路每週」資料表；
  * 通路 > 8 時兩者都不渲染（也不計算），改為表格之後一句說明。default 變體（會議摘要）不變。
  */
-export function ChannelWideTable({ summary, onEvidence, ariaLabel, caption, variant = "default", snapshot }: ChannelWideTableProps) {
-  if (variant === "diagnosis") return <DiagnosisChannelTable summary={summary} onEvidence={onEvidence} ariaLabel={ariaLabel} caption={caption} snapshot={snapshot} />;
+export function ChannelWideTable({ summary, onEvidence, ariaLabel, caption, variant = "default", snapshot, onDrill }: ChannelWideTableProps) {
+  if (variant === "diagnosis") return <DiagnosisChannelTable summary={summary} onEvidence={onEvidence} ariaLabel={ariaLabel} caption={caption} snapshot={snapshot} onDrill={onDrill} />;
   const resolver = snapshot && snapshot.report.dataset_id === summary.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, summary.dataset_id);
   const columnHeaders = (["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.shell.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.shell.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.exports.csv.suffix.change}`]);
   // V3-10 收尾：可及名稱含可見數字（Lighthouse label-content-name-mismatch；抽屜標題 evidence.title 不變）。

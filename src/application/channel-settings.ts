@@ -12,7 +12,8 @@ export interface ChannelSettings { version: typeof CHANNEL_SETTINGS_VERSION; cha
 export type ChannelNames = Readonly<Record<string, string>>;
 /** 群組在快照裡的身分是成員代碼的集合（members 已排序）；id 是設定裡的穩定值，改名不改 id。 */
 export interface ResolvedChannelGroup { id: string; label: string; members: string[] }
-export interface NameResolver { channel(code: string): string; category(code: string): string; names: ChannelNames }
+/** V42-2a：groups＝快照的 channel_groups（沒有設定時 []），讓範圍文字認得群組（copy.ts 的 scopeChannelsLabel、scopeLabel、scopeDetailText）。 */
+export interface NameResolver { channel(code: string): string; category(code: string): string; names: ChannelNames; groups: readonly ResolvedChannelGroup[] }
 export interface ChannelSettingsValidation { settings: ChannelSettings; droppedCodes: string[]; invalidNames: string[] }
 
 /** v4.1.2 copy.ts 的 demoAlias 的同一條規則（整合後只剩這裡）：dataset_id 以 synthetic-demo 開頭才套示範別名。 */
@@ -23,6 +24,10 @@ export function isDemoDataset(datasetId: string): boolean {
 /** 顯示名稱與群組名沿用通路代碼的四條規則（import-guidance.ts:58）：去頭尾空白後非空、前後沒有空格、≤ 200 字、沒有控制字元。 */
 export function isValidChannelName(name: string): boolean {
   return name.trim().length > 0 && name === name.trim() && name.length <= 200 && !/[\u0000-\u001f\u007f]/.test(name);
+}
+/** V42-2a（PRD §4.1）：通路代碼含控制字元時視為不可分組（精靈不接受這種代碼；手寫 manifest 帶進來的只能單獨看）。群組選項值的前綴是控制字元，所以兩者不會碰撞。 */
+export function isGroupableChannelCode(code: string): boolean {
+  return !/[\u0000-\u001f\u007f]/.test(code);
 }
 const nfc = (value: string) => value.normalize("NFC");
 
@@ -45,6 +50,7 @@ const integerOrUndefined = (value: unknown): number | undefined => typeof value 
  * - 顯示名稱與群組名依四條規則驗證、存成 NFC；不合規則的名稱回報（invalidNames）：通路只丟掉 label，群組整個丟掉（群組沒有名稱就沒有意義）。
  * - 不重複：先把每個 manifest 代碼當成已占用（名稱可以等於自己的代碼，但不可等於別的通路代碼），再依輸入順序接受通路 label、最後是群組名；撞到的丟掉並回報。
  * - group 指到不存在的群組就丟掉；order 強制成整數，不是有限數字就丟掉（群組的 order 缺時用位置）。
+ * - V42-2a：代碼含控制字元的通路不可分組，group 丟掉（代碼不是名稱，不列入 invalidNames）。
  */
 export function validateChannelSettings(input: unknown, manifestChannels: readonly string[]): ChannelSettingsValidation {
   const droppedCodes: string[] = [], invalidNames: string[] = [];
@@ -70,7 +76,7 @@ export function validateChannelSettings(input: unknown, manifestChannels: readon
     seen.add(item.code);
     const entry: ChannelSetting = { code: item.code };
     if (typeof item.label === "string") { if (isValidChannelName(item.label)) entry.label = nfc(item.label); else invalidNames.push(item.label); }
-    if (typeof item.group === "string" && groupIds.has(item.group)) entry.group = item.group;
+    if (typeof item.group === "string" && groupIds.has(item.group) && isGroupableChannelCode(item.code)) entry.group = item.group;
     const order = integerOrUndefined(item.order);
     if (order !== undefined) entry.order = order;
     channels.push(entry);
@@ -126,13 +132,13 @@ export function resolveChannelNames(settings: ChannelSettings | null | undefined
   return names;
 }
 
-/** 群組依成員集合解析（成員排序，與輸入順序無關）；沒有成員的群組不出現；依 order 再 id 排序。 */
+/** 群組依成員集合解析（成員排序，與輸入順序無關）；沒有成員的群組不出現；依 order 再 id 排序。V42-2a：代碼含控制字元的通路不列為成員。 */
 export function resolveChannelGroups(settings: ChannelSettings | null | undefined, manifestChannels: readonly string[]): ResolvedChannelGroup[] {
   if (!settings) return [];
   const known = new Set(manifestChannels);
   return [...settings.groups]
     .sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-    .map(group => ({ id: group.id, label: group.label, members: settings.channels.filter(entry => entry.group === group.id && known.has(entry.code)).map(entry => entry.code).sort() }))
+    .map(group => ({ id: group.id, label: group.label, members: settings.channels.filter(entry => entry.group === group.id && known.has(entry.code) && isGroupableChannelCode(entry.code)).map(entry => entry.code).sort() }))
     .filter(group => group.members.length > 0);
 }
 
@@ -144,12 +150,13 @@ export function orderedChannels(settings: ChannelSettings | null | undefined, ma
   return [...manifestChannels].sort((a, b) => key(a) - key(b) || (a < b ? -1 : a > b ? 1 : 0));
 }
 
-/** 名稱解析器：channel(code)＝names[code] 或代碼；category 只有示範資料套既有 demoCategoryAlias。names 沒給時用該資料集的隱含預設。 */
-export function makeResolver(names: ChannelNames | undefined, datasetId: string): NameResolver {
+/** 名稱解析器：channel(code)＝names[code] 或代碼；category 只有示範資料套既有 demoCategoryAlias。names 沒給時用該資料集的隱含預設。V42-2a：第 3 個參數 groups（快照的 channel_groups；預設 []）。 */
+export function makeResolver(names: ChannelNames | undefined, datasetId: string, groups: readonly ResolvedChannelGroup[] = []): NameResolver {
   const demo = isDemoDataset(datasetId);
   const map: ChannelNames = names ?? (demo ? labels.data.demoChannelAlias : {});
   return {
     names: map,
+    groups,
     channel: code => map[code] || code,
     category: code => (demo && labels.data.demoCategoryAlias[code]) || code,
   };
@@ -164,4 +171,45 @@ export function snapshotChannelFields(settings: ChannelSettings | null | undefin
   const normalized = normalizeChannelSettings(validateChannelSettings(settings, manifestChannels).settings, defaultChannelSettings(datasetId, manifestChannels));
   if (!normalized) return null;
   return { channel_names: resolveChannelNames(normalized, datasetId, manifestChannels), channel_groups: resolveChannelGroups(normalized, manifestChannels) };
+}
+
+// ── V42-2a（PRD §4.1、§4.2；D-V42-10）：群組查找、期間列選項值的編碼與選取值。純函式、不含中文；沒有 Scope.kind "group"（D-V42-12），群組只是成員代碼的集合。
+
+/** channels 的集合恰好等於某群組 members 的集合（排序後逐一比對；空陣列回 null）。 */
+export function findGroupByMembers(groups: readonly ResolvedChannelGroup[], channels: readonly string[]): ResolvedChannelGroup | null {
+  const wanted = [...new Set(channels)].sort();
+  if (wanted.length === 0) return null;
+  return groups.find(group => { const members = [...new Set(group.members)].sort(); return members.length === wanted.length && members.every((code, index) => code === wanted[index]); }) ?? null;
+}
+/** 成員含 code 的群組（一個通路至多屬於一個群組）；不在任何群組回 null。 */
+export function findGroupOfChannel(groups: readonly ResolvedChannelGroup[], code: string): ResolvedChannelGroup | null {
+  return groups.find(group => group.members.includes(code)) ?? null;
+}
+/** 期間列群組選項值的前綴（控制字元；通路代碼不含控制字元——isValidChannelName、isGroupableChannelCode——所以不會與任何代碼碰撞）。 */
+export const GROUP_OPTION_PREFIX = "\u0001";
+/** 範圍是子集但沒有對應群組時的只讀選項值（同樣以控制字元開頭）。 */
+export const SUBSET_OPTION_VALUE = "\u0002subset";
+export function groupOptionValue(groupId: string): string {
+  return GROUP_OPTION_PREFIX + groupId;
+}
+/** 有前綴才回群組 id；通路代碼、空字串（全部通路）與子集選項值都回 null。 */
+export function groupIdOfOption(value: string): string | null {
+  if (!value.startsWith(GROUP_OPTION_PREFIX)) return null;
+  const id = value.slice(GROUP_OPTION_PREFIX.length);
+  return id.length > 0 ? id : null;
+}
+/** 期間列的選取值：範圍的通路集合對到全部、單一通路、某個群組，或都不是的子集（count＝通路數）。 */
+export type ChannelSelection = { kind: "all" } | { kind: "channel"; code: string } | { kind: "group"; group: ResolvedChannelGroup } | { kind: "subset"; count: number };
+/**
+ * 優先順序（PRD §4.1）：(1) 集合等於 allChannels 的集合 → all（就算有群組包含全部通路）；(2) 恰好一個 → channel（就算該通路自己是只有一個成員的群組）；
+ * (3) findGroupByMembers 命中 → group；(4) 其餘 → subset。
+ */
+export function channelSelection(channels: readonly string[], allChannels: readonly string[], groups: readonly ResolvedChannelGroup[]): ChannelSelection {
+  const selected = new Set(channels);
+  const everything = new Set(allChannels);
+  if (selected.size > 0 && selected.size === everything.size && [...everything].every(code => selected.has(code))) return { kind: "all" };
+  if (selected.size === 1) return { kind: "channel", code: [...selected][0] };
+  const group = findGroupByMembers(groups, channels);
+  if (group) return { kind: "group", group };
+  return { kind: "subset", count: selected.size };
 }

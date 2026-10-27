@@ -2,7 +2,7 @@ import { formatCents, parseCents } from "../domain/money";
 import type { Diagnostic, Fact, Metric, RuleCode, Scope } from "../domain/types";
 import { labels } from "../i18n";
 import { ruleCopy, scopeLabel, snapshotResolver } from "./copy";
-import type { NameResolver } from "./channel-settings";
+import { findGroupByMembers, type NameResolver } from "./channel-settings";
 import type { WorkspaceSnapshot } from "./workspace";
 
 // R5-1／R5-2 健檢清單化（docs/revamp/05_FEATURES.md §7）：把 Diagnostic[] 合併成「一個規則一列」。
@@ -84,9 +84,10 @@ function groupOrder(a: DiagnosisGroup, b: DiagnosisGroup): number {
   return aa > bb ? -1 : aa < bb ? 1 : compareText(a.rule, b.rule);
 }
 
-/** 畫面範圍標籤：合計顯示「合計」，通路顯示通路名，SKU 顯示「通路／SKU」（名稱由解析器決定；示範資料套別名）。 */
+/** 畫面範圍標籤：合計顯示「合計」（V42-2a：合計範圍等於某群組的成員時顯示群組名），通路顯示通路名（群組內單一通路寫「{群組名} · {通路名}」），SKU 顯示「通路／SKU」（名稱由解析器決定；示範資料套別名）。 */
 export function diagnosisScopeLabel(scope: Scope, resolver: NameResolver): string {
-  return scope.kind === "all" ? labels.overview.sections.total : scopeLabel(scope, resolver);
+  if (scope.kind !== "all") return scopeLabel(scope, resolver);
+  return findGroupByMembers(resolver.groups, scope.channels)?.label ?? labels.overview.sections.total;
 }
 
 /** summary 只列前 limit 個範圍標籤；more＝其餘個數（0 表示全部列出）。 */
@@ -96,7 +97,7 @@ export function summaryScopes(group: Pick<DiagnosisGroup, "scopes">, limit = SUM
 }
 
 /** Presentation-only grouping. Rules, totals, facts and financial formulas stay unchanged. */
-export function diagnosisGroups(snapshot: Pick<WorkspaceSnapshot, "report" | "channel_names">, options: { importanceThreshold?: string } = {}): DiagnosisGroupResult {
+export function diagnosisGroups(snapshot: Pick<WorkspaceSnapshot, "report" | "channel_names" | "channel_groups">, options: { importanceThreshold?: string } = {}): DiagnosisGroupResult {
   const threshold = parseImportanceThreshold(options.importanceThreshold);
   const { report } = snapshot;
   const resolver = snapshotResolver(snapshot);

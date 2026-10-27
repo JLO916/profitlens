@@ -47,6 +47,8 @@ export interface ManagerSummaryProps {
   meeting?: PrintMeeting | null;
   /** R6-2：false 時不顯示「方案與待辦」與其他待辦附錄（會議紀錄頁改在議程 ⑤⑥ 列出）。預設 true。 */
   decisions?: boolean;
+  /** V42-2a（D-V42-2）：通路寬表通路格的「只看這個通路」——傳給兩處 ChannelWideTable（會議摘要與議程 3）；按鈕只在資料集有群組時渲染。 */
+  onDrill?: (channel: string) => void;
 }
 
 // V4-3c：toneClass 搬到 tone-class.ts（試算頁在首載只用到它），這裡再匯出，既有的匯入路徑不變。
@@ -74,7 +76,7 @@ export function AgendaItem({ n, title, children }: { n: number; title: string; c
   return <li className="meeting-agenda-entry"><section className="meeting-agenda-item" id={id} data-testid={id} aria-labelledby={`${id}-title`}><h3 id={`${id}-title`} className="meeting-agenda-title">{title}</h3>{children}</section></li>;
 }
 
-export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreateAction, reviewControls, selectionManaged = false, conversion = null, targets = null, outputs = true, agenda, meeting = null, decisions: showDecisions = true }: ManagerSummaryProps) {
+export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreateAction, reviewControls, selectionManaged = false, conversion = null, targets = null, outputs = true, agenda, meeting = null, decisions: showDecisions = true, onDrill }: ManagerSummaryProps) {
   const [thresholdInput, setThresholdInput] = useState(reviewControls?.importanceThreshold ?? "0.00");
   const [threshold, setThreshold] = useState("0.00");
   const [error, setError] = useState("");
@@ -90,7 +92,7 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
   const amount = (evidence: SummaryEvidence, signed = false, text?: string, tone: DeltaTone = "neutral") => { const shown = text ?? (signed ? formatSignedDelta(evidence.metric.value, "L1", emptyKindOf(evidence.metric.reason_codes)) : formatAmountL1(evidence.metric.value, emptyKindOf(evidence.metric.reason_codes))); return <button type="button" className={tone === "neutral" ? "number-link" : `number-link ${toneClass(tone)}`} onClick={() => onEvidence(evidence)} aria-label={fill(labels.meeting.pageV3.linkAria, { title: evidence.title, value: shown })}>{shown}</button>; };
   // 門檻表單（總覽三件事的門檻是另一份 state，兩者不共用；會議門檻經 reviewControls 存進會議稿的 importance_threshold）。
   const submitThreshold = (event: { preventDefault: () => void }) => { event.preventDefault(); try { const checked = buildManagerSummary(snapshot, { importanceThreshold: thresholdInput }); setThreshold(checked.importance_threshold); reviewControls?.onThresholdChange(checked.importance_threshold); setThresholdInput(checked.importance_threshold); setError(""); } catch { setError(labels.overview.notes.thresholdInvalid); } };
-  if (agenda) return <AgendaSummary summary={summary} snapshot={snapshot} agenda={agenda} threshold={thresholdInput} onThresholdInput={setThresholdInput} onThresholdSubmit={submitThreshold} error={error} persistNote={reviewControls ? copy.persistNoteManaged : copy.persistNoteLocal} amount={amount} onEvidence={onEvidence} onCreateAction={onCreateAction} />;
+  if (agenda) return <AgendaSummary summary={summary} snapshot={snapshot} agenda={agenda} threshold={thresholdInput} onThresholdInput={setThresholdInput} onThresholdSubmit={submitThreshold} error={error} persistNote={reviewControls ? copy.persistNoteManaged : copy.persistNoteLocal} amount={amount} onEvidence={onEvidence} onCreateAction={onCreateAction} onDrill={onDrill} />;
   return <section className={`panel ${styles.summary}`} data-testid="manager-summary" aria-labelledby="manager-summary-title">
     <div className="section-heading"><div><h2 id="manager-summary-title">{copy.title}</h2></div><span className="tag">{decisionContext?.decisionState ?? copy.draftDecision}</span></div>
     <p className={styles.context}>{fill(copy.context, { asOf: summary.data_as_of, channels: channelsLabel(summary.scope.channels, resolver) })}</p>
@@ -102,7 +104,7 @@ export function ManagerSummary({ snapshot, onEvidence, decisionContext, onCreate
     {error && <p role="alert">{error}</p>}
     {summary.priorities.length ? <ol className={styles.priorities}>{summary.priorities.map(item => { const rule = ruleCopy(snapshot, item.primary, resolver); return <li key={item.code} data-testid={`manager-priority-${item.code}`}><div className={styles.priorityTitle}><h4>{rule.headline}</h4></div><p className="top-three-impact"><span>{labels.overview.sections.impact}</span>{item.code === "MISSING_CRITICAL_DATA" ? amount(item.evidence, true) : <ImpactAmount snapshot={snapshot} diagnostic={item.primary} onEvidence={onEvidence} />}</p><p className="note">{scopeLabel(item.primary.scope, resolver)} · {item.code === "MISSING_CRITICAL_DATA" ? copy.missingDataNote : copy.rankingNote}</p><p>{rule.nextStep}</p>{item.members.length > 1 && <details><summary>{fill(copy.relatedScopes, { n: item.members.length - 1 })}</summary><ul>{item.members.slice(1).map(member => <li key={member.id}>{scopeLabel(member.scope, resolver)}：{item.code === "MISSING_CRITICAL_DATA" ? amount(priorityEvidence(snapshot, member), true) : <ImpactAmount snapshot={snapshot} diagnostic={member} onEvidence={onEvidence} />}</li>)}</ul><p className="note">{labels.overview.notes.scopesNotAdditive}</p></details>}{onCreateAction && <button type="button" className="button quiet" onClick={() => onCreateAction(item.primary)}>{labels.actions.buttons.addToActions}</button>}</li>; })}</ol> : <p role="status">{labels.overview.notes.noPriorities}</p>}
     <p className="note">{fill(labels.overview.notes.omittedGroups, { n: summary.omitted_group_count })}</p>
-    <details className={styles.wideTable} open><summary>{copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} snapshot={snapshot} /></details>
+    <details className={styles.wideTable} open><summary>{copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} onDrill={onDrill} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} snapshot={snapshot} /></details>
     {showDecisions && <><div className={styles.decisions}><h3>{copy.decisionsHeading}</h3>{!selectionManaged && decisions.scenarios.length > 0 && <label>{copy.selectedScenario}<select aria-label={copy.selectedScenario} value={decisions.selected?.id ?? ""} onChange={event => setSelected(event.target.value)}><option value="">{copy.noneSelected}</option>{decisions.scenarios.map(plan => <option key={plan.id} value={plan.id} disabled={plan.status !== "current"}>{fill(copy.scenarioOption, { name: plan.name, statusOrScope: plan.status === "current" ? plan.scopeLabel : plan.status === "stale" ? copy.scenarioStale : labels.meeting.form.decisions.draft })}</option>)}</select></label>}{decisions.selectedScenarios.length ? <>{decisions.selectedScenarios.map(plan => <div key={plan.id}><p>{fill(copy.scenarioLine, { name: plan.name, scope: plan.scopeLabel, baseline: formatAmountL1(plan.baseline ?? null), contribution: formatAmountL1(plan.contribution ?? null), delta: formatSignedDelta(plan.delta ?? null, "L1") })}</p><details><summary>{labels.scenarios.sections.scenarioAssumptions}</summary><ul>{plan.assumptions.map((assumption, index) => <li key={index}>{assumption}</li>)}</ul></details></div>)}<p className="note">{copy.scenarioNote}</p></> : <p className="note">{copy.noScenario}</p>}{decisions.mainActions.length ? <ActionSummaryList actions={decisions.mainActions} /> : <p className="note">{decisions.appendixActions.length ? copy.unpinnedNotice : copy.noActions}</p>}</div>
     {decisions.appendixActions.length > 0 && <details><summary>{fill(copy.appendixActions, { n: decisions.appendixActions.length })}</summary><ActionSummaryList actions={decisions.appendixActions} /></details>}</>}
     <details><summary>{labels.evidence.sections.technicalDetails}</summary><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}</ul></details>
@@ -118,6 +120,8 @@ interface AgendaSummaryProps {
   summary: SummaryData; snapshot: WorkspaceSnapshot; agenda: NonNullable<ManagerSummaryProps["agenda"]>;
   threshold: string; onThresholdInput: (value: string) => void; onThresholdSubmit: (event: { preventDefault: () => void }) => void; error: string; persistNote: string;
   amount: AmountLink; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void;
+  /** V42-2a：議程 3 的完整通路寬表的「只看這個通路」（同 ManagerSummaryProps.onDrill）。 */
+  onDrill?: (channel: string) => void;
 }
 
 /**
@@ -127,7 +131,7 @@ interface AgendaSummaryProps {
  *   門檻表單收在「調整門檻」details（會議自己的 importance_threshold，與總覽三件事的門檻互不影響）。
  * 3 各通路表現：精簡表（通路、本期扣廣告後貢獻、差額，L2 number-link）＋「完整通路寬表」details（ChannelWideTable default 變體）。
  */
-function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput, onThresholdSubmit, error, persistNote, amount, onEvidence, onCreateAction }: AgendaSummaryProps) {
+function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput, onThresholdSubmit, error, persistNote, amount, onEvidence, onCreateAction, onDrill }: AgendaSummaryProps) {
   const resolver = snapshotResolver(snapshot);
   const sentence = snapshotSentence(snapshot, { importanceThreshold: summary.importance_threshold, missingItems: agenda.missingItems });
   const alerts = labels.overview.alerts;
@@ -191,7 +195,7 @@ function AgendaSummary({ summary, snapshot, agenda, threshold, onThresholdInput,
         <thead><tr><th scope="col">{copy.channelColumn}</th><th scope="col" className="num">{fill(labels.format.units.yuanColumn, { label: labels.shell.periods.current })}</th><th scope="col" className="num">{fill(labels.format.units.yuanColumn, { label: copy.changeColumn })}</th></tr></thead>
         <tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, resolver)}</th><td className="num">{tableLink(row.contribution.evidence.current, false)}</td><td className="num">{tableLink(row.contribution.evidence.change, true, row.contribution.change.value === null ? "neutral" : deltaTone("contribution_after_marketing", row.contribution.change.value, "L2"))}</td></tr>)}</tbody>
       </table>
-      <details className="meeting-wide-table"><summary>{agenda.channelSummary ?? copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} snapshot={snapshot} /></details>
+      <details className="meeting-wide-table"><summary>{agenda.channelSummary ?? copy.channelTableSummary}</summary><ChannelWideTable summary={summary} onEvidence={onEvidence} onDrill={onDrill} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} snapshot={snapshot} /></details>
       <details className="meeting-technical"><summary>{labels.evidence.sections.technicalDetails}</summary><ul>{summary.assumptions.map(item => <li key={item}>{item}</li>)}</ul></details>
     </AgendaItem>
   </>;

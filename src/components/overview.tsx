@@ -29,6 +29,8 @@ type Props = {
   targets?: TargetSet | null; events?: EventSet | null; allChannels?: readonly string[]; snapshot: WorkspaceSnapshot; onEvidence: (evidence: EvidenceSelection) => void; onCreateAction?: (diagnostic: Diagnostic) => void; periodOpen?: boolean; onPeriodToggle?: (open: boolean) => void;
   // V3-4a：本期一句話（資料集名、資料待補項數、待辦概況、會議入口）、KPI 帶的 `?` 定義按鈕與「先補齊」連結。
   onBasis?: () => void; onNavigate?: (id: "diagnosis" | "meeting" | "data") => void; datasetName: string; missingItems: number; actionsSummary: OverviewActionsSummary; meetingEntry?: ReactNode;
+  /** V42-2a（D-V42-2）：G4 精簡表通路列的「只看這個通路」——dashboard 以該通路重算（applyFilters）；只傳給 ChannelSection，按鈕只在資料集有群組時渲染。 */
+  onDrill?: (channel: string) => void;
 };
 const ui = labels.overview.page;
 const nullLabel = (metric: Metric) => formatEmpty(metric.reason_codes.some(code => code.startsWith("MISSING") || code === "SALES_COVERAGE_UNCONFIRMED") ? "missing" : "notApplicable");
@@ -38,7 +40,7 @@ function text(name: MetricName, metric: Metric, layer: Layer) {
   if (metric.value === null) return nullLabel(metric);
   return formatMetric(name, metric, layer);
 }
-export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle, targets = null, events = null, allChannels, onBasis, onNavigate, datasetName, missingItems, actionsSummary, meetingEntry }: Props) {
+export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = false, onPeriodToggle, targets = null, events = null, allChannels, onBasis, onNavigate, datasetName, missingItems, actionsSummary, meetingEntry, onDrill }: Props) {
   const { report } = snapshot;
   // 進階（收合）：重新進入總覽時，若期間合計與日均原本是展開的，外層一起展開；之後各自開關。
   const [advancedOpen, setAdvancedOpen] = useState(periodOpen);
@@ -87,7 +89,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
 
     <div className="pair">
       <TrendSection snapshot={snapshot} events={events} onEvidence={onEvidence} />
-      <ChannelSection snapshot={snapshot} onEvidence={onEvidence} />
+      <ChannelSection snapshot={snapshot} onEvidence={onEvidence} onDrill={onDrill} />
     </div>
 
     <AssistTable snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} budget={targetLine("ad_spend", true)} />
