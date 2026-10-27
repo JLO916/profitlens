@@ -9,6 +9,8 @@ import { validateDataset } from "../src/domain/validation";
 import type { Dataset, DatasetInput, MetricName } from "../src/domain/types";
 import { fixture } from "./helpers/fixtures";
 import { labels } from "../src/i18n";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 function load(input: DatasetInput): Dataset {
   const result = validateDataset(input);
@@ -191,5 +193,37 @@ describe("M2 exact presentation and source evidence", () => {
     const setting = evidenceRows(missingAd, [{ file: "manifest.json", line: null }])[0];
     expect(setting.values.sales_coverage_confirmed).toBe("true");
     expect(setting.missing).toBe(false);
+  });
+});
+
+// ── V42-2a 子集稽核第 6 條（verification/revamp-v42/V42-0-subset-audit.md；設計 §5 最後一列）：filter_hash 只由 report.scope 算（workspace.ts 的 digest(report.scope)），不受影響，補測試。
+describe("V42-2a 子集稽核第 6 條（不受影響，補測試）：群組範圍的 filter_hash", () => {
+  it("成員任意順序傳入 → report.scope.channels 排序後相同、filter_hash 相同；成員不同 → 不同；通路設定與群組不進 hash，也不改任何金額", async () => {
+    const input = synthetic4ChannelInput();
+    const dataset = load(input);
+    const datasetHash = await hashInput(input);
+    const g1 = await createSnapshot(dataset, { channels: ["DTC", "SOCIAL"] }, datasetHash, SYNTHETIC_CHANNEL_SETTINGS);
+    const reversed = await createSnapshot(dataset, { channels: ["SOCIAL", "DTC"] }, datasetHash, SYNTHETIC_CHANNEL_SETTINGS);
+    const plain = await createSnapshot(dataset, { channels: ["SOCIAL", "DTC"] }, datasetHash);
+    const g2 = await createSnapshot(dataset, { channels: ["MARKETPLACE", "LIVE"] }, datasetHash, SYNTHETIC_CHANNEL_SETTINGS);
+    const other = await createSnapshot(dataset, { channels: ["DTC", "MARKETPLACE"] }, datasetHash, SYNTHETIC_CHANNEL_SETTINGS);
+    const single = await createSnapshot(dataset, { channels: ["DTC"] }, datasetHash, SYNTHETIC_CHANNEL_SETTINGS);
+    const all = await createSnapshot(dataset, {}, datasetHash, SYNTHETIC_CHANNEL_SETTINGS);
+    expect(g1.report.scope.channels).toEqual(["DTC", "SOCIAL"]);
+    expect(reversed.report.scope).toEqual(g1.report.scope);
+    expect(g1.filter_hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(reversed.filter_hash).toBe(g1.filter_hash);
+    expect(plain.filter_hash).toBe(g1.filter_hash);
+    // 成員不同（另一個群組、沒有對應群組的子集、單一成員、全部通路）→ 五個都不同
+    expect(new Set([g1.filter_hash, g2.filter_hash, other.filter_hash, single.filter_hash, all.filter_hash]).size).toBe(5);
+    expect([g1, reversed, plain, g2, other, single, all].every(snapshot => snapshot.dataset_hash === datasetHash)).toBe(true);
+    // 設定只多出 channel_names／channel_groups 兩個鍵；report、products、weeks 逐字相同
+    expect(plain.channel_groups).toBeUndefined();
+    expect(plain.channel_names).toBeUndefined();
+    expect(g1.channel_groups?.map(group => [group.id, group.members])).toEqual([["g1", ["DTC", "SOCIAL"]], ["g2", ["LIVE", "MARKETPLACE"]]]);
+    expect(reversed.report).toEqual(plain.report);
+    expect(reversed.products).toEqual(plain.products);
+    expect(reversed.weeks).toEqual(plain.weeks);
+    expect(Object.keys(g1).sort()).toEqual(["channel_groups", "channel_names", "data_as_of", "dataset_hash", "filter_hash", "metric_version", "products", "report", "weeks", "yoy"]);
   });
 });
