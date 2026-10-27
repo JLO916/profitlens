@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { Diagnostic, Scope } from "@/domain/types";
 import { addActionDraft, emptyActionWorkspace, setAdDecision } from "@/application/action-workspace";
+import { isDemoDataset } from "@/application/channel-settings";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
 import { inspectImportFile } from "@/application/import";
 import { initialWizardState, runCheck, wizardReducer, type WizardState } from "@/application/import-wizard";
 import { periodPresets } from "@/application/period-presets";
@@ -16,7 +18,7 @@ import { ActionsWorkbench } from "@/components/actions-workbench";
 import { ImportWizard } from "@/components/import-wizard";
 import { EvidenceDrawer } from "@/components/evidence-drawer";
 import { channelChangeEvidence, channelEvidence } from "@/components/overview/charts/channel-section";
-import { asyncNoop, bytes, load, noop, pageStates, roles, wizardFiles, type StateMarkup } from "./helpers/page-states";
+import { SYNTHETIC_CHANNEL_SETTINGS, asyncNoop, bytes, load, noop, pageStates, roles, wizardFiles, type StateMarkup } from "./helpers/page-states";
 
 /*
  * V3-3 掛載規則測試（PRD §6.4 M1／M6、§11.7）。
@@ -1410,11 +1412,13 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const segments: Record<string, string[]> = {
         "data-missing-ad-day": ["ads-MARKETPLACE-2026-08-02"],
         "data-synthetic": ["costs-LIVE-2026-09-14", "ads-LIVE-2026-08-30", "ads-LIVE-2026-09-22"],
+        // V42-1b：同一份 4 通路合成資料加通路設定（名稱不改資料），缺列框與 data-synthetic 相同。
+        "data-channel-settings": ["costs-LIVE-2026-09-14", "ads-LIVE-2026-08-30", "ads-LIVE-2026-09-22"],
         // D-V4-51（b）＝B：同一檔不同通路重疊的缺列合成一框（通路段 all）；資料表仍是每個通路的區段一列（tableRows）。
         "data-overlap": ["costs-all-2026-09-14", "ads-all-2026-08-30", "ads-LIVE-2026-09-22", "ads-SOCIAL-2026-09-23"],
       };
       const tableRows: Record<string, number> = { "data-overlap": 6 };
-      const cells: Record<string, string[]> = { "data-missing-ad-day": ["ads-MISSING_AD_DAY"], "data-synthetic": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-overlap": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-partial": ["sales-MISSING_COGS"], "data-with-issues": ["sales-MISSING_COGS"] };
+      const cells: Record<string, string[]> = { "data-missing-ad-day": ["ads-MISSING_AD_DAY"], "data-synthetic": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-channel-settings": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-overlap": ["costs-MISSING_CHANNEL_COST_DAY", "ads-MISSING_AD_DAY"], "data-partial": ["sales-MISSING_COGS"], "data-with-issues": ["sales-MISSING_COGS"] };
       expect(data.map(({ name }) => name)).toEqual(expect.arrayContaining(Object.keys(segments)));
       for (const { name, html, state } of data) {
         const issues = state!.active.dataset.issues.length;
@@ -2058,6 +2062,79 @@ describe("V3-3 mounted-testids（PRD §6.4 M1／M6）", () => {
       const details = element(section, '<details class="data-alternative"')!;
       expect(openTag(details, "<details"), `${name}：資料表收合`).not.toMatch(/\sopen=""/);
       expect(element(details, "<tbody>")!.match(/<tr>/g), `${name}：資料表列數`).toHaveLength(channels.length);
+    });
+
+    // ── V42-1b 新增 M1 測試在此之後（頁面狀態寫在 tests/helpers/page-states.tsx 的「V42-1b 新增頁面狀態」錨點後；docs/revamp-v4.2/06_BATCHES.md V42-1b 第 3 項；D-V42-8＝A）──
+    it("V42-1b 資料來源＋通路設定（data-channel-settings）：「通路設定」details 收合但內容掛載（M1），在 data-scope 之後、data-preprocessing 之前；4 列 channel-settings-row-*（manifest 順序）、2 列 channel-settings-group-*；每列的顯示名稱欄＝設定的 label、群組 select 選到設定的群組、群組列的成員一行是顯示名稱；範圍列表與期間列的通路文字是顯示名稱（channelsLabel＋snapshotResolver）", () => {
+      const ui = labels.data.channelSettingsV42;
+      const { name, html, state } = states.find(entry => entry.name === "data-channel-settings")!;
+      const settings = state!.channelSettings!;
+      expect(settings, name).toBe(SYNTHETIC_CHANNEL_SETTINGS);
+      const channels = state!.active.dataset.manifest.channels;
+      expect(channels, name).toEqual(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+      const resolver = snapshotResolver(state!.active.snapshot);
+      expect(state!.active.snapshot.channel_names, `${name}：快照帶 channel_names`).toEqual({ DTC: "官網", LIVE: "直播", MARKETPLACE: "蝦皮", SOCIAL: "社群" });
+      // 名稱不進雜湊：與沒有設定的 data-synthetic 同一份資料、同一個 filter_hash 與 dataset_hash。
+      const plain = states.find(entry => entry.name === "data-synthetic")!.state!.active.snapshot;
+      expect([state!.active.snapshot.filter_hash, state!.active.snapshot.dataset_hash], name).toEqual([plain.filter_hash, plain.dataset_hash]);
+      const ids = testIdCounts(html);
+      const view = element(html, 'class="view-content"')!;
+      expect(ids.get("channel-settings"), name).toBe(1);
+      expect(openTag(view, 'data-testid="channel-settings"'), `${name}：收合的 details`).toBe('<details class="panel data-section channel-settings" data-testid="channel-settings">');
+      expect(view.indexOf('data-testid="data-scope"'), `${name}：在 data-scope 之後`).toBeLessThan(view.indexOf('data-testid="channel-settings"'));
+      expect(view.indexOf('data-testid="channel-settings"'), `${name}：在 data-preprocessing 之前`).toBeLessThan(view.indexOf('data-testid="data-preprocessing"'));
+      const editor = element(view, 'data-testid="channel-settings"')!;
+      expect([...editor.matchAll(/data-testid="channel-settings-row-([^"]+)"/g)].map(match => match[1]), `${name}：每個 manifest 通路一列`).toEqual(channels);
+      for (const code of channels) {
+        expect(ids.get(`channel-settings-row-${code}`), `${name} ${code}`).toBe(1);
+        const row = element(editor, `data-testid="channel-settings-row-${code}"`)!;
+        const entry = settings.channels.find(item => item.code === code)!;
+        const group = settings.groups.find(item => item.id === entry.group)!;
+        expect(openTag(row, `id="channel-setting-label-${code}"`), `${name} ${code}：顯示名稱欄`).toContain(`value="${entry.label}"`);
+        expect(element(row, `id="channel-setting-group-${code}"`), `${name} ${code}：群組 select`).toContain(`<option value="${group.id}" selected="">${group.label}</option>`);
+      }
+      expect([...editor.matchAll(/data-testid="channel-settings-group-([^"]+)"/g)].map(match => match[1]), `${name}：每個群組一列`).toEqual(settings.groups.map(group => group.id));
+      for (const group of settings.groups) {
+        expect(ids.get(`channel-settings-group-${group.id}`), `${name} ${group.id}`).toBe(1);
+        const item = element(editor, `data-testid="channel-settings-group-${group.id}"`)!;
+        expect(openTag(item, `id="channel-setting-groupname-${group.id}"`), `${name} ${group.id}：名稱欄`).toContain(`value="${group.label}"`);
+        // 成員一行依 manifest 順序（編輯器的列順序）列出目前的顯示名稱。
+        expect(item, `${name} ${group.id}：成員一行是顯示名稱`).toContain(escapeAttr(fill(ui.groups.members, { list: channels.filter(code => settings.channels.find(entry => entry.code === code)?.group === group.id).map(code => resolver.channel(code)).join("、") })));
+      }
+      expect(editor, `${name}：狀態句掛著、沒有問題清單`).toContain('<p class="channel-settings-status" role="status"></p>');
+      expect(editor, name).not.toContain('role="alert"');
+      // 範圍列表（檔案裡的通路、目前看的通路）與期間列的通路選項都是顯示名稱。
+      const scope = element(view, 'data-testid="data-scope"')!;
+      expect(channelsLabel(channels, resolver), name).toBe("官網、直播、蝦皮、社群");
+      expect(scope, name).toContain(`<dt>${labels.data.panel.meta.channels}</dt><dd>${escapeAttr(channelsLabel(channels, resolver))}</dd>`);
+      expect(scope, name).toContain(`<dt>${labels.data.panel.meta.scopeChannels}</dt><dd>${escapeAttr(channelsLabel(state!.active.snapshot.report.scope.channels, resolver))}</dd>`);
+      const periodBar = element(html, 'data-testid="period-bar"')!;
+      for (const code of channels) expect(periodBar, `${name} ${code}：期間列選項`).toContain(`<option value="${code}">${resolver.channel(code)}</option>`);
+    });
+
+    it("V42-1b 既有的資料來源頁狀態（data；沒有通路設定）：「通路設定」區仍收合掛載，每列的顯示名稱欄空白、placeholder＝通路代碼、選到「未分組」，0 個群組列（「還沒有群組。」）；每個資料來源頁狀態恰好一份 channel-settings、列數＝manifest 通路數", () => {
+      const ui = labels.data.channelSettingsV42;
+      const { html, state } = states.find(entry => entry.name === "data")!;
+      expect(state!.channelSettings).toBeUndefined();
+      expect(state!.active.snapshot.channel_names).toBeUndefined();
+      expect(isDemoDataset(state!.active.dataset.manifest.dataset_id)).toBe(false);
+      const view = element(html, 'class="view-content"')!;
+      expect(openTag(view, 'data-testid="channel-settings"')).toBe('<details class="panel data-section channel-settings" data-testid="channel-settings">');
+      const editor = element(view, 'data-testid="channel-settings"')!;
+      for (const code of state!.active.dataset.manifest.channels) {
+        const row = element(editor, `data-testid="channel-settings-row-${code}"`)!;
+        const label = openTag(row, `id="channel-setting-label-${code}"`)!;
+        expect(label, code).toContain('value=""');
+        expect(label, code).toContain(`placeholder="${code}"`);
+        expect(element(row, `id="channel-setting-group-${code}"`), code).toMatch(new RegExp(`<option value=""[^>]*selected=""[^>]*>${ui.ungrouped}</option>`));
+      }
+      expect(editor).not.toContain('data-testid="channel-settings-group-');
+      expect(editor).toContain(`<p class="data-section-empty">${ui.groups.empty}</p>`);
+      for (const { name, html, state } of loaded().filter(entry => entry.state!.panel === "data")) {
+        const ids = testIdCounts(html);
+        expect(ids.get("channel-settings"), name).toBe(1);
+        expect([...ids.keys()].filter(id => id.startsWith("channel-settings-row-")).sort(), name).toEqual(state!.active.dataset.manifest.channels.map(code => `channel-settings-row-${code}`).sort());
+      }
     });
 
   });

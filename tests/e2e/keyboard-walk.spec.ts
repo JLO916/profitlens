@@ -25,6 +25,8 @@ import { LAUNCH_PAGES, activeStop, copy, evidenceDrawer, gotoPage, hideDevOverla
  * V41-1：另加說明首頁 /guide 的走查（檔尾的獨立測試；七頁的斷言不變），結果寫在「{專案}-guide」鍵。
  * V41-2a：另加功能區頁 /guide/start 的走查（檔尾的獨立測試，與 /guide 共用 guideWalk、expectGuideWalk），結果寫在「{專案}-guide-start」鍵。
  * V41-3：兩條說明頁走查加「影片控制」里程碑；guideWalk 把同一支影片的原生控制記成各自的停留點（nativeMediaStops），不當成回到停過的元素。
+ * V42-1b：資料來源頁加「通路設定 summary」里程碑（收合的 <details> channel-settings 在 data-scope 之後；D-V42-8＝A）：summary 本身是停留點、在「問題表或範圍列表」之後、
+ *   不晚於 V42-1b 實測（V42_1B_CHANNEL_SETTINGS_TABS）；資料來源頁既有的兩個里程碑與基準不變。
  */
 /** tabTo 的上限（找單一目標）與整頁走查的上限（商品毛利頁約 390 個停留點）。 */
 const MAX_TABS = 160;
@@ -43,7 +45,8 @@ const MILESTONES: Record<LaunchPage, { name: string; selector: string }[]> = {
   meeting: [{ name: "議程 1", selector: "[data-testid='meeting-agenda-1']" }, { name: "第一張圖的資料表 summary", selector: "[data-testid='chart-meeting-scenarios'] > details.data-alternative > summary" }],
   // V4-7a（CHART_CATALOG G20「鍵盤」）：G20 涵蓋時間軸在狀態一行之下、data-issues 之上，資料表 summary 是它唯一的停留點（示範資料沒有缺列段，資料表沒有篩選按鈕），
   // 記成「涵蓋時間軸資料表 summary」里程碑（在「問題表或範圍列表」之前）。
-  data: [{ name: "涵蓋時間軸資料表 summary", selector: "[data-testid='chart-data-coverage'] > details.data-alternative > summary" }, { name: "問題表或範圍列表", selector: "[data-testid='data-issues'], [data-testid='data-scope']" }],
+  // V42-1b（06_BATCHES V42-1b 第 3 項）：「通路設定」區（收合的 <details>，在 data-scope 之後）的 summary；示範資料沒有群組，summary 是這一區在收合時唯一的停留點。
+  data: [{ name: "涵蓋時間軸資料表 summary", selector: "[data-testid='chart-data-coverage'] > details.data-alternative > summary" }, { name: "問題表或範圍列表", selector: "[data-testid='data-issues'], [data-testid='data-scope']" }, { name: "通路設定 summary", selector: "[data-testid='channel-settings'] > summary" }],
 };
 /**
  * V4-3b（06_BATCHES V4-3b、護欄表 keyboard-walk、CHART_CATALOG G11「鍵盤」）：整頁走查時另數「經過某個區塊」的 Tab：
@@ -75,6 +78,12 @@ const V4_0A_SCENARIO_TABS: Record<string, Record<string, number>> = {
 const V4_0A_DATA_TABS: Record<string, number> = { desktop: 10, mobile: 4 };
 /** D-V4-52＝A：資料來源頁「問題表或範圍列表」的新基準（V4-7a 實測，取代 V4-0a 的 10／4）。 */
 const V4_7A_DATA_ISSUES_TABS: Record<string, number> = { desktop: 11, mobile: 5 };
+/**
+ * V42-1b（docs/revamp-v4.2/06_BATCHES.md V42-1b 第 3 項「keyboard-walk 加通路設定區的里程碑」；D-V42-8＝A）：資料來源頁「通路設定」<details>（channel-settings，在 data-scope 之後、預設收合）
+ * 的 summary 是停留點，在「問題表或範圍列表」（data-scope 內技術細節的 summary）之後、不晚於 V42-1b 實測（代理 C，2026-10-27：1440 第 12 步、390 第 6 步；「問題表或範圍列表」仍是 11／5）；之後每批不晚於它。
+ * 示範資料的「問題表或範圍列表」仍是 V4-7a 的 11／5（通路設定區在它之後，不影響既有里程碑）。
+ */
+const V42_1B_CHANNEL_SETTINGS_TABS: Record<string, number> = { desktop: 12, mobile: 6 };
 /**
  * V4-8b（06_BATCHES V4-8b「keyboard-walk」與「驗收重點」：各頁里程碑 Tab 數不晚於 V4-0、總覽 KPI 前可聚焦 ≤ 10）：
  *   - 總覽、健檢、待辦、會議的主要里程碑不晚於 V4-0a 實測（verification/revamp-v4/V4-0a/keyboard-walk.json，V4-8a 相同）；商品、試算、資料來源見上方各批的常數。
@@ -352,6 +361,11 @@ test("V3-10 鍵盤走查：七頁 Tab 步數、焦點可見、沒有焦點陷阱
   expect(coverageTabs, "V4-7a：資料來源頁第一個主要結果（G20 資料表 summary）不晚於 V4-0a 的里程碑").toBeLessThanOrEqual(V4_0A_DATA_TABS[testInfo.project.name]);
   expect(issuesTabs, "V4-7a：「問題表或範圍列表」緊接在 G20 資料表 summary 之後（G20 只多 1 個停留點）").toBe(coverageTabs + 1);
   expect(issuesTabs, "V4-7a（D-V4-52＝A）：「問題表或範圍列表」不晚於 V4-7a 實測的新基準（1440 第 11 步、390 第 5 步）").toBeLessThanOrEqual(V4_7A_DATA_ISSUES_TABS[testInfo.project.name]);
+  // V42-1b：「通路設定」summary 本身是停留點（reachedBy inside），在「問題表或範圍列表」之後，不晚於 V42-1b 實測。
+  const settingsMilestone = dataMilestones.find(item => item.name === "通路設定 summary")!;
+  expect(settingsMilestone.reachedBy, "V42-1b：「通路設定」summary 本身是 Tab 停留點").toBe("inside");
+  expect(settingsMilestone.tabs!, "V42-1b：「通路設定」summary 在「問題表或範圍列表」之後").toBeGreaterThan(issuesTabs);
+  expect(settingsMilestone.tabs!, "V42-1b：「通路設定」summary 不晚於 V42-1b 實測").toBeLessThanOrEqual(V42_1B_CHANNEL_SETTINGS_TABS[testInfo.project.name]);
   expect(flowAriaHiddenStops, "§11.1 只用鍵盤的流程：經過的 Tab 停留點都不在 [aria-hidden=true] 內（V4-0a）").toEqual([]);
   // V4-1：KNOWN_ARIA_HIDDEN_STOPS 已清空，1440 與 390 七頁走查加上 §11.1 流程的 aria-hidden 停留點合計必須是 0。
   expect(ariaHiddenTotal, "V4-1：aria-hidden 內的 Tab 停留點合計 0").toBe(0);
