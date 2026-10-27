@@ -16,6 +16,8 @@ import { AMOUNT_FIELDS, type DatasetInput, type Metric } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { readZip, zipText } from "./helpers/zip";
 
 // R6-5 PPT 一頁式：資料層的字串（golden 手算）＋寫出的 .pptx 以測試用最小 zip 讀取器拆開，直接檢查 XML。
@@ -667,5 +669,34 @@ describe("V4-9a C32 PPT 原生瀑布（第二張投影片；D-V4-10＝A、D-V4-3
       expect(other.chart!.axis, other.variant).toEqual(standard.chart!.axis);
       expect(embeddedRows(other.files), other.variant).toEqual(embeddedRows(standard.files));
     }
+  });
+});
+
+// ── V42-2a 子集稽核第 9 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：PPT 副標（檔案主旨）的通路走 scopeChannelsLabel。群組範圍與群組內單一通路範圍都跑；沒有群組時逐字不變。
+describe("V42-2a 子集稽核第 9 條：PPT 副標的通路認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const nameOf = (code: string) => SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === code)!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: nameOf("DTC") });
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    const snapshot = await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS);
+    return { snapshot, model: buildPptxOnePager({ summary: buildManagerSummary(snapshot), snapshot, actions: emptyActionWorkspace(), generatedAt: GENERATED_AT }) };
+  }
+  const subtitleOf = (snapshot: WorkspaceSnapshot, channels: string) => pptxText(fill(copy.subtitle, { asOf: snapshot.data_as_of, previous: formatPeriodExport(snapshot.report.previous.period.start, snapshot.report.previous.period.end), current: formatPeriodExport(snapshot.report.current.period.start, snapshot.report.current.period.end), channels }), PPTX_TEXT_LIMITS.subtitle);
+
+  it("群組範圍（DTC＋SOCIAL＝自有）寫群組名、通路表仍逐成員一列；群組內單一通路（DTC）寫「自有 · 官網」；全部通路（沒有對應群組）列成員", async () => {
+    const group = await scoped(["DTC", "SOCIAL"]);
+    expect(group.model.subtitle).toBe(subtitleOf(group.snapshot, G1));
+    expect(group.model.channels.map(row => row.channel)).toEqual([nameOf("DTC"), nameOf("SOCIAL")]);
+    const single = await scoped(["DTC"]);
+    expect(single.model.subtitle).toBe(subtitleOf(single.snapshot, MEMBER));
+    const all = await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(all.model.subtitle).toBe(subtitleOf(all.snapshot, channelsLabel(all.snapshot.report.scope.channels, snapshotResolver(all.snapshot))));
+  });
+
+  it("沒有群組（golden）：副標與 channelsLabel 的成員清單逐字相同（與今天相同）", async () => {
+    const { snapshot, build } = await setup();
+    expect(build().subtitle).toBe(subtitleOf(snapshot, channelsLabel(snapshot.report.scope.channels, snapshotResolver(snapshot))));
   });
 });

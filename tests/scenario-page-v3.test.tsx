@@ -15,6 +15,8 @@ import type { ScenarioInputs } from "../src/domain/scenarios";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 /*
  * V3-6 代理 A：假設試算頁（PRD §7.4、§6.3 #37–#39、D-V3-12＝B）。
@@ -489,5 +491,44 @@ describe("V3-6 假設試算頁（PRD §7.4）", () => {
     expect(g15(tree).bars.map(bar => bar.key)).toEqual([state.scenarios[1].id]);
     expect(g15(tree).title).toBe(fill(labels.scenarios.chartsV4.variance.title.less, { plan: fill(dw.defaultPlanName, { n: 2 }), amount: formatHeadlineAmount("-6.00") }));
     expect(g15(tree).tableRows.map(row => row.delta)).toEqual([null, "-6.00"]);
+  });
+});
+
+// ── V42-2a 子集稽核第 15 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §4、§5；PRD §4.2 第 1 點）：全站範圍是 2 到 n−1 個通路時，試算頁的通路選單只列範圍內的通路（manifest 順序）、預設第一個成員；其他情況與今天相同。
+describe("V42-2a 子集稽核第 15 條：群組範圍下試算頁的通路選單只列成員", () => {
+  const nameOf = (code: string) => SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === code)!.label!;
+  async function scoped(channels: string[]): Promise<ScenarioSource> {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    return { input, dataset, snapshot: await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), revision: 1, channel_settings: SYNTHETIC_CHANNEL_SETTINGS };
+  }
+  /** 「試算通路」選單的選項：值、是否選中（SSR 的 selected 屬性）、顯示文字。 */
+  const options = (html: string) => [...element(html, 'data-testid="scenario-channel"').matchAll(/<option value="([^"]*)"([^>]*)>([^<]*)<\/option>/g)].map(match => ({ value: match[1], selected: /\bselected\b/.test(match[2]), label: match[3] }));
+  /** 「其他通路的方案」列出的通路名（沒有其他通路時整個 details 不渲染）。 */
+  const others = (html: string) => count(html, 'data-testid="scenario-other-channels"') === 0 ? [] : [...element(html, 'data-testid="scenario-other-channels"').matchAll(/<strong>([^<]*)<\/strong>/g)].map(match => match[1]);
+
+  it("群組範圍（DTC＋SOCIAL＝自有）：選項只有成員（manifest 順序 DTC、SOCIAL，顯示名稱 官網、社群）、預設第一個成員 DTC；「其他通路的方案」只列社群", async () => {
+    const html = render(await scoped(["DTC", "SOCIAL"]));
+    expect(options(html)).toEqual([{ value: "DTC", selected: true, label: nameOf("DTC") }, { value: "SOCIAL", selected: false, label: nameOf("SOCIAL") }]);
+    expect(others(html)).toEqual([nameOf("SOCIAL")]);
+  });
+
+  it("群組內單一通路範圍（DTC）：選單仍列 manifest 全部四個、預設 DTC；全部通路：四個、預設第一個；沒有對應群組的子集（DTC＋LIVE）：只列這兩個、預設 DTC", async () => {
+    const single = render(await scoped(["DTC"]));
+    expect(options(single).map(option => option.value)).toEqual(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(options(single).find(option => option.selected)?.value).toBe("DTC");
+    const all = render(await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]));
+    expect(options(all).map(option => option.value)).toEqual(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(options(all).find(option => option.selected)?.value).toBe("DTC");
+    const subset = render(await scoped(["DTC", "LIVE"]));
+    expect(options(subset)).toEqual([{ value: "DTC", selected: true, label: nameOf("DTC") }, { value: "LIVE", selected: false, label: nameOf("LIVE") }]);
+    expect(others(subset)).toEqual([nameOf("LIVE")]);
+  });
+
+  it("沒有群組（golden，範圍 DTC 與全部）：兩個選項、預設 DTC——與今天相同", async () => {
+    const dtc = render(await source());
+    expect(options(dtc)).toEqual([{ value: "DTC", selected: true, label: "DTC" }, { value: "MARKETPLACE", selected: false, label: "MARKETPLACE" }]);
+    const all = render(await source("golden", {}));
+    expect(options(all).map(option => [option.value, option.selected])).toEqual([["DTC", true], ["MARKETPLACE", false]]);
   });
 });

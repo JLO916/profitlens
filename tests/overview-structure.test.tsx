@@ -7,7 +7,7 @@ import { assistWeeks } from "../src/application/chart-assist-weeks";
 import { channelsLabel, formatHeadlineAmount, snapshotResolver } from "../src/application/copy";
 import { createReviewSession } from "../src/application/review-session";
 import { deltaTone, deltaWord, formatGrowth, formatMetric, formatPeriodL1, formatRatePoints, metricDefinitions } from "../src/application/presentation";
-import { achievement, achievementText, mismatchText, targetDisplay, type TargetSet } from "../src/application/targets";
+import { achievement, achievementText, mismatchText, parseTargets, targetDisplay, type TargetSet } from "../src/application/targets";
 import { buildWeeklySummary, snapshotSentence } from "../src/application/weekly-summary";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { MeetingEntry } from "../src/components/meeting-page";
@@ -20,6 +20,8 @@ import type { Dataset, DatasetInput, Metric } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { byTestId, element, escapeAttr, openTag, textOf } from "./helpers/markup";
 
 // V3-4a 經營總覽「首屏與結構」（PRD §7.1 區塊 2、3、9、10；§9.4 C1、C2、C12、C18）：SSR golden 結構測試。
@@ -287,5 +289,72 @@ describe("V3-4a 進階（收合）：期間合計與日均", () => {
     const html = render({ periodOpen: true });
     expect(openTag(html, 'data-testid="overview-advanced"')).toMatch(/\sopen=""/);
     expect(openTag(html, 'data-testid="period-comparison"')).toMatch(/\sopen=""/);
+  });
+});
+
+// ── V42-2a（docs/revamp-v4.2/06_BATCHES.md V42-2a 第 2 到 4 項；DESIGN §4、§5 第 18 條；D-V42-2、D-V42-12）：總覽在群組範圍下——範圍行（snapshotMeta）認得群組、G4 精簡表的「只看這個通路」、KPI 帶之後的目標限制句。
+describe("V42-2a 總覽：範圍行、「只看這個通路」與目標限制句", () => {
+  const drillCopy = labels.diagnosis.channelsV42;
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const nameOf = (code: string) => SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === code)!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: nameOf("DTC") });
+  type Loaded = { dataset: Dataset; snapshot: WorkspaceSnapshot };
+  let group: Loaded, single: Loaded, all: Loaded;
+  let syntheticTargets: TargetSet;
+  beforeAll(async () => {
+    const load = async (channels: string[]): Promise<Loaded> => { const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!; return { dataset, snapshot: await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS) }; };
+    group = await load(["DTC", "SOCIAL"]); single = await load(["DTC"]); all = await load(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    // 比照 tests/helpers/page-states.tsx：本期日期、channel ALL、四個指標。
+    const { start, end } = group.snapshot.report.current.period;
+    const csv = ["period_start,period_end,channel,metric,target", ...["net_revenue", "gross_profit", "contribution_after_marketing", "ad_spend"].map(metric => `${start},${end},ALL,${metric},${metric === "ad_spend" ? "-50000.00" : "100000.00"}`)].join("\n");
+    syntheticTargets = parseTargets({ name: "targets.csv", bytes: new TextEncoder().encode(csv) }, group.dataset.manifest.channels).set!;
+  });
+  const renderLoaded = (loaded: Loaded, extra: { onDrill?: (channel: string) => void; targets?: TargetSet | null } = {}) => renderToStaticMarkup(createElement(Overview, { snapshot: loaded.snapshot, onEvidence: noop, datasetName: "synthetic", missingItems: 0, actionsSummary: { pending: 0, pinned: [] }, allChannels: loaded.dataset.manifest.channels, targets: extra.targets ?? null, onDrill: extra.onDrill }));
+  const drillButtons = (html: string) => [...html.matchAll(/<button type="button" class="ui-btn ui-btn-text channel-drill" data-testid="channel-drill-([^"]+)" aria-label="([^"]*)">([^<]*)<\/button>/g)].map(match => ({ channel: match[1], aria: match[2], text: match[3] }));
+  const meta = (loaded: Loaded, channels: string) => fill(snapUi.meta, { period: formatPeriodL1(loaded.snapshot.report.current.period.start, loaded.snapshot.report.current.period.end, { days: false, anchor: loaded.snapshot.data_as_of }), channels });
+
+  it("範圍行（第 18 條）：群組 → 群組名；群組內單一通路 → 自有 · 官網；全部通路 → 全部通路；沒有群組的 golden 單一通路 → channelsLabel（與今天相同）", async () => {
+    expect(snapshotMeta(group.snapshot, group.dataset.manifest.channels)).toBe(meta(group, G1));
+    expect(renderLoaded(group)).toContain(`<p class="snapshot-meta">${meta(group, G1)}</p>`);
+    expect(snapshotMeta(single.snapshot, single.dataset.manifest.channels)).toBe(meta(single, MEMBER));
+    expect(snapshotMeta(all.snapshot, all.dataset.manifest.channels)).toBe(meta(all, labels.shell.periodBar.filter.allChannels));
+    const dtc = await createSnapshot(golden.dataset, { channels: ["DTC"] }, await hashInput(golden.input));
+    expect(snapshotMeta(dtc, golden.dataset.manifest.channels)).toBe(fill(snapUi.meta, { period: formatPeriodL1(dtc.report.current.period.start, dtc.report.current.period.end, { days: false, anchor: dtc.data_as_of }), channels: channelsLabel(["DTC"], snapshotResolver(dtc)) }));
+  });
+
+  it("G4 精簡表（D-V42-2）：群組範圍＋onDrill → 每列一個 channel-drill-{code}，在 th[scope=row] 內列名之後；aria-label＝只看這個通路：{顯示名稱}；可見文字＝只看這個通路；只在精簡表內", () => {
+    const html = renderLoaded(group, { onDrill: noop });
+    const rows = element(byTestId(html, "channel-mix"), 'class="kv channel-kv"')!.match(/<tr>[\s\S]*?<\/tr>/g)!.slice(1);
+    expect(rows).toHaveLength(2);
+    for (const [index, code] of ["DTC", "SOCIAL"].entries()) {
+      const th = /<th scope="row">([\s\S]*?)<\/th>/.exec(rows[index])![1];
+      expect(th.startsWith(nameOf(code)), code).toBe(true);
+      expect(th.endsWith(`<button type="button" class="ui-btn ui-btn-text channel-drill" data-testid="channel-drill-${code}" aria-label="${escapeAttr(fill(drillCopy.drillChannelAria, { channel: nameOf(code) }))}">${drillCopy.drill}</button>`), code).toBe(true);
+    }
+    expect(drillButtons(html).map(button => button.channel)).toEqual(["DTC", "SOCIAL"]);
+    expect(html.split("channel-drill-").length - 1).toBe(2);
+  });
+
+  it("不渲染「只看這個通路」：沒傳 onDrill、群組但單一通路範圍、golden（沒有群組）→ 0 個；全部通路範圍（有群組）→ 每個通路一個；golden 有沒有 onDrill 的 markup 逐位元組相同", () => {
+    expect(drillButtons(renderLoaded(group))).toEqual([]);
+    expect(drillButtons(renderLoaded(single, { onDrill: noop }))).toEqual([]);
+    expect(drillButtons(renderLoaded(all, { onDrill: noop })).map(button => button.channel)).toEqual(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(render()).not.toContain("channel-drill");
+    const props = { snapshot: golden.snapshot, onEvidence: noop, datasetName: "x", missingItems: 0, actionsSummary: { pending: 0, pinned: [] }, allChannels: golden.dataset.manifest.channels };
+    expect(renderToStaticMarkup(createElement(Overview, { ...props, onDrill: noop }))).toBe(renderToStaticMarkup(createElement(Overview, props)));
+  });
+
+  it("目標限制句（D-V42-12）：群組範圍＋目標檔 → KPI 帶之後緊接一行 note（kpi-targets-note）；沒有目標、群組內單一通路＋目標、全部通路＋目標、golden＋目標 → 都沒有", () => {
+    const note = `<p class="note kpi-targets-note">${drillCopy.limits.targets}</p>`;
+    const html = renderLoaded(group, { targets: syntheticTargets });
+    // KpiBand 的根是 <section class="kpi-section">（kpi-band 在裡面）；限制句緊接在這個 section 之後。
+    const section = element(html, 'class="kpi-section"')!;
+    expect(section).toContain(byTestId(html, "kpi-band"));
+    expect(html).toContain(`${section}${note}`);
+    expect(html.split(note).length - 1).toBe(1);
+    expect(renderLoaded(group)).not.toContain("kpi-targets-note");
+    expect(renderLoaded(single, { targets: syntheticTargets })).not.toContain("kpi-targets-note");
+    expect(renderLoaded(all, { targets: syntheticTargets })).not.toContain("kpi-targets-note");
+    expect(render({ withTargets: true })).not.toContain("kpi-targets-note");
   });
 });

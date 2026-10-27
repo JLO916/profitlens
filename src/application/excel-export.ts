@@ -18,7 +18,7 @@ import { CHANNEL_STRUCTURE_VERSION } from "./chart-structure";
 import { channelConclusion } from "./chart-takeaways";
 import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type ExcelSheetKey, type ExportVariant, type ExportVariantSpec } from "./export-variants";
 import { BREAKEVEN_MER_VERSION, breakevenMer, type BreakevenMer } from "./breakeven-mer";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, scopeLabel, snapshotResolver } from "./copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, csvHeader, scopeChannelsLabel, scopeLabel, snapshotResolver } from "./copy";
 import { makeResolver, orderedChannels, type ChannelSettings, type NameResolver } from "./channel-settings";
 import { downloadBinary } from "./download";
 import { buildExportHeader } from "./export-header";
@@ -495,6 +495,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
   }
 
   // G13、G14 商品（同商品頁：compareProducts 的列，不受品類與搜尋篩選影響）；SKU 與通路分兩欄。
+  // V42-2a（子集稽核第 1 條）：子集的範圍文字走解析器——等於某群組的成員集合時寫群組名、群組內單一通路寫「{群組名} · {通路名}」；沒有群組時仍是成員清單（逐位元組不變）。
   const products = input.products ?? [];
   const scope = report.scope;
   const everyChannel = dataset.manifest.channels.length > 0 && dataset.manifest.channels.every(channel => scope.channels.includes(channel));
@@ -502,7 +503,7 @@ function chartDataSections(input: ExcelExportInput): ChartDataSection[] {
     ctx: { previous: scope.previous_period, current: scope.current_period, resolver },
     current: formatPeriodL1(scope.current_period.start, scope.current_period.end, { days: false, anchor: snapshot.data_as_of }),
     previous: formatPeriodL1(scope.previous_period.start, scope.previous_period.end, { days: false, anchor: snapshot.data_as_of }),
-    channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scope.channels, resolver),
+    channels: everyChannel ? labels.shell.periodBar.filter.allChannels : scopeChannelsLabel(scope.channels, resolver),
   };
   const productColumns = [copy.columns.products.sku, copy.columns.products.channel];
   const top = productHighlights(products), all = productHighlights(products, products.length);

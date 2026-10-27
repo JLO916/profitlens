@@ -4,7 +4,7 @@ import { variantHeaderLines, variantKpis, variantOneLiner, variantSpec, type Exp
 import { fill, labels } from "../i18n";
 import { axisTicks } from "../components/overview/charts/chart-frame";
 import { MAX_PINNED_ACTIONS, type ActionWorkspace } from "./action-workspace";
-import { channelLabel, channelsLabel, ruleCopy, snapshotResolver } from "./copy";
+import { channelLabel, ruleCopy, scopeChannelsLabel, snapshotResolver } from "./copy";
 import { downloadBinary } from "./download";
 import { buildExportHeader, type ExportHeader } from "./export-header";
 import { EXPORT_THEME } from "./export-theme";
@@ -130,8 +130,9 @@ export function buildPptxOnePager(input: PptxOnePagerInput): PptxOnePager {
   const header = [firstLine, ...clientLines, periodLine, versionLine].map(line => fitLine(pptxText(line, limit.header), HEADER_LINE_CAPACITY));
   const subtitle = pptxText(fill(copy.subtitle, {
     // 版頭的期間用匯出格式「2026-07-13 至 2026-08-23（42 天）」（§8.6）。
+    // V42-2a（子集稽核第 9 條）：通路文字走解析器——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」；沒有群組時仍是成員清單（逐字不變）。
     asOf: summary.data_as_of, previous: formatPeriodExport(summary.scope.previous_period.start, summary.scope.previous_period.end),
-    current: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end), channels: channelsLabel(summary.scope.channels, resolver),
+    current: formatPeriodExport(summary.scope.current_period.start, summary.scope.current_period.end), channels: scopeChannelsLabel(summary.scope.channels, resolver),
   }), limit.subtitle);
   const kpiRows = spec.sections.kpis === "four" ? variantKpis(summary, snapshot.report) : summary.headlines;
   const key_deltas = kpiRows.map(row => ({ label: metricDefinitions[row.metric].label, previous: money(row.previous, "L1"), current: money(row.current, "L1"), change: money(row.change, "L1", true) }));

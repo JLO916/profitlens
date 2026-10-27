@@ -3,14 +3,16 @@ import { describe, expect, it } from "vitest";
 import { expected, fixture } from "./helpers/fixtures";
 import { validateDataset } from "@/domain/validation";
 import type { AnalysisFilters } from "@/domain/types";
-import { createSnapshot, hashInput } from "@/application/workspace";
+import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { saveScenario } from "@/application/decision";
 import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, scenarioSelectionRef, updateScenarioContext, type ScenarioWorkspace } from "@/application/scenario-workspace";
 import { createReviewSession, rebuildReviewSnapshot, refreshReviewScenarioReferences, refreshReviewSession, selectReviewScenario, syncReviewPins, updateReviewSession, type ReviewSession } from "@/application/review-session";
 import { addActionDraft, editActionManagement, editBoundAction, emptyActionWorkspace, pinAction, removeBoundAction, type ActionWorkspace } from "@/application/action-workspace";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { appendMeeting, compareWithLastMeeting, exportMeetingMarkdown, finalizeMeeting, freezeMeeting, lastMeeting, MAX_MEETING_HISTORY, meetingAgendaFromSnapshot, MEETING_SCHEMA_VERSION, removeMeeting, validateMeeting, type Meeting } from "@/application/meeting";
-import { conversionSentence } from "@/application/copy";
+import { channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import type { TaxConversion } from "@/application/tax-basis";
 import { fill, labels } from "@/i18n";
 import { formatAmountL2 as l2, formatPeriodExport, formatSignedDelta, MINUS } from "@/application/presentation";
@@ -494,5 +496,52 @@ describe("R6-1 exportMeetingMarkdown", () => {
     expect(text).toContain(fill(labels.meeting.record.mdFollowUpRow, { problem: meeting.agenda.pinned_actions[0].problem, last: labels.actions.form.statuses.in_progress, current: labels.actions.form.statuses.in_progress, updated: fill(labels.meeting.record.statusUpdatedAt, { date: "2026-10-01" }) }));
     expect(text).toContain(labels.meeting.record.noScenarios);
     expect(text).toContain(labels.meeting.record.noPinnedActions);
+  });
+});
+
+// ── V42-2a 子集稽核第 11a、11b 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：上次會議比較的提醒句（compareWithLastMeeting）與會議紀錄 Markdown 的通路欄走 scopeChannelsLabel；sameSet 與 source_fixed.channels（代碼）不改。
+describe("V42-2a 子集稽核第 11a、11b 條：上次會議比較的提醒句與會議紀錄的通路欄認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!;
+    return { input, dataset, snapshot: await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), revision: 1 };
+  }
+  const meetingOf = (source: Awaited<ReturnType<typeof scoped>>, id: string) => finalizeMeeting({ review: createReviewSession(source, "e", id, CREATED), snapshot: source.snapshot, scenarios: emptyScenarioWorkspace("e"), actions: emptyActionWorkspace(), date: "2026-10-03", now: NOW });
+  const compare = (snapshot: WorkspaceSnapshot, last: Meeting) => compareWithLastMeeting({ snapshot, review: null, actions: emptyActionWorkspace() }, last);
+  const field = (value: string) => fill(labels.meeting.record.mdField, { field: labels.exports.csv.columns.channels, value });
+
+  it("11a：上次是全部通路、這次是群組（自有）→ 提醒句的 last 列成員、current 寫群組名；這次是群組內單一通路 → 「自有 · 官網」；上次是群組 → last 寫群組名；同一組成員仍是 same_scope", async () => {
+    const all = await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]), group = await scoped(["DTC", "SOCIAL"]), single = await scoped(["DTC"]);
+    const members = channelsLabel(all.snapshot.report.scope.channels, snapshotResolver(group.snapshot));
+    const lastAll = meetingOf(all, "rev-all");
+    expect(compare(group.snapshot, lastAll).kind).toBe("different_dataset");
+    expect(compare(group.snapshot, lastAll).note).toBe(fill(labels.meeting.record.differentChannels, { last: members, current: G1 }));
+    expect(compare(single.snapshot, lastAll).note).toBe(fill(labels.meeting.record.differentChannels, { last: members, current: MEMBER }));
+    const lastGroup = meetingOf(group, "rev-group");
+    expect(lastGroup.source_fixed.channels).toEqual(["DTC", "SOCIAL"]);
+    expect(compare(all.snapshot, lastGroup).note).toBe(fill(labels.meeting.record.differentChannels, { last: G1, current: members }));
+    expect(compare(single.snapshot, lastGroup).note).toBe(fill(labels.meeting.record.differentChannels, { last: G1, current: MEMBER }));
+    expect(compare(group.snapshot, lastGroup).kind).toBe("same_scope");
+  });
+
+  it("11b：會議紀錄 Markdown 的通路欄——resolver 給時群組範圍寫「自有」、群組內單一通路寫「自有 · 官網」；沒給 resolver 仍是代碼；source_fixed.channels 永遠是代碼", async () => {
+    const group = await scoped(["DTC", "SOCIAL"]), single = await scoped(["DTC"]);
+    const groupMeeting = meetingOf(group, "rev-md-group");
+    expect(exportMeetingMarkdown(groupMeeting, undefined, { resolver: snapshotResolver(group.snapshot) })).toContain(field(G1));
+    expect(exportMeetingMarkdown(groupMeeting)).toContain(field("DTC、SOCIAL"));
+    expect(groupMeeting.source_fixed.channels).toEqual(["DTC", "SOCIAL"]);
+    const singleMeeting = meetingOf(single, "rev-md-single");
+    expect(exportMeetingMarkdown(singleMeeting, undefined, { resolver: snapshotResolver(single.snapshot) })).toContain(field(MEMBER));
+    expect(exportMeetingMarkdown(singleMeeting)).toContain(field("DTC"));
+  });
+
+  it("沒有群組（golden）：提醒句與通路欄與 channelsLabel 的成員清單逐字相同（與今天相同）", async () => {
+    const { meeting } = await finalized();
+    expect(exportMeetingMarkdown(meeting)).toContain(field("DTC、MARKETPLACE"));
+    expect(exportMeetingMarkdown(meeting, undefined, { resolver: snapshotResolver((await source()).snapshot) })).toContain(field("DTC、MARKETPLACE"));
+    const dtc = await source("golden", { channels: ["DTC"] });
+    expect(compare(dtc.snapshot, meeting).note).toBe(fill(labels.meeting.record.differentChannels, { last: "DTC、MARKETPLACE", current: "DTC" }));
   });
 });

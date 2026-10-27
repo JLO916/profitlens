@@ -262,8 +262,8 @@ describe("V3-10 備份還原矩陣（v1–v5 × golden／demo）", () => {
         expect(restored.action_workspace.items.map(item => item.ad_decision)).toEqual(["pause"]);
         expect(restored.meeting_history).toHaveLength(1);
         expect(restored.imported_at).toBeNull();
-        // 試算頁式的單一通路範圍：還原後快照的解析器把 DTC 顯示成設定的名稱（PRD §3.4 的單元測試第二半）。
-        expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, snapshotResolver(restored.snapshot))).toBe("自營官網");
+        // 試算頁式的單一通路範圍：還原後快照的解析器把 DTC 顯示成設定的名稱（PRD §3.4 的單元測試第二半）；V42-2a 起 DTC 屬於群組 g1「全部平台」，寫「{群組名} · {顯示名稱}」。
+        expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, snapshotResolver(restored.snapshot))).toBe(fill(labels.shell.scopeV42.memberOfGroup, { group: "全部平台", channel: "自營官網" }));
         expect(again.channel_settings).toEqual(CHANNEL_SETTINGS);
         expect(JSON.parse(againText).payload).toEqual(wire.payload);
         expect(amountsOf(again.snapshot)).toEqual(EXPECTED[name]);

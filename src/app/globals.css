@@ -1388,6 +1388,8 @@ body { --tabbar-h: 56px; --more-nav-h: 112px; --more-cluster-h: 56px; }
 /* 各通路的緊湊表（C2）：通路／本期（元）／貢獻率；轉負、轉正用狀態標籤。 */
 .chart-section .channel-kv { margin-top: var(--space-3); }
 .chart-section .channel-kv th[scope="row"] .ui-lozenge { margin-left: var(--space-2); }
+/* V42-2a（D-V42-2）：G4 精簡表與通路寬表通路格的「只看這個通路」（只在資料集有群組時渲染）：接在列名與 lozenge 之後，留一格間距。 */
+.channel-drill { margin-left: var(--space-2); }
 .chart-section .channel-kv td.negative { color: var(--unfavorable); }
 @media (max-width: 767px) {
   .chart-section { padding: var(--space-4); }

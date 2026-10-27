@@ -10,6 +10,8 @@ import { AMOUNT_FIELDS, type AmountField, type Metric, type MetricName } from ".
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 // V3-4b 瀑布的資料組裝（C17 貢獻變化拆解、F2 本期利潤結構；PRD §7.1 第 5 點、§10.3）。
 // 期待值一律由 labels 模板＋格式化函式＋snapshot 的精確字串組出；加總與恆等式用 decimal.js 檢查到分。
@@ -319,5 +321,43 @@ describe("profitWaterfall：本期利潤結構（F2）", () => {
     expect(result.title).toBe(profitCopy.section);
     expect(result.scopeLabel).toBe(channelLabel("UNKNOWN", snapshotResolver(golden)));
     expect(profitWaterfall(golden, "constructor").missing).toBe(true);
+  });
+});
+
+// ── V42-2a 子集稽核第 8 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：本期利潤結構合計的範圍文字——全部通路寫「全部通路」、範圍等於某群組的成員集合時寫群組名、其他子集維持「合計」；通路範圍不變。沒有群組時逐字不變。
+describe("V42-2a 子集稽核第 8 條：本期利潤結構合計的範圍文字認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    return { snapshot: await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), allChannels: dataset.manifest.channels };
+  }
+
+  it("群組範圍（DTC＋SOCIAL＝自有）：合計的 scopeLabel 與副標寫群組名（有沒有給 allChannels 都一樣）；通路範圍仍寫通路名；柱的金額不變", async () => {
+    const { snapshot, allChannels } = await scoped(["DTC", "SOCIAL"]);
+    const result = profitWaterfall(snapshot, "all", { allChannels });
+    expect(result.scopeLabel).toBe(G1);
+    expect(result.subtitle).toBe(fill(profitCopy.subtitle, { section: profitCopy.section, period: period(snapshot, "current"), scope: G1 }));
+    expect(profitWaterfall(snapshot, "all").scopeLabel).toBe(G1);
+    expect(profitWaterfall(snapshot, "DTC", { allChannels }).scopeLabel).toBe(DTC_NAME);
+    expect(result.bars.map(bar => [bar.id, bar.value, bar.start, bar.end])).toEqual(profitWaterfall(snapshot, "all").bars.map(bar => [bar.id, bar.value, bar.start, bar.end]));
+  });
+
+  it("群組內單一通路範圍（DTC）：合計寫「合計」（單一通路不等於群組的成員集合）、通路範圍寫「官網」；沒有對應群組的子集（DTC＋LIVE）寫「合計」；全部通路寫「全部通路」", async () => {
+    const single = await scoped(["DTC"]);
+    expect(profitWaterfall(single.snapshot, "all", { allChannels: single.allChannels }).scopeLabel).toBe(labels.overview.sections.total);
+    expect(profitWaterfall(single.snapshot, "DTC", { allChannels: single.allChannels }).scopeLabel).toBe(DTC_NAME);
+    const subset = await scoped(["DTC", "LIVE"]);
+    expect(profitWaterfall(subset.snapshot, "all", { allChannels: subset.allChannels }).scopeLabel).toBe(labels.overview.sections.total);
+    const all = await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(profitWaterfall(all.snapshot, "all", { allChannels: all.allChannels }).scopeLabel).toBe(labels.shell.periodBar.filter.allChannels);
+  });
+
+  it("沒有群組（golden、示範）：合計寫「合計」或「全部通路」、通路寫通路名——與今天逐字相同", () => {
+    expect(profitWaterfall(golden, "all").scopeLabel).toBe(labels.overview.sections.total);
+    expect(profitWaterfall(golden, "all", { allChannels: golden.report.scope.channels }).scopeLabel).toBe(labels.shell.periodBar.filter.allChannels);
+    expect(profitWaterfall(demo, "all", { allChannels: [...demo.report.scope.channels, "LINE"] }).scopeLabel).toBe(labels.overview.sections.total);
+    expect(profitWaterfall(demo, "MARKETPLACE").scopeLabel).toBe(channelLabel("MARKETPLACE", snapshotResolver(demo)));
   });
 });

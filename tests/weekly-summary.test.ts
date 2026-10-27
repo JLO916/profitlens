@@ -11,6 +11,8 @@ import type { Metric, RuleCode } from "../src/domain/types";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 // V3-4a 本期一句話（PRD §7.1 區塊 2）與 F1 週會摘要（PRD §10.2）。
 // 期待值一律由 labels 模板＋格式化函式＋snapshot 的精確字串組出，不寫死數字（golden：本期扣廣告後貢獻 255.00、差額 −315.00，不改）。
@@ -295,5 +297,44 @@ describe("D-V3-15 分析事件：只記事件名", () => {
     for (const name of events) track(name);
     expect(va.mock.calls.map(([, payload]) => payload)).toEqual(events.map(name => ({ name })));
     for (const name of events) expect(name).toMatch(/^[a-z_]+$/);
+  });
+});
+
+// ── V42-2a 子集稽核第 7 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：週會摘要期間行的通路走 scopeChannelsLabel。群組範圍與群組內單一通路範圍都跑；沒有群組時逐字不變。
+describe("V42-2a 子集稽核第 7 條：週會摘要期間行的通路認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+  const actions: WeeklySummaryInput["actions"] = { pending: 0, pinned: [] };
+  const span = (snap: WorkspaceSnapshot, which: "previous" | "current") => {
+    const period = snap.report[which].period;
+    return `${formatPeriodL1(period.start, period.end, { days: false })}${fill(labels.format.units.periodDays, { days: snap.report.comparison[which === "current" ? "current_days" : "previous_days"] })}`;
+  };
+  const periodLine = (snap: WorkspaceSnapshot, channels: string) => fill(weekly.period, { current: span(snap, "current"), previous: span(snap, "previous"), channels });
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    return { snapshot: await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS), allChannels: dataset.manifest.channels };
+  }
+  const lineOf = (snapshot: WorkspaceSnapshot, allChannels?: readonly string[]) => buildWeeklySummary({ snapshot, datasetName: "合成資料", actions, allChannels });
+
+  it("群組範圍（DTC＋SOCIAL＝自有）：純文字與 Markdown 的期間行通路都寫群組名", async () => {
+    const { snapshot, allChannels } = await scoped(["DTC", "SOCIAL"]);
+    const summary = lineOf(snapshot, allChannels);
+    expect(summary.text.split("\n")[2]).toBe(periodLine(snapshot, G1));
+    expect(summary.markdown.split("\n")).toContain(periodLine(snapshot, G1));
+  });
+
+  it("群組內單一通路範圍（DTC）寫「自有 · 官網」；全部通路仍寫「全部通路」；沒有對應群組的子集（DTC＋LIVE）列成員", async () => {
+    const single = await scoped(["DTC"]);
+    expect(lineOf(single.snapshot, single.allChannels).text.split("\n")[2]).toBe(periodLine(single.snapshot, MEMBER));
+    const all = await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(lineOf(all.snapshot, all.allChannels).text.split("\n")[2]).toBe(periodLine(all.snapshot, labels.shell.periodBar.filter.allChannels));
+    const subset = await scoped(["DTC", "LIVE"]);
+    expect(lineOf(subset.snapshot, subset.allChannels).text.split("\n")[2]).toBe(periodLine(subset.snapshot, channelsLabel(subset.snapshot.report.scope.channels, snapshotResolver(subset.snapshot))));
+  });
+
+  it("沒有群組（golden、示範）：期間行與 channelsLabel 的成員清單逐字相同（與今天相同）", () => {
+    for (const snap of [golden, demo]) expect(lineOf(snap).text.split("\n")[2]).toBe(periodLine(snap, channelsLabel(snap.report.scope.channels, snapshotResolver(snap))));
   });
 });

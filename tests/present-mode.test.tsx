@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { parseCss, splitSelectors } from "../scripts/lib/ui-scan.mjs";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 import { validateDataset } from "@/domain/validation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { createReviewSession } from "@/application/review-session";
@@ -412,5 +414,41 @@ describe("globals.css 的 C 區段（:root[data-mode=\"present\"]）", () => {
     expect(shown[0].declarations).toEqual([{ prop: "display", value: "inline-flex" }]);
     expect(shown[0].context.some(prelude => /^@media screen\b/.test(prelude))).toBe(true);
     expect(decl(".page-present", "gap")).toBe("var(--space-2)");
+  });
+});
+
+// ── V42-2a 子集稽核第 17 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：投影中頁首的期間文字的通路走 scopeChannelsLabel（目前範圍與會議固定範圍都一樣）。
+describe("V42-2a 子集稽核第 17 條：投影中頁首的期間文字認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    const snapshot = await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS);
+    return { input, dataset, snapshot, channels: dataset.manifest.channels };
+  }
+  const summaryOf = (snapshot: WorkspaceSnapshot) => periodSummary({ previous: snapshot.report.previous.period, current: snapshot.report.current.period, previousDays: snapshot.report.comparison.previous_days, currentDays: snapshot.report.comparison.current_days, comparisonMode: snapshot.report.comparison.mode, channelsText: "", dataAsOf: snapshot.data_as_of }).text;
+  const expected = (snapshot: WorkspaceSnapshot, channels: string) => fill(labels.shell.presentV3.period, { period: summaryOf(snapshot), channels });
+
+  it("群組範圍（DTC＋SOCIAL＝自有）→ 群組名；會議固定範圍是同一組成員 → 群組名；群組內單一通路（DTC）→ 自有 · 官網；全部通路 → 全部通路；沒有對應群組的子集 → 成員清單", async () => {
+    const group = await scoped(["DTC", "SOCIAL"]);
+    expect(presentPeriodText(group.snapshot, null, group.channels)).toBe(expected(group.snapshot, G1));
+    const review = createReviewSession({ input: group.input, dataset: group.dataset, snapshot: group.snapshot, revision: 1 }, "e", "rev-group");
+    expect(review.meeting_filters.channels).toEqual(["DTC", "SOCIAL"]);
+    expect(presentPeriodText(group.snapshot, review, group.channels)).toBe(expected(group.snapshot, G1));
+    const single = await scoped(["DTC"]);
+    expect(presentPeriodText(single.snapshot, null, single.channels)).toBe(expected(single.snapshot, MEMBER));
+    const all = await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(presentPeriodText(all.snapshot, null, all.channels)).toBe(expected(all.snapshot, labels.shell.periodBar.filter.allChannels));
+    const subset = await scoped(["DTC", "LIVE"]);
+    expect(presentPeriodText(subset.snapshot, null, subset.channels)).toBe(expected(subset.snapshot, channelsLabel(["DTC", "LIVE"], snapshotResolver(subset.snapshot))));
+  });
+
+  it("沒有群組（golden 單一通路 DTC）：與 channelsLabel 逐字相同（與今天相同）", async () => {
+    const input = fixture("golden");
+    const dataset = validateDataset(input).dataset!;
+    const snapshot = await createSnapshot(dataset, { channels: ["DTC"] }, await hashInput(input));
+    expect(presentPeriodText(snapshot, null, dataset.manifest.channels)).toBe(expected(snapshot, channelsLabel(["DTC"], snapshotResolver(snapshot))));
   });
 });

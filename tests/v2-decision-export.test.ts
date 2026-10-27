@@ -5,7 +5,9 @@ import { createSnapshot, hashInput } from '@/application/workspace';
 import { blankScenarioInputs, createDecisionSession, saveScenario, type DecisionSession, type ScenarioPlan } from '@/application/decision';
 import { calculateScenario } from '@/domain/scenarios';
 import { activateScenarioEpoch, emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision, updateScenarioContext } from '@/application/scenario-workspace';
-import { csvHeaderKey } from '@/application/copy';
+import { csvHeaderKey, snapshotResolver } from '@/application/copy';
+import { SYNTHETIC_CHANNEL_SETTINGS } from './helpers/page-states';
+import { synthetic4ChannelInput } from './helpers/synthetic-4-channel';
 import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from '@/application/decision-export';
 import { fill, labels } from '@/i18n';
 import { emptyActionWorkspace } from '@/application/action-workspace';
@@ -223,5 +225,40 @@ describe('R5 fix: workspace export follows the scenario page context', () => {
    const rows = records(exportWorkspaceDecision('csv', allSource, workspace, emptyActionWorkspace(), null, null, selected)).filter(row => row.row_type === 'scenario_input' && row.field === 'volume_change_pct');
    expect(rows.map(row => [row.item_id, row.status, row.plan_revision]), String(selected)).toEqual([['p', 'draft', ''], ['q', 'valid', '1']]);
   }
+ });
+});
+
+// ── V42-2a 子集稽核第 10 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：決策工作稿 Markdown 主層「資料版本與來源」的範圍（scope）走 scopeChannelsLabel；CSV 與 JSON 維持通路代碼。
+describe('V42-2a 子集稽核第 10 條：決策工作稿的範圍文字認得群組（只有 Markdown）', () => {
+ const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === 'g1')!.label;
+ const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === 'DTC')!.label!;
+ const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+ const scopeLine = (value: string) => fill(labels.exports.decision.fieldLine, { label: mdEscape(labels.exports.csv.columns.scope), value: mdEscape(value) });
+ async function scoped(channels: string[]) {
+  const input = synthetic4ChannelInput(); const dataset = validateDataset(input).dataset!;
+  const snapshot = await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS);
+  return { snapshot, session: createDecisionSession(dataset, snapshot, 1) };
+ }
+ it('群組範圍（DTC＋SOCIAL＝自有）：Markdown 的 scope 寫群組名；JSON 的 session.scope.channels 與 CSV 仍是代碼、都不含群組名', async () => {
+  const { snapshot, session } = await scoped(['DTC', 'SOCIAL']);
+  const markdown = exportDecisionMarkdown(session, [], [], undefined, [], { resolver: snapshotResolver(snapshot) });
+  expect(markdown).toContain(scopeLine(G1));
+  expect(markdown).not.toContain(scopeLine('DTC、SOCIAL'));
+  const json = exportDecisionJson(session, [], []);
+  expect(JSON.parse(json).session.scope.channels).toEqual(['DTC', 'SOCIAL']);
+  expect(json).not.toContain(G1);
+  const csv = exportDecisionCsv(session, [], []);
+  expect(csv).toContain('DTC'); expect(csv).toContain('SOCIAL'); expect(csv).not.toContain(G1);
+ });
+ it('群組內單一通路範圍（DTC）：Markdown 的 scope 寫「自有 · 官網」；沒給 resolver 時仍是代碼', async () => {
+  const { snapshot, session } = await scoped(['DTC']);
+  expect(exportDecisionMarkdown(session, [], [], undefined, [], { resolver: snapshotResolver(snapshot) })).toContain(scopeLine(MEMBER));
+  expect(exportDecisionMarkdown(session, [], [])).toContain(scopeLine('DTC'));
+ });
+ it('沒有群組（golden 全部通路與單一通路）：scope 與 channelsLabel 的成員清單逐字相同（與今天相同）', async () => {
+  const input = fixture(), dataset = validateDataset(input).dataset!, hash = await hashInput(input);
+  const all = await createSnapshot(dataset, {}, hash), dtc = await createSnapshot(dataset, { channels: ['DTC'] }, hash);
+  expect(exportDecisionMarkdown(createDecisionSession(dataset, all, 1), [], [], undefined, [], { resolver: snapshotResolver(all) })).toContain(scopeLine('DTC、MARKETPLACE'));
+  expect(exportDecisionMarkdown(createDecisionSession(dataset, dtc, 1), [], [], undefined, [], { resolver: snapshotResolver(dtc) })).toContain(scopeLine('DTC'));
  });
 });

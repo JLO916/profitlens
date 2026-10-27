@@ -16,6 +16,8 @@ import { fill, labels } from "@/i18n";
  */
 
 const ui = labels.data.channelSettingsV42;
+/** V42-2a（D-V42-12；GLOSSARY §2）：群組層的三句限制，接在「要注意」的名稱句之後（details 預設收合，畫面 17 不變）。 */
+const limits = labels.diagnosis.channelsV42.limits;
 const JOINER = "、";
 
 export interface ChannelDraftRow { code: string; label: string; group: string; order: string }
@@ -146,6 +148,6 @@ export function ChannelSettingsEditor({ datasetId, manifestChannels, settings, o
     {problems.length > 0 && <div role="alert"><ul className="channel-settings-problems">{problems.map(problem => <li key={problem} className="ui-field-error">{problem}</li>)}</ul></div>}
     {/* 套用後的狀態句：live region 一直掛著（空字串時不佔高度），內容換成句子時才會被唸出。 */}
     <p className="channel-settings-status" role="status">{applied ? ui.applied : ""}</p>
-    <details className="channel-settings-notes"><summary>{ui.notes.summary}</summary><p>{ui.notes.names}</p></details>
+    <details className="channel-settings-notes"><summary>{ui.notes.summary}</summary><p>{ui.notes.names}</p><p>{limits.rules}</p><p>{limits.scenario}</p><p>{limits.targets}</p></details>
   </details>;
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { track } from "@/application/analytics";
-import { channelsLabel, snapshotResolver } from "@/application/copy";
+import { scopeChannelsLabel, snapshotResolver } from "@/application/copy";
 import { formatPeriodL1 } from "@/application/presentation";
 import { buildWeeklySummary, snapshotSentence, type WeeklySummaryInput } from "@/application/weekly-summary";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -43,12 +43,12 @@ export async function copyWeeklySummary(input: WeeklySummaryInput, clipboard: Pi
   return { copied: await writeClipboard(text, clipboard), text };
 }
 
-/** 一句話下方的範圍行：「本期 7/13–8/23 · 全部通路 · 金額未稅」。 */
+/** 一句話下方的範圍行：「本期 7/13–8/23 · 全部通路 · 金額未稅」。V42-2a（子集稽核第 18 條）：子集走解析器（群組名／「{群組名} · {通路名}」）；沒有群組時仍是成員清單。 */
 export function snapshotMeta(snapshot: WorkspaceSnapshot, allChannels?: readonly string[]): string {
   const { report } = snapshot;
   const channels = report.scope.channels, all = allChannels ?? channels;
   const everyChannel = all.length > 0 && all.every(channel => channels.includes(channel));
-  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(channels, snapshotResolver(snapshot));
+  const channelsText = everyChannel ? labels.shell.periodBar.filter.allChannels : scopeChannelsLabel(channels, snapshotResolver(snapshot));
   return fill(ui.meta, { period: formatPeriodL1(report.current.period.start, report.current.period.end, { days: false, anchor: snapshot.data_as_of }), channels: channelsText });
 }
 

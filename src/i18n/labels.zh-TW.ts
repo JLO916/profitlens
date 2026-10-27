@@ -1063,6 +1063,23 @@ export const diagnosis = {
       cellAria: "{week} {metric} {value}，看明細",
     },
   },
+  // ── V42-2a 錨點：「只看這個通路」與群組層的三句限制（D-V42-2、D-V42-12；PRD §4.2、§4.3；用詞照 docs/revamp-v4.2/GLOSSARY.md #7 與 §2）。
+  //    按鈕只在資料集有群組且範圍通路數 > 1 時渲染（示範資料 0 差異）；三句限制放資料來源頁「要注意」與總覽目標區塊，主層不寫否定句。
+  channelsV42: {
+    /** 通路寬表與 G4 精簡表通路列的按鈕（GLOSSARY #7；動詞開頭）：按了就是既有的單一通路篩選。 */
+    drill: "只看這個通路",
+    /**
+     * 按鈕的可及名稱：可見文字加通路顯示名稱（{channel}），Lighthouse label-content-name-mismatch 不觸發。
+     * 鍵名不叫 drillAria：copy-scan 把「X」與「XAria」視為同一句的變體、要求占位符相同（placeholderVariantMismatch 上限 0，棘輪不能上調），可見文字沒有 {channel}，所以用 drillChannelAria。
+     */
+    drillChannelAria: "只看這個通路：{channel}",
+    /** 群組層的三句限制（GLOSSARY §2；陳述句，不含 copy-density 的否定計數詞）。 */
+    limits: {
+      rules: "群組的健檢只有合計層的規則；扣廣告後為負的提醒只出現在單一通路列。",
+      scenario: "試算一次只算一個通路。",
+      targets: "目標只對全部通路或單一通路配對。",
+    },
+  },
 } as const;
 
 // ── products：商品毛利：商品頁、最差與增加最多、商品比較

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExtern
 import { createPortal } from "react-dom";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import { PRODUCT_PARETO_LIMIT, productPareto } from "@/application/chart-pareto";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
+import { categoryLabel, channelLabel, conversionSentence, scopeChannelsLabel, snapshotResolver } from "@/application/copy";
 import { makeResolver } from "@/application/channel-settings";
 import { downloadText } from "@/application/download";
 import { exportProductsCsv } from "@/application/export";
@@ -148,6 +148,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
   /**
    * 範圍副標：目前範圍涵蓋資料集全部通路時寫「全部通路」（同 overview/weekly-snapshot.tsx 的 snapshotMeta）。
    * V4-4：兩期起訖與通路範圍字和 G13、G14 共用（chartScope：抽屜 builder 的 ctx＋副標用字），product-scope 那一行由它組成，輸出不變。
+   * V42-2a（子集稽核第 19 條）：子集走解析器——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」；沒有群組時仍是成員清單（逐字不變）。
    */
   const chartScope = useMemo((): ProductChartScope => {
     const scoped = comparison.scope, every = allChannels ?? dataset.manifest.channels;
@@ -156,7 +157,7 @@ export function ProductComparisonPanel({ dataset, snapshot, onEvidence, filename
       ctx: { previous: scoped.previous_period, current: scoped.current_period, resolver },
       current: formatPeriodL1(scoped.current_period.start, scoped.current_period.end, { days: false, anchor: snapshot.data_as_of }),
       previous: formatPeriodL1(scoped.previous_period.start, scoped.previous_period.end, { days: false, anchor: snapshot.data_as_of }),
-      channels: everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(scoped.channels, resolver),
+      channels: everyChannel ? labels.shell.periodBar.filter.allChannels : scopeChannelsLabel(scoped.channels, resolver),
     };
   }, [comparison.scope, allChannels, dataset.manifest.channels, resolver, snapshot.data_as_of]);
   const scopeText = fill(page.scope, { current: chartScope.current, previous: chartScope.previous, channels: chartScope.channels });

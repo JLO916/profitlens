@@ -7,7 +7,8 @@ import { emptyScenarioWorkspace, ensureScenarioContext, scenarioContextDecision,
 import { createReviewSession, updateReviewSession, selectReviewScenario, refreshReviewSession, validateReviewSession, buildReviewDecisionContext, syncReviewPins, refreshReviewActionReferences, refreshReviewScenarioReferences, rebuildReviewSnapshot } from '@/application/review-session';
 import { emptyActionWorkspace, addActionDraft, pinAction, editBoundAction, confirmBoundAction, refreshActionWorkspace, actionDocuments } from '@/application/action-workspace';
 import { buildManagerSummary, exportManagerSummaryMarkdown } from '@/application/manager-summary';
-import { labels } from '@/i18n';
+import { fill, labels } from '@/i18n';
+import { snapshotResolver } from '@/application/copy';
 import { synthetic4ChannelInput } from './helpers/synthetic-4-channel';
 import { SYNTHETIC_CHANNEL_SETTINGS } from './helpers/page-states';
 async function source(channel?:string){const input=fixture();const dataset=validateDataset(input).dataset!;return{input,dataset,snapshot:await createSnapshot(dataset,channel?{channels:[channel]}:{},await hashInput(input)),revision:1};}
@@ -65,5 +66,50 @@ describe('V42-2a 子集稽核第 12b 條（不受影響，補測試）：群組�
   expect(r.selected_scenarios.map(row=>row.channel)).toEqual(['DTC']);
   expect(()=>selectReviewScenario(r,w,null,'SOCIAL')).toThrow('REVIEW_SCENARIO_SCOPE_MISMATCH');
   validateReviewSession(r,w);
+ });
+});
+
+// ── V42-2a 子集稽核第 12c、12d 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：buildReviewDecisionContext 的方案（12c）與待辦（12d）範圍文字走 scopeChannelsLabel（resolver 給時）；沒給 resolver 時仍是代碼。
+describe('V42-2a 子集稽核第 12c、12d 條：方案與待辦的範圍文字認得群組',()=>{
+ const G1=SYNTHETIC_CHANNEL_SETTINGS.groups.find(group=>group.id==='g1')!.label;
+ const DTC_NAME=SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry=>entry.code==='DTC')!.label!;
+ const MEMBER=fill(labels.shell.scopeV42.memberOfGroup,{group:G1,channel:DTC_NAME});
+ const ui=labels.meeting.session;
+ async function synthetic(channels:string[]){const input=synthetic4ChannelInput();const dataset=validateDataset(input).dataset!;return{input,dataset,snapshot:await createSnapshot(dataset,{channels},await hashInput(input),SYNTHETIC_CHANNEL_SETTINGS),revision:1,channel_settings:SYNTHETIC_CHANNEL_SETTINGS};}
+ async function plan(w:ReturnType<typeof emptyScenarioWorkspace>,channel:string){const next=ensureScenarioContext(w,await synthetic([channel]));const c=next.contexts.at(-1)!;const d=scenarioContextDecision(c);d.scenarios=saveScenario(c.session,[],{id:'p',name:channel,inputs});return updateScenarioContext(next,c.id,d);}
+ /** 群組或單一通路範圍的會議稿：一筆置頂待辦（綁定目前範圍）＋選入的 DTC 方案；expected 以綁定與方案的期間組出兩種範圍文字。 */
+ async function contextOf(channels:string[]){
+  const s=await synthetic(channels);
+  let a=addActionDraft(emptyActionWorkspace(),s,'a1');a=pinAction(a,'a1',true);
+  const w=await plan(emptyScenarioWorkspace('e'),'DTC');
+  let r=syncReviewPins(createReviewSession(s,'e','m'),a);r=selectReviewScenario(r,w,scenarioSelectionRef(w.contexts[0],'p'));
+  const binding=actionDocuments(a)[0].binding,period=w.contexts[0].session.period;
+  const expected=(scopeChannels:string,channel:string)=>({action:fill(ui.actionScope,{channels:scopeChannels,start:binding.period.start,end:binding.period.end}),scenario:fill(ui.scenarioScope,{channel,start:period.start,end:period.end})});
+  return{s,a,w,r,expected};
+ }
+ it('群組範圍（DTC＋SOCIAL＝自有）：待辦的範圍寫「自有 · {start}–{end}」、選入的 DTC 方案寫「自有 · 官網 · {start}–{end}」；沒給 resolver 時是「DTC、SOCIAL」與「DTC」',async()=>{
+  const {s,a,w,r,expected}=await contextOf(['DTC','SOCIAL']);
+  expect(actionDocuments(a)[0].binding.scope.channels).toEqual(['DTC','SOCIAL']);
+  const ctx=buildReviewDecisionContext(r,w,a,snapshotResolver(s.snapshot));
+  expect(ctx.actions[0].scopeLabel).toBe(expected(G1,MEMBER).action);
+  expect(ctx.scenarios[0].scopeLabel).toBe(expected(G1,MEMBER).scenario);
+  const plain=buildReviewDecisionContext(r,w,a);
+  expect(plain.actions[0].scopeLabel).toBe(expected('DTC、SOCIAL','DTC').action);
+  expect(plain.scenarios[0].scopeLabel).toBe(expected('DTC、SOCIAL','DTC').scenario);
+ });
+ it('群組內單一通路範圍（DTC）：待辦與方案都寫「自有 · 官網」',async()=>{
+  const {s,a,w,r,expected}=await contextOf(['DTC']);
+  const ctx=buildReviewDecisionContext(r,w,a,snapshotResolver(s.snapshot));
+  expect(ctx.actions[0].scopeLabel).toBe(expected(MEMBER,MEMBER).action);
+  expect(ctx.scenarios[0].scopeLabel).toBe(expected(MEMBER,MEMBER).scenario);
+ });
+ it('沒有群組（golden）：待辦「DTC、MARKETPLACE」、方案「DTC」——與今天逐字相同',async()=>{
+  const s=await source();let a=addActionDraft(emptyActionWorkspace(),s,'a1');a=pinAction(a,'a1',true);
+  let w=ensureScenarioContext(emptyScenarioWorkspace('e'),await source('DTC'));const c=w.contexts[0];const d=scenarioContextDecision(c);d.scenarios=saveScenario(c.session,[],{id:'p',name:'DTC',inputs});w=updateScenarioContext(w,c.id,d);
+  let r=syncReviewPins(createReviewSession(s,'e','m'),a);r=selectReviewScenario(r,w,scenarioSelectionRef(w.contexts[0],'p'));
+  const ctx=buildReviewDecisionContext(r,w,a,snapshotResolver(s.snapshot));
+  const binding=actionDocuments(a)[0].binding;
+  expect(ctx.actions[0].scopeLabel).toBe(fill(ui.actionScope,{channels:'DTC、MARKETPLACE',start:binding.period.start,end:binding.period.end}));
+  expect(ctx.scenarios[0].scopeLabel).toBe(fill(ui.scenarioScope,{channel:'DTC',start:c.session.period.start,end:c.session.period.end}));
  });
 });

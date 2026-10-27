@@ -80,10 +80,13 @@ export function channelChangeText(metric: Metric): string {
   return metric.value === null ? formatEmpty(emptyKindOf(metric.reason_codes)) : formatSignedDelta(metric.value, "L2");
 }
 
-export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
+export function ChannelSection({ snapshot, onEvidence, onDrill }: ChannelSectionProps) {
   const { report } = snapshot;
   const resolver = snapshotResolver(snapshot);
   const conclusion = channelConclusion(snapshot, { resolver });
+  // V42-2a（D-V42-2；PRD §4.2 第 1 點）：「只看這個通路」只在有 onDrill、資料集有至少一個群組、範圍通路數 > 1 時渲染（示範資料沒有群組 → 畫面 0 差異；已是單一通路時沒有意義）。
+  const drill = onDrill !== undefined && (snapshot.channel_groups?.length ?? 0) > 0 && report.scope.channels.length > 1 ? onDrill : null;
+  const drillButton = (channel: string, label: string) => drill === null ? null : <button type="button" className="ui-btn ui-btn-text channel-drill" data-testid={`channel-drill-${channel}`} aria-label={fill(labels.diagnosis.channelsV42.drillChannelAria, { channel: label })} onClick={() => drill(channel)}>{labels.diagnosis.channelsV42.drill}</button>;
   // V4-2 G4：各通路的差額（同一個 builder 給條與 number-link），差額條共用一把尺（PRD §7.2：同一張表的內嵌條共用最大值）。
   const changes = useMemo(() => new Map(report.scope.channels.map(channel => [channel, channelChangeEvidence(snapshot, channel)])), [report.scope.channels, snapshot]);
   const changeScale = useMemo(() => barCellScale([...changes.values()].map(evidence => evidence.metric.value)), [changes]);
@@ -127,7 +130,7 @@ export function ChannelSection({ snapshot, onEvidence }: ChannelSectionProps) {
       const changeShown = channelChangeText(change);
       const changeTone = change.value === null ? null : deltaTone("contribution_after_marketing", change.value, "L2");
       return <tr key={row.channel}>
-        <th scope="row">{row.label}{row.turned !== null && <span className="ui-lozenge" data-tone={row.turned === "negative" ? "unfavorable" : undefined}>{row.turned === "negative" ? copy.turnedNegative : copy.turnedPositive}</span>}</th>
+        <th scope="row">{row.label}{row.turned !== null && <span className="ui-lozenge" data-tone={row.turned === "negative" ? "unfavorable" : undefined}>{row.turned === "negative" ? copy.turnedNegative : copy.turnedPositive}</span>}{drillButton(row.channel, row.label)}</th>
         <td className={`num${unfavorable("contribution_after_marketing", row.current.value, "L2") ? " negative" : ""}`}><button type="button" className="number-link" aria-label={fill(row.current.value === null ? copy.marginAria : copy.amountAria, { channel: row.label, metric: metricDefinitions.contribution_after_marketing.label, value: amount })} onClick={() => openChannel(row.channel, "current")}>{amount}</button></td>
         <td className={`num${unfavorable("contribution_margin", row.margin.value, "L2") ? " negative" : ""}`}><button type="button" className="number-link" aria-label={fill(copy.marginAria, { channel: row.label, metric: metricDefinitions.contribution_margin.label, value: rate })} onClick={() => openChannel(row.channel, "current", "contribution_margin")}>{rate}</button></td>
         <td className={`num channel-change${changeTone === "unfavorable" ? " negative" : ""}`}>{changeTone !== null && <BarCell mode="variance" value={change.value} max={changeScale} tone={changeTone} favorableFill="total" testId={`chart-overview-channels-bar-${row.channel}`} onClick={() => onChangeBar(row.channel)} />}<button type="button" className="number-link" aria-label={fill(change.value === null ? chartsCopy.changeEmptyAria : chartsCopy.changeAria, { channel: row.label, metric: metricDefinitions.contribution_after_marketing.label, value: changeShown })} onClick={() => openChange(row.channel)}>{changeShown}</button></td>

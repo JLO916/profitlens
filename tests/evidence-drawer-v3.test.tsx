@@ -25,7 +25,8 @@ import { barCellFill, barCellShareBase, barCellShareGeometry, barCellSigned } fr
 import { channelEvidence } from "@/components/overview/charts/channel-section";
 import { cumulativeDayEvidence, cumulativeEvidence } from "@/components/overview/charts/cumulative-section";
 import { frozenLadderMetrics, ladderCases, ladderDatasets } from "./helpers/evidence-ladder-cases";
-import { snapshotResolver } from "@/application/copy";
+import { channelsLabel, snapshotResolver } from "@/application/copy";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
 
 // V4-7b 代理 B：ladderMetrics 搬到 src/application/evidence-ladder.ts，抽屜改從那裡匯入。這裡把它包一層開關：預設走搬移後的函式（本檔其餘測試不受影響），
 // 設了 impl 時改走它（V4-7b 段用搬移前的原文凍結 frozenLadderMetrics），同一份抽屜渲染兩次逐字比對 SSR。
@@ -650,5 +651,47 @@ describe("V4-10 G8 兩期每日累計的抽屜", () => {
     expect(bigNumber(html)).toBe(formatAmountL1("255.00"));
     expect(technicalOf(html)).toContain(`<div><dt>metric_version</dt><dd><code>contribution-v1</code></dd></div><div data-testid="evidence-arrange-version"><dt>${labels.evidence.chartsV4.arrangeVersion}</dt><dd><code>${CUMULATIVE_DAILY_VERSION}</code></dd></div>`);
     expect(between(html, 'data-testid="evidence-filter"', "</div>")).toContain(filterPhrase("2026-08-02"));
+  });
+});
+
+// ── V42-2a 子集稽核第 14 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5；PRD §4.2 第 2 點）：evidenceSubtitle 的通路走 scopeChannelsLabel；scopeLabel 已寫出群組名或成員清單都算「已寫出通路」；不改 EvidenceFilter。
+describe("V42-2a 子集稽核第 14 條：抽屜副標（evidenceSubtitle）認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+  let grouped: { dataset: Dataset; snapshot: WorkspaceSnapshot };
+  beforeAll(async () => {
+    const input = synthetic4ChannelInput();
+    const loaded = validateDataset(input).dataset!;
+    grouped = { dataset: loaded, snapshot: await createSnapshot(loaded, { channels: ["DTC", "SOCIAL"] }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS) };
+  });
+  const options = () => ({ resolver: snapshotResolver(grouped.snapshot), anchor: grouped.dataset.manifest.data_as_of, allChannels: grouped.dataset.manifest.channels, report: grouped.snapshot.report });
+  const currentPeriod = () => fill(v3.periodNamed, { name: labels.shell.periods.current, range: formatPeriodL1(grouped.snapshot.report.current.period.start, grouped.snapshot.report.current.period.end, { days: false, anchor: grouped.dataset.manifest.data_as_of }) });
+  const subtitle = (channels: string[], scopeLabel?: string) => evidenceSubtitle({ period: grouped.snapshot.report.current.period, channels, scopeLabel }, options());
+
+  it("沒有 scopeLabel：全部通路 → 全部通路；群組（DTC＋SOCIAL，順序無關）→ 自有；群組成員（DTC）→ 自有 · 官網；沒有對應群組的子集（DTC＋LIVE）→ 成員清單", () => {
+    expect(subtitle(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"])).toBe(fill(v3.subtitle, { scope: labels.evidence.allChannels, period: currentPeriod() }));
+    expect(subtitle(["DTC", "SOCIAL"])).toBe(fill(v3.subtitle, { scope: G1, period: currentPeriod() }));
+    expect(subtitle(["SOCIAL", "DTC"])).toBe(fill(v3.subtitle, { scope: G1, period: currentPeriod() }));
+    expect(subtitle(["DTC"])).toBe(fill(v3.subtitle, { scope: MEMBER, period: currentPeriod() }));
+    expect(subtitle(["DTC", "LIVE"])).toBe(fill(v3.subtitle, { scope: channelsLabel(["DTC", "LIVE"], options().resolver), period: currentPeriod() }));
+  });
+
+  it("有 scopeLabel：已含群組名（影響金額 · 自有）或成員清單（合計（官網、社群））時不重複；都沒有時另附「通路：自有」；群組成員的 scopeLabel 只寫「官網」也算已寫出", () => {
+    const members = channelsLabel(["DTC", "SOCIAL"], options().resolver);
+    const impact = labels.overview.sections.impact;
+    expect(subtitle(["DTC", "SOCIAL"], `${impact} · ${G1}`)).toBe(fill(v3.subtitle, { scope: `${impact} · ${G1}`, period: currentPeriod() }));
+    expect(subtitle(["DTC", "SOCIAL"], `${labels.overview.sections.total}（${members}）`)).toBe(fill(v3.subtitle, { scope: `${labels.overview.sections.total}（${members}）`, period: currentPeriod() }));
+    expect(subtitle(["DTC", "SOCIAL"], impact)).toBe(fill(v3.subtitleChannels, { scope: impact, period: currentPeriod(), channels: G1 }));
+    expect(subtitle(["DTC"], DTC_NAME)).toBe(fill(v3.subtitle, { scope: DTC_NAME, period: currentPeriod() }));
+    expect(subtitle(["DTC"], MEMBER)).toBe(fill(v3.subtitle, { scope: MEMBER, period: currentPeriod() }));
+    expect(subtitle(["DTC"], impact)).toBe(fill(v3.subtitleChannels, { scope: impact, period: currentPeriod(), channels: MEMBER }));
+  });
+
+  it("沒有群組（golden）：與 channelsLabel 逐字相同（與今天相同）", () => {
+    const plain = { resolver: snapshotResolver(snapshot), anchor: dataset.manifest.data_as_of, allChannels: dataset.manifest.channels, report: snapshot.report };
+    const period = fill(v3.periodNamed, { name: labels.shell.periods.current, range: range(snapshot.report.current.period.start, snapshot.report.current.period.end) });
+    expect(evidenceSubtitle({ period: snapshot.report.current.period, channels: ["DTC"] }, plain)).toBe(fill(v3.subtitle, { scope: channelsLabel(["DTC"], plain.resolver), period }));
+    expect(evidenceSubtitle({ period: snapshot.report.current.period, channels: ["DTC"], scopeLabel: labels.diagnosis.panel.scopeAll }, plain)).toBe(fill(v3.subtitleChannels, { scope: labels.diagnosis.panel.scopeAll, period, channels: "DTC" }));
   });
 });

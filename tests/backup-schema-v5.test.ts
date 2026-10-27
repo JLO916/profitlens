@@ -247,7 +247,8 @@ describe("V42-1a 備份 v5 的通路設定（payload.channel_settings，選填�
     expect(restored.snapshot.report.scope.channels).toEqual(["DTC"]);
     expect(restored.snapshot.filter_hash).toBe(single.filter_hash);
     const resolver = snapshotResolver(restored.snapshot);
-    expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, resolver)).toBe("官網");
+    // V42-2a（PRD §4.2 第 2 點）：DTC 屬於群組 g1「全部平台」，scopeLabel 寫「{群組名} · {顯示名稱}」；channelsLabel 仍是顯示名稱。
+    expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, resolver)).toBe(fill(labels.shell.scopeV42.memberOfGroup, { group: "全部平台", channel: "官網" }));
     expect(channelsLabel(restored.snapshot.report.scope.channels, resolver)).toBe("官網");
     expect(resolver.channel("MARKETPLACE")).toBe("MARKETPLACE");
     const plain = await restoreWorkspaceBackup(await exportWorkspaceBackup(base));
