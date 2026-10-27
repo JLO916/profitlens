@@ -8,6 +8,8 @@ import { createReviewSession, updateReviewSession, selectReviewScenario, refresh
 import { emptyActionWorkspace, addActionDraft, pinAction, editBoundAction, confirmBoundAction, refreshActionWorkspace, actionDocuments } from '@/application/action-workspace';
 import { buildManagerSummary, exportManagerSummaryMarkdown } from '@/application/manager-summary';
 import { labels } from '@/i18n';
+import { synthetic4ChannelInput } from './helpers/synthetic-4-channel';
+import { SYNTHETIC_CHANNEL_SETTINGS } from './helpers/page-states';
 async function source(channel?:string){const input=fixture();const dataset=validateDataset(input).dataset!;return{input,dataset,snapshot:await createSnapshot(dataset,channel?{channels:[channel]}:{},await hashInput(input)),revision:1};}
 const inputs={volume_change_pct:'0',discount_change_pp:'0',fulfillment_change_pct:'-10',ad_change_pct:'0',one_time_cost:'0',assumptions_accepted:true};
 describe('A2 restorable fixed-source review session',()=>{
@@ -33,5 +35,35 @@ describe('A2 restorable fixed-source review session',()=>{
  it('creating a meeting after a legacy restore can preserve existing pins and their bindings',async()=>{const s=await source();let actions=addActionDraft(emptyActionWorkspace(),s,'legacy');actions=pinAction(actions,'legacy',true);const legacy={contexts:actions.contexts,items:actions.items.map(({card,context_id,scope,pinned,diagnostic_id})=>({card,context_id,scope,pinned,diagnostic_id}))};const restored=syncReviewPins(createReviewSession(s,'restored','legacy-review'),legacy);expect(restored.pinned_action_ids).toEqual(['legacy']);expect(restored.action_bindings).toEqual([{action_id:'legacy',context_id:legacy.items[0].context_id,binding_revision:1}]);expect(buildReviewDecisionContext(restored,emptyScenarioWorkspace('restored'),legacy).actions[0].pinned).toBe(true);});
  it('binding mismatch cannot silently replace a same-ID action reference',async()=>{
   const s=await source();let a=addActionDraft(emptyActionWorkspace(),s,'a');a=editBoundAction(a,'a',{fact_ids:[a.contexts[0].session.facts[0].id]});a=confirmBoundAction(a,'a');a=pinAction(a,'a',true);const r=syncReviewPins(createReviewSession(s,'e','m'),a);const changed=editBoundAction(a,'a',{fact_ids:[a.contexts[0].session.facts[1].id]});const ctx=buildReviewDecisionContext(r,emptyScenarioWorkspace('e'),changed);expect(ctx.actions[0].status).toBe('stale');const decided=updateReviewSession(r,{decision_state:'adopted'});expect(syncReviewPins(decided,changed).decision_state).toBe('draft');const refreshed=refreshReviewActionReferences(r,changed,['a']);expect(refreshed.action_bindings[0].binding_revision).toBe(r.action_bindings[0].binding_revision+1);expect(buildReviewDecisionContext(refreshed,emptyScenarioWorkspace('e'),changed).actions[0].status).toBe('draft');
+ });
+});
+
+// ── V42-2a 子集稽核第 12b 條（verification/revamp-v42/V42-0-subset-audit.md；設計 §5 最後一列）：review-session.ts 的 meeting_filters 與 .includes(ref.channel) 以成員資格判斷，不受影響，補測試。群組範圍與單一通路範圍都跑。
+describe('V42-2a 子集稽核第 12b 條（不受影響，補測試）：群組範圍與單一通路範圍的會議快照只接受成員',()=>{
+ async function synthetic(channels:string[]){const input=synthetic4ChannelInput();const dataset=validateDataset(input).dataset!;return{input,dataset,snapshot:await createSnapshot(dataset,{channels},await hashInput(input),SYNTHETIC_CHANNEL_SETTINGS),revision:1,channel_settings:SYNTHETIC_CHANNEL_SETTINGS};}
+ async function plan(w:ReturnType<typeof emptyScenarioWorkspace>,channel:string){const next=ensureScenarioContext(w,await synthetic([channel]));const c=next.contexts.at(-1)!;const d=scenarioContextDecision(c);d.scenarios=saveScenario(c.session,[],{id:'p',name:channel,inputs});return updateScenarioContext(next,c.id,d);}
+ it('群組範圍（g1＝DTC＋SOCIAL，成員任意順序）：meeting_filters.channels＝排序後的成員代碼；成員 DTC 的方案可選入，非成員 MARKETPLACE 被拒絕（REVIEW_SCENARIO_SCOPE_MISMATCH），寫進引用也被驗證擋下',async()=>{
+  const grouped=await synthetic(['SOCIAL','DTC']);let r=createReviewSession(grouped,'e','meeting');
+  expect(r.meeting_filters.channels).toEqual(['DTC','SOCIAL']);expect(r.filter_hash).toBe(grouped.snapshot.filter_hash);
+  let w=await plan(emptyScenarioWorkspace('e'),'DTC');const dtc=w.contexts[0];
+  r=selectReviewScenario(r,w,scenarioSelectionRef(dtc,'p'));
+  expect(r.selected_scenarios).toEqual([{context_id:dtc.id,plan_id:'p',plan_revision:1,channel:'DTC'}]);
+  validateReviewSession(r,w);
+  expect(buildReviewDecisionContext(r,w,emptyActionWorkspace()).scenarios.map(row=>row.binding?.channels)).toEqual([['DTC']]);
+  w=await plan(w,'MARKETPLACE');const market=w.contexts[1];
+  expect(()=>selectReviewScenario(r,w,scenarioSelectionRef(market,'p'))).toThrow('REVIEW_SCENARIO_SCOPE_MISMATCH');
+  expect(()=>selectReviewScenario(r,w,null,'MARKETPLACE')).toThrow('REVIEW_SCENARIO_SCOPE_MISMATCH');
+  expect(()=>selectReviewScenario(r,w,null,'LIVE')).toThrow('REVIEW_SCENARIO_SCOPE_MISMATCH');
+  expect(()=>validateReviewSession({...r,selected_scenarios:[...r.selected_scenarios,scenarioSelectionRef(market,'p')]},w)).toThrow('INVALID_REVIEW_SCENARIO_REFERENCE');
+  expect(r.selected_scenarios).toHaveLength(1);
+ });
+ it('單一通路範圍（群組成員 DTC）：meeting_filters.channels＝[DTC]；DTC 的方案可選入，同群組的另一個成員 SOCIAL 也被拒絕',async()=>{
+  const single=await synthetic(['DTC']);let r=createReviewSession(single,'e','meeting');
+  expect(r.meeting_filters.channels).toEqual(['DTC']);
+  const w=await plan(emptyScenarioWorkspace('e'),'DTC');
+  r=selectReviewScenario(r,w,scenarioSelectionRef(w.contexts[0],'p'));
+  expect(r.selected_scenarios.map(row=>row.channel)).toEqual(['DTC']);
+  expect(()=>selectReviewScenario(r,w,null,'SOCIAL')).toThrow('REVIEW_SCENARIO_SCOPE_MISMATCH');
+  validateReviewSession(r,w);
  });
 });

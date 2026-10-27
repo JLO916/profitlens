@@ -3,6 +3,9 @@ import { fixture } from './helpers/fixtures';
 import { validateDataset } from '@/domain/validation';
 import { createSnapshot, hashInput } from '@/application/workspace';
 import { emptyActionWorkspace, addActionDraft, editBoundAction, confirmBoundAction, pinAction, moveActionUp, refreshActionWorkspace, actionDocuments } from '@/application/action-workspace';
+import type { Scope } from '@/domain/types';
+import { synthetic4ChannelInput } from './helpers/synthetic-4-channel';
+import { SYNTHETIC_CHANNEL_SETTINGS } from './helpers/page-states';
 async function setup(channels?:string[], revision=1) {
   const input=fixture(); const dataset=validateDataset(input).dataset!;
   const snapshot=await createSnapshot(dataset,{channels},await hashInput(input));
@@ -90,5 +93,41 @@ describe('PL05 independent action workspace',()=>{
   const doc=actionDocuments(w)[0];expect(doc.evidence.map(x=>x.id)).toEqual(d.fact_ids);
   expect(doc.binding.period).toEqual(s.snapshot.report.current.period);expect(doc.status).toBe('confirmed');
   expect(doc.evidence.find(x=>x.metric==='contribution_after_marketing')?.value).toBe('-15.00');
+ });
+});
+
+// ── V42-2a 子集稽核第 4 條（verification/revamp-v42/V42-0-subset-audit.md；設計 §5 最後一列）：action-workspace.ts:196-198 的 assertBinding 不受影響，補測試。群組範圍與單一通路範圍都跑。
+describe('V42-2a 子集稽核第 4 條（不受影響，補測試）：群組範圍與單一通路範圍的待辦綁定',()=>{
+ async function synthetic(channels:string[]){
+  const input=synthetic4ChannelInput();const dataset=validateDataset(input).dataset!;
+  const snapshot=await createSnapshot(dataset,{channels},await hashInput(input),SYNTHETIC_CHANNEL_SETTINGS);
+  return {input,dataset,snapshot,revision:1,channel_settings:SYNTHETIC_CHANNEL_SETTINGS};
+ }
+ const withScope=(w:ReturnType<typeof emptyActionWorkspace>,scope:Scope)=>({...w,items:[{...w.items[0],scope}]});
+ it('群組範圍（g1＝DTC＋SOCIAL）：kind "all"＋成員清單的綁定通過；成員子集與 kind "channel" 的單一成員也通過；從每條健檢建立的草稿都能文件化',async()=>{
+  const s=await synthetic(['SOCIAL','DTC']);
+  let w=addActionDraft(emptyActionWorkspace(),s,'A');
+  expect(w.contexts[0].session.scope.channels).toEqual(['DTC','SOCIAL']);
+  expect(w.items[0].scope).toEqual({kind:'all',channels:['DTC','SOCIAL']});
+  expect(actionDocuments(w)[0].binding).toMatchObject({status:'current',scope:{kind:'all',channels:['DTC','SOCIAL']},analysis_scope:{channels:['DTC','SOCIAL']}});
+  expect(actionDocuments(withScope(w,{kind:'all',channels:['SOCIAL']}))[0].binding.scope).toEqual({kind:'all',channels:['SOCIAL']});
+  expect(actionDocuments(withScope(w,{kind:'channel',channels:['DTC']}))[0].binding.scope).toEqual({kind:'channel',channels:['DTC']});
+  // 群組範圍的健檢範圍都在成員內（kind "all" 帶成員清單、kind "channel"／"sku" 帶一個成員），每條都能建立草稿並通過 actionDocuments；同一個 context
+  expect(s.snapshot.report.diagnostics.length).toBeGreaterThan(0);
+  for(const diagnostic of s.snapshot.report.diagnostics){expect(diagnostic.scope.channels.every(channel=>['DTC','SOCIAL'].includes(channel)),diagnostic.id).toBe(true);w=addActionDraft(w,s,`d:${diagnostic.id}`,diagnostic.id);}
+  expect(actionDocuments(w)).toHaveLength(1+s.snapshot.report.diagnostics.length);
+  expect(w.contexts).toHaveLength(1);
+ });
+ it('成員之外的通路 → ACTION_SCOPE_MISMATCH（群組範圍下的 MARKETPLACE、LIVE；單一通路範圍 DTC 下的 SOCIAL）',async()=>{
+  const grouped=await synthetic(['DTC','SOCIAL']);
+  const w=addActionDraft(emptyActionWorkspace(),grouped,'A');
+  const outside:Scope[]=[{kind:'all',channels:['DTC','MARKETPLACE']},{kind:'channel',channels:['MARKETPLACE']},{kind:'all',channels:['DTC','LIVE','SOCIAL']},{kind:'all',channels:['DTC','SOCIAL','MARKETPLACE','LIVE']}];
+  for(const scope of outside)expect(()=>actionDocuments(withScope(w,scope)),JSON.stringify(scope)).toThrow('ACTION_SCOPE_MISMATCH');
+  const single=await synthetic(['DTC']);
+  const ws=addActionDraft(emptyActionWorkspace(),single,'A');
+  expect(ws.items[0].scope).toEqual({kind:'all',channels:['DTC']});
+  expect(actionDocuments(ws)[0].binding.analysis_scope.channels).toEqual(['DTC']);
+  expect(()=>actionDocuments(withScope(ws,{kind:'channel',channels:['SOCIAL']}))).toThrow('ACTION_SCOPE_MISMATCH');
+  expect(()=>actionDocuments(withScope(ws,{kind:'all',channels:['DTC','SOCIAL']}))).toThrow('ACTION_SCOPE_MISMATCH');
  });
 });

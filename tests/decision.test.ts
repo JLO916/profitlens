@@ -3,9 +3,11 @@ import { blankScenarioInputs, createDecisionSession, isDecisionSessionStale, rec
 import { exportDecisionCsv, exportDecisionJson, exportDecisionMarkdown } from "@/application/decision-export";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import { validateDataset } from "@/domain/validation";
-import type { Dataset } from "@/domain/types";
+import type { Dataset, MetricName } from "@/domain/types";
 import { labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 let dataset: Dataset;
 let snapshot: WorkspaceSnapshot;
@@ -271,5 +273,41 @@ describe("M4 decision exports", () => {
     const csv = exportDecisionCsv(s, [], []);
     expect(csv).toContain('"baseline_amount","","","","cogs_net",""');
     expect(csv).toContain("BASELINE_MISSING_AMOUNT");
+  });
+});
+
+// ── V42-2a 子集稽核第 2 條（verification/revamp-v42/V42-0-subset-audit.md；設計 §5 最後一列）：decision.ts:93-99 不受影響，補測試。群組範圍與單一通路範圍都跑。
+describe("V42-2a 子集稽核第 2 條（不受影響，補測試）：群組範圍與單一通路範圍的試算基準", () => {
+  async function synthetic(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const loaded = validateDataset(input).dataset!;
+    return { dataset: loaded, snapshot: await createSnapshot(loaded, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS) };
+  }
+  it("群組範圍（g1＝DTC＋SOCIAL，成員任意順序傳入）：session.scope.channels＝排序後的成員代碼、baseline 不可試算且第一個原因是 SINGLE_CHANNEL_REQUIRED；基準金額是成員的 domain 合計，方案結果是 ineligible", async () => {
+    const grouped = await synthetic(["SOCIAL", "DTC"]);
+    expect(grouped.snapshot.channel_groups?.find(group => group.id === "g1")?.members).toEqual(["DTC", "SOCIAL"]);
+    const s = createDecisionSession(grouped.dataset, grouped.snapshot, 1);
+    expect(s.scope).toEqual(grouped.snapshot.report.scope);
+    expect(s.scope.channels).toEqual(["DTC", "SOCIAL"]);
+    expect(s.baseline.eligible).toBe(false);
+    expect(s.baseline.reasons[0]).toEqual({ code: "SINGLE_CHANNEL_REQUIRED", message: labels.scenarios.checks.singleChannelRequired });
+    // 基準金額＝群組合計（成員的 domain 合計；README §4.1 兩通路相加），只是不會被拿去算
+    expect(s.baseline.amounts.net_revenue).toBe("174590.00"); // DTC 134,300 + SOCIAL 40,290
+    expect(s.baseline.amounts.contribution_after_marketing).toBe("48230.00"); // DTC 40,800 + SOCIAL 7,430
+    for (const [field, value] of Object.entries(s.baseline.amounts) as [MetricName, string | null][]) expect(value, field).toBe(grouped.snapshot.report.current.metrics[field].value);
+    const plans = saveScenario(s, [], plan());
+    expect(plans[0].result).toMatchObject({ status: "ineligible", contribution: null, delta: null });
+    expect(exportDecisionCsv(s, plans, [])).toContain("SINGLE_CHANNEL_REQUIRED");
+    expect(JSON.parse(exportDecisionJson(s, plans, [])).session.scope.channels).toEqual(["DTC", "SOCIAL"]);
+  });
+  it("單一通路範圍（群組成員 DTC）：baseline 可試算、scope.channels＝[DTC]、基準＝該通路本期的 domain 值；方案結果有值", async () => {
+    const single = await synthetic(["DTC"]);
+    const s = createDecisionSession(single.dataset, single.snapshot, 1);
+    expect(s.scope.channels).toEqual(["DTC"]);
+    expect(s.baseline.eligible).toBe(true);
+    expect(s.baseline.reasons).toEqual([]);
+    expect(s.baseline.amounts.contribution_after_marketing).toBe("40800.00"); // 17 天 ×（3,900 − 1,500）
+    for (const [field, value] of Object.entries(s.baseline.amounts) as [MetricName, string | null][]) expect(value, field).toBe(single.snapshot.report.current.channels.DTC.metrics[field].value);
+    expect(saveScenario(s, [], plan())[0].result?.status).toBe("valid");
   });
 });
