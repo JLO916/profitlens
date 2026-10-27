@@ -2268,6 +2268,48 @@ export const data = {
       },
     },
   },
+  // ── V42-1b 錨點：通路設定區（代理 A：資料來源頁 DataWorkspace 的「通路設定」<details>，在「範圍與金額基準」之後；D-V42-8＝A、D-V42-13＝A；PRD §3.1、§3.2、§9；用詞照 docs/revamp-v4.2/GLOSSARY.md #1–#4 與 §2「名稱」句）。
+  // 只進人讀的畫面：顯示名稱與群組名不進 CSV 的 channel 欄、AI 的事實、備份的 active.filters；驗證四條規則與不重複由 src/application/channel-settings.ts 的 validateChannelSettings 判定，這裡只放句子。
+  channelSettingsV42: {
+    heading: "通路設定",
+    /** 區塊開頭一句（L2）：每個通路一列，三個欄位，套用後整個工作台一起換名稱。 */
+    lead: "每個通路一列：填顯示名稱、指派群組、調整順序；按「套用設定」後整個工作台一起換。",
+    /** 欄名（GLOSSARY #1–#3）。≥ 768 顯示成表頭一列，≤ 767 每個欄位各自帶可見標籤。 */
+    columns: { code: "通路代碼", label: "顯示名稱", group: "群組", order: "順序" },
+    /** 每個通路一列的控制的可及名稱（{code}＝通路代碼）；可見標籤是 columns.*。 */
+    rowAria: { label: "{code} 的顯示名稱", group: "{code} 的群組", order: "{code} 的順序" },
+    /** 群組選單的第一個選項（GLOSSARY #4）。 */
+    ungrouped: "未分組",
+    /** 群組區：小標、每個群組的名稱欄（{n}＝第幾個，從 1 起）、還沒命名時在選單裡的替代名、成員一行、沒有群組與沒有成員的句子。 */
+    groups: {
+      heading: "群組",
+      nameLabel: "第 {n} 個群組的名稱",
+      unnamed: "第 {n} 個群組",
+      members: "成員：{list}",
+      noMembers: "還沒有成員",
+      empty: "還沒有群組。",
+    },
+    buttons: { addGroup: "新增群組", apply: "套用設定" },
+    /** 提示（ui-field-hint 樣式）：顯示名稱空白時畫面顯示通路代碼；沒有成員的群組在套用時去掉。 */
+    hints: {
+      blankLabel: "顯示名稱空白時，畫面顯示通路代碼。",
+      emptyGroupDropped: "沒有成員的群組在套用時會被去掉。",
+    },
+    /** 套用前的檢查句（每個問題一句，role="alert" 清單；有問題就不套用）。{name}＝使用者輸入的名稱、{code}＝通路代碼、{n}＝第幾個群組。 */
+    validation: {
+      invalidName: "{name} 不符合名稱規則：去頭尾空白後不能是空的、前後不能有空格、最多 200 字、不能有控制字元。",
+      duplicateName: "{name} 與其他通路或群組同名。",
+      groupNameMissing: "第 {n} 個群組有成員，還沒有名稱。",
+      invalidOrder: "{code} 的順序要填整數。",
+    },
+    /** 套用後的狀態句（role="status"，在編輯區內）。 */
+    applied: "已套用通路設定。",
+    /** 「要注意」收合區：GLOSSARY §2 的「名稱」句（固定寫法）。 */
+    notes: {
+      summary: "要注意",
+      names: "顯示名稱只改畫面；CSV、備份與 AI 用的仍是通路代碼。",
+    },
+  },
 } as const;
 
 // ── importWizard：匯入精靈：步驟文字（沿用 v2 鍵）、各步驟元件（panel）、欄位說明與提示（guidance）

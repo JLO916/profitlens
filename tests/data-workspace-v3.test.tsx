@@ -85,7 +85,8 @@ describe("V3-8 資料來源頁（PRD §7.7.1）", () => {
       expect(html.startsWith('<p class="data-status-line" data-testid="data-status-line">')).toBe(true);
       expect(html).toContain('<section class="panel data-section" aria-labelledby="quality-heading" data-testid="data-issues">');
       // V4-7a：G20 涵蓋時間軸（狀態一行之後、資料問題之前）的結論標題是第 8 個 h2（G21 是 h3，在資料問題之內）。
-      expect(html.match(/<h2[\s>]/g)).toHaveLength(8);
+      // V42-1b：第 9 個 h2 是「通路設定」收合區的 summary（在 data-scope 之後、data-preprocessing 之前；tests/channel-settings-editor.test.tsx）。
+      expect(html.match(/<h2[\s>]/g)).toHaveLength(9);
       expect(html.match(/<h2 id="data-coverage-title">/g)).toHaveLength(1);
     }
   });

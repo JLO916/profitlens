@@ -3154,3 +3154,32 @@ td.ladder-amount > .bar-cell { float: left; margin-top: calc((1lh - 12px) / 2); 
 .guide-video-note { margin-top: var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-secondary); }
 .guide-video-transcript { display: grid; gap: var(--space-1); margin: var(--space-2) 0 0; padding-left: var(--space-5); list-style: decimal; font-size: var(--text-14); line-height: var(--leading-14); }
 /* ── V41-3 示範影片錨點結束 ── */
+
+/* ── V42-1b 錨點（代理 A：資料來源頁「通路設定」區——.channel-settings*：收合的 details（summary 內是區段 h2，與 .data-version 同款）、每個通路一列（通路代碼｜顯示名稱｜群組｜順序）、群組列、動作列、問題清單、套用狀態、「要注意」；只用 token，字級只用 --text-12／13／14；≤ 767 每列直向堆疊、沒有橫向捲動；在本註解之後、結束錨點之前新增） ── */
+.channel-settings > summary { cursor: pointer; }
+.channel-settings > summary .ui-section-title { display: inline; }
+.channel-settings[open] > summary { margin-bottom: var(--space-3); }
+.channel-settings-lead { margin: 0 0 var(--space-3); font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+/* ≥ 768：表頭一列＋每列四欄的 grid（代碼 1：名稱 2：群組 1：順序 5em）；每個欄位自己的 label 以 sr-only 方式留在可及樹（label for 仍指到控制）。 */
+.channel-settings-head, .channel-settings-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) minmax(0, 1fr) minmax(0, 6em); gap: var(--space-2) var(--space-3); align-items: center; }
+.channel-settings-head { padding-bottom: var(--space-1); border-bottom: var(--border-w) solid var(--border-subtle); font-size: var(--text-12); line-height: var(--leading-12); font-weight: var(--weight-medium); color: var(--text-secondary); }
+.channel-settings-rows, .channel-settings-group-list { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.channel-settings-rows { margin-top: var(--space-2); }
+.channel-settings-row { padding-bottom: var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); }
+.channel-settings-code { font-size: var(--text-14); line-height: var(--leading-14); color: var(--text-primary); }
+.channel-settings-row .ui-field-control, .channel-settings-group .ui-field-control { width: 100%; }
+.channel-settings-hint { margin: var(--space-2) 0 0; }
+.channel-settings-subheading { margin: var(--space-4) 0 var(--space-2); font-size: var(--text-14); line-height: var(--leading-14); font-weight: var(--weight-semibold); color: var(--text-primary); }
+.channel-settings-group { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--space-2) var(--space-3); align-items: end; padding-bottom: var(--space-2); border-bottom: var(--border-w) solid var(--border-subtle); }
+.channel-settings-group-members { font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); overflow-wrap: anywhere; }
+.channel-settings-actions { flex-wrap: wrap; margin-top: var(--space-3); }
+.channel-settings-problems { display: grid; gap: var(--space-1); margin: var(--space-3) 0 0; padding-left: var(--space-5); }
+.channel-settings-status { margin: var(--space-2) 0 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.channel-settings-status:empty { display: none; }
+.channel-settings-notes { margin-top: var(--space-3); }
+.channel-settings-notes > summary { cursor: pointer; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+.channel-settings-notes[open] > summary { margin-bottom: var(--space-1); }
+.channel-settings-notes p { margin: 0; font-size: var(--text-13); line-height: var(--leading-13); color: var(--text-secondary); }
+@media (min-width: 768px) { .channel-settings-row .ui-field { position: relative; } .channel-settings-row .ui-field-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; } }
+@media (max-width: 767px) { .channel-settings-head { display: none; } .channel-settings-row, .channel-settings-group { grid-template-columns: minmax(0, 1fr); align-items: stretch; } }
+/* ── V42-1b A 錨點結束 ── */
