@@ -15,7 +15,7 @@ import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import { formatSavedDateTime } from "@/application/auto-save";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { categoryLabel, channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
-import { makeResolver } from "@/application/channel-settings";
+import { makeResolver, type ChannelSettings } from "@/application/channel-settings";
 import type { TaxConversion } from "@/application/tax-basis";
 import { exportTargetsCsv, targetDisplay, targetsCsvTemplate, type TargetIssue, type TargetSet } from "@/application/targets";
 import { eventsCsvTemplate, exportEventsCsv, type EventIssue, type EventSet } from "@/application/events";
@@ -27,6 +27,7 @@ import { ShareSection } from "./diagnosis/share-section";
 import type { IssueFilter } from "@/application/issue-filter";
 import { CoverageChart } from "./data/coverage-chart";
 import { IssuesChart } from "./data/issues-chart";
+import { ChannelSettingsEditor } from "./data/channel-settings-editor";
 import { BarCell, barCellScale, barCellSigned } from "./charts/bar-cell";
 
 type EvidenceHandler = (selection: EvidenceSelection) => void;
@@ -61,6 +62,8 @@ const ISSUES_CSV_FILENAME = "profitlens-issues.csv";
  * request＝第幾次套用（每按一次就加 1，同一組條件再按也會把焦點移到篩選片語，審查 B-2）；issues＝套用時的問題清單（換了資料集就不再套用，不留下篩不到任何列的舊篩選）。
  */
 interface IssueFilterState { filter: IssueFilter; request: number; issues: readonly ValidationIssue[] }
+/** V42-1b：頁面狀態與沒有接線的呼叫端（tests/helpers/page-states.tsx）用的預設，套用設定時什麼都不做。 */
+const noopApplyChannelSettings = () => undefined;
 
 /**
  * V3-8 資料來源頁（PRD §7.7.1，依 1–9 的順序）：頁首（page-chrome）→ 資料狀態一行 → 資料問題 → 範圍與金額基準 → 本次匯入的前處理 →
@@ -68,7 +71,7 @@ interface IssueFilterState { filter: IssueFilter; request: number; issues: reado
  * 全部是既有資料，不新增計算；收合的內容保持掛載（M1）。
  * V4-7a（PRD §5.7；CHART_CATALOG §7、G20、G21）：狀態一行之下加 G20 涵蓋時間軸，資料問題內問題表之上加 G21 問題分布表；本元件持有問題表的篩選（issueFilter）。
  */
-export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion, targets = null, events = null, targetIssues = [], eventIssues = [], importedAt = null, onTargets, onEvents, onRemoveTargets, onRemoveEvents, onRemoveTargetRow, onRemoveEventRow }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null; targetIssues?: TargetIssue[]; eventIssues?: EventIssue[]; /** §7.7.1 第 8 點：匯入時間（ISO；V4-7c 起是到分的 UTC「YYYY-MM-DDTHH:MMZ」，還原帶 imported_at 的備份後也有）；呼叫端沒有記錄時省略該列。 */ importedAt?: string | null; onTargets?: (file: File | undefined) => void; onEvents?: (file: File | undefined) => void; onRemoveTargets?: () => void; onRemoveEvents?: () => void; onRemoveTargetRow?: (line: number) => void; onRemoveEventRow?: (line: number) => void }) {
+export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversion, targets = null, events = null, targetIssues = [], eventIssues = [], importedAt = null, channelSettings = null, onApplyChannelSettings = noopApplyChannelSettings, onTargets, onEvents, onRemoveTargets, onRemoveEvents, onRemoveTargetRow, onRemoveEventRow }: { dataset: Dataset; snapshot: WorkspaceSnapshot; filenames?: Partial<Record<SourceRef["file"], string>>; mappings?: Partial<Record<SourceRef["file"], Record<string, string>>>; conversion?: TaxConversion | null; targets?: TargetSet | null; events?: EventSet | null; targetIssues?: TargetIssue[]; eventIssues?: EventIssue[]; /** §7.7.1 第 8 點：匯入時間（ISO；V4-7c 起是到分的 UTC「YYYY-MM-DDTHH:MMZ」，還原帶 imported_at 的備份後也有）；呼叫端沒有記錄時省略該列。 */ importedAt?: string | null; /** V42-1b（D-V42-8＝A）：目前生效的通路設定（Active.channel_settings；沒有設定時 null）與「套用設定」的回呼（dashboard 的 applyChannelSettings：寫進 Active 並以目前範圍重算快照）。 */ channelSettings?: ChannelSettings | null; onApplyChannelSettings?: (settings: ChannelSettings | null) => void; onTargets?: (file: File | undefined) => void; onEvents?: (file: File | undefined) => void; onRemoveTargets?: () => void; onRemoveEvents?: () => void; onRemoveTargetRow?: (line: number) => void; onRemoveEventRow?: (line: number) => void }) {
   const settings = dataset.manifest;
   const resolver = snapshot.report.dataset_id === settings.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, settings.dataset_id);
   const anchor = settings.data_as_of;
@@ -142,6 +145,8 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
       <details><summary>{labels.evidence.sections.technicalDetails}</summary><dl className="ui-dl"><div><dt>{labels.data.panel.meta.formatVersionTechnical}</dt><dd className="ui-mono">{settings.schema_version} / {snapshot.metric_version}</dd></div><div><dt>{labels.data.panel.meta.datasetShaTechnical}</dt><dd><code>{snapshot.dataset_hash}</code></dd></div><div><dt>{labels.data.panel.meta.filterShaTechnical}</dt><dd><code>{snapshot.filter_hash}</code></dd></div><div><dt>{labels.data.panel.meta.amountBasisTechnical}</dt><dd><code>{settings.amount_basis}</code></dd></div></dl></details>
       {mappings && <details><summary>{dataPanel.mappingsSummary}</summary>{Object.entries(mappings).map(([file, mapping]) => <div key={file}><h3 className="ui-mono">{fileName(file as SourceRef["file"])}</h3><dl className="ui-dl">{Object.entries(mapping).map(([standard, original]) => <div key={standard}><dt className="ui-mono">{standard}</dt><dd>{original}</dd></div>)}</dl></div>)}</details>}
     </section>
+    {/* ── V42-1b 錨點（代理 A）：通路設定區（D-V42-8＝A；PRD §3.2；06_BATCHES V42-1b 第 1 項）——收合的 <details>，在「範圍與金額基準」之後、「本次匯入的前處理」之前；草稿在元件內，套用時經 onApplyChannelSettings 寫進 Active.channel_settings 並重算快照。 */}
+    <ChannelSettingsEditor datasetId={settings.dataset_id} manifestChannels={settings.channels} settings={channelSettings} onApply={onApplyChannelSettings} />
     {/* §7.7.1 第 5 點：本次匯入的前處理——表格（欄位｜含稅合計（元）｜未稅合計（元）｜稅率），一列一個換算欄位，取代 v2 的條列；未稅匯入時一句 noConversion。 */}
     <section className="panel data-section" aria-labelledby="preprocessing-heading" data-testid="data-preprocessing">
       <div className="ui-section-head"><h2 className="ui-section-title" id="preprocessing-heading">{labels.data.sections.dataPreprocessing}</h2>{conversion && <p className="ui-section-subtitle">{conversionSentence(conversion)}</p>}</div>

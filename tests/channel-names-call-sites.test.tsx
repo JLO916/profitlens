@@ -175,7 +175,11 @@ describe("V42-1a createSnapshot 的呼叫點都傳 Active.channel_settings", () 
     expect(start).toBeGreaterThan(-1);
     const following = ["\n  async function ", "\n  function "].map(marker => dashboard.indexOf(marker, start + 1)).filter(index => index > start);
     const body = dashboard.slice(start, Math.min(...following));
-    expect(body).toContain("createSnapshot(active.dataset, filters, active.snapshot.dataset_hash, active.channel_settings ?? null)");
+    // V42-1b（D-V42-8）：applyFilters 多了第 2 個選填參數 settings（「套用設定」用目前範圍重算時傳入要寫進 Active 的設定）；省略時仍是 active.channel_settings ?? null。
+    expect(body).toContain("async function applyFilters(filters: AnalysisFilters, settings?: ChannelSettings | null)");
+    expect(body).toContain("const channelSettings = settings === undefined ? active.channel_settings ?? null : settings;");
+    expect(body).toContain("createSnapshot(active.dataset, filters, active.snapshot.dataset_hash, channelSettings)");
+    expect(body).toContain("...(settings === undefined ? {} : { channel_settings: settings })");
   });
 });
 
