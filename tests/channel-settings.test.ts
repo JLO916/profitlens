@@ -203,6 +203,9 @@ describe("V42-2a channel-settings：群組查找、選取值與選項值", () =>
   it("兩個邊界：群組包含全部通路時仍是「全部通路」；只有一個成員的群組、範圍是那個通路時仍是單一通路", () => {
     expect(channelSelection(FOUR, FOUR, [EVERYTHING])).toEqual({ kind: "all" });
     expect(channelSelection(["LIVE"], FOUR, [SOLO])).toEqual({ kind: "channel", code: "LIVE" });
+    // 只有一個通路的資料集（說明媒體 import-wizard 的樣本）：顯示那個通路，不是「全部通路」（v4.1.3 的 scope.channels.length > 1 ? "" : scope.channels[0]）；就算它自己是只有一個成員的群組也一樣。
+    expect(channelSelection(["DTC"], ["DTC"], [])).toEqual({ kind: "channel", code: "DTC" });
+    expect(channelSelection(["DTC"], ["DTC"], [{ id: "g1", label: "只有官網", members: ["DTC"] }])).toEqual({ kind: "channel", code: "DTC" });
     // findGroupByMembers 本身兩者都命中（範圍文字走它：單一成員群組的範圍寫群組名，見 tests/copy.test.ts）。
     expect(findGroupByMembers([EVERYTHING], FOUR)).toBe(EVERYTHING);
     expect(findGroupByMembers([SOLO], ["LIVE"])).toBe(SOLO);

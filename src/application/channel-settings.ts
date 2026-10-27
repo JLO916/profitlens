@@ -201,14 +201,14 @@ export function groupIdOfOption(value: string): string | null {
 /** 期間列的選取值：範圍的通路集合對到全部、單一通路、某個群組，或都不是的子集（count＝通路數）。 */
 export type ChannelSelection = { kind: "all" } | { kind: "channel"; code: string } | { kind: "group"; group: ResolvedChannelGroup } | { kind: "subset"; count: number };
 /**
- * 優先順序（PRD §4.1）：(1) 集合等於 allChannels 的集合 → all（就算有群組包含全部通路）；(2) 恰好一個 → channel（就算該通路自己是只有一個成員的群組）；
- * (3) findGroupByMembers 命中 → group；(4) 其餘 → subset。
+ * 優先順序（PRD §4.1）：(1) 恰好一個 → channel（就算該通路自己是只有一個成員的群組；只有一個通路的資料集也顯示那個通路，與 v4.1.3 相同——說明媒體 import-wizard 的 apply 畫格靠這條不變）；
+ * (2) 集合等於 allChannels 的集合 → all（就算有群組包含全部通路）；(3) findGroupByMembers 命中 → group；(4) 其餘 → subset。
  */
 export function channelSelection(channels: readonly string[], allChannels: readonly string[], groups: readonly ResolvedChannelGroup[]): ChannelSelection {
   const selected = new Set(channels);
   const everything = new Set(allChannels);
-  if (selected.size > 0 && selected.size === everything.size && [...everything].every(code => selected.has(code))) return { kind: "all" };
   if (selected.size === 1) return { kind: "channel", code: [...selected][0] };
+  if (selected.size > 0 && selected.size === everything.size && [...everything].every(code => selected.has(code))) return { kind: "all" };
   const group = findGroupByMembers(groups, channels);
   if (group) return { kind: "group", group };
   return { kind: "subset", count: selected.size };
