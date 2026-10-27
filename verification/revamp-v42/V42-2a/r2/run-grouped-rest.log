@@ -1,0 +1,9 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 [laptop] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/grouped-flow.spec.ts:13:5 › R2 grouped flow (10.2s)
+  ✓  2 [tablet] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/grouped-flow.spec.ts:13:5 › R2 grouped flow (9.3s)
+  ✓  3 [mobile] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/grouped-flow.spec.ts:13:5 › R2 grouped flow (10.5s)
+
+  3 passed (32.1s)
+exit=0

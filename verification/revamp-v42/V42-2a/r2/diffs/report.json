@@ -1,0 +1,49 @@
+[
+  {
+    "name": "01-overview-top",
+    "baseline": "1440x1000",
+    "actual": "1440x1000",
+    "diffPixels": 0,
+    "diffBox": null,
+    "diffRowBands": []
+  },
+  {
+    "name": "02-overview-full",
+    "baseline": "1440x2946",
+    "actual": "1440x2946",
+    "diffPixels": 0,
+    "diffBox": null,
+    "diffRowBands": []
+  },
+  {
+    "name": "05-diagnosis",
+    "baseline": "1440x3665",
+    "actual": "1440x3665",
+    "diffPixels": 1280,
+    "diffBox": {
+      "x": 402,
+      "y": 3520,
+      "width": 165,
+      "height": 13
+    },
+    "diffRowBands": [
+      "y3500-3549:1280"
+    ]
+  },
+  {
+    "name": "08-meeting",
+    "baseline": "1440x3108",
+    "actual": "1440x3108",
+    "diffPixels": 0,
+    "diffBox": null,
+    "diffRowBands": []
+  },
+  {
+    "name": "09-data",
+    "baseline": "1440x2373",
+    "actual": "1440x2373",
+    "diffPixels": 0,
+    "diffBox": null,
+    "diffRowBands": []
+  }
+]

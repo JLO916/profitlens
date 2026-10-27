@@ -1,0 +1,1339 @@
+{
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "lastStep": "axe",
+  "kpiAll": {
+    "net_revenue": "29.5 萬",
+    "gross_profit": "14.2 萬",
+    "contribution_before_marketing": "資料待補",
+    "contribution_after_marketing": "資料待補",
+    "contribution_margin": "資料待補"
+  },
+  "pb.noGroup": {
+    "x": 16,
+    "y": 48,
+    "width": 358,
+    "height": 56
+  },
+  "kpiBand.noGroup": {
+    "x": 16,
+    "y": 354,
+    "width": 358,
+    "height": 310
+  },
+  "select.noGroup": {
+    "value": "",
+    "selected": {
+      "value": "",
+      "text": "全部通路",
+      "group": null,
+      "disabled": false,
+      "testid": null
+    },
+    "groups": [],
+    "topLevel": [
+      {
+        "value": "",
+        "text": "全部通路",
+        "disabled": false
+      },
+      {
+        "value": "DTC",
+        "text": "DTC",
+        "disabled": false
+      },
+      {
+        "value": "LIVE",
+        "text": "LIVE",
+        "disabled": false
+      },
+      {
+        "value": "MARKETPLACE",
+        "text": "MARKETPLACE",
+        "disabled": false
+      },
+      {
+        "value": "SOCIAL",
+        "text": "SOCIAL",
+        "disabled": false
+      }
+    ],
+    "optionTexts": [
+      "全部通路",
+      "DTC",
+      "LIVE",
+      "MARKETPLACE",
+      "SOCIAL"
+    ]
+  },
+  "g4.noGroup": {
+    "rows": 4,
+    "firstRow": {
+      "x": 33,
+      "y": 3714.6,
+      "width": 112.8,
+      "height": 49.5
+    },
+    "table": {
+      "x": 33,
+      "y": 3682.6,
+      "width": 336.8,
+      "height": 215
+    },
+    "drills": 0
+  },
+  "pb.noGroup.sheetOpen": {
+    "x": 0,
+    "y": 278,
+    "width": 390,
+    "height": 566
+  },
+  "pb.groupedAll": {
+    "x": 16,
+    "y": 48,
+    "width": 358,
+    "height": 56
+  },
+  "kpiBand.groupedAll": {
+    "x": 16,
+    "y": 354,
+    "width": 358,
+    "height": 310
+  },
+  "select.groupedAll": {
+    "value": "",
+    "selected": {
+      "value": "",
+      "text": "全部通路",
+      "group": null,
+      "disabled": false,
+      "testid": null
+    },
+    "groups": [
+      {
+        "label": "自有",
+        "options": [
+          {
+            "value": "\u0001g1",
+            "text": "自有",
+            "testid": "scope-option-group-g1",
+            "disabled": false
+          },
+          {
+            "value": "DTC",
+            "text": "官網",
+            "testid": null,
+            "disabled": false
+          },
+          {
+            "value": "SOCIAL",
+            "text": "社群",
+            "testid": null,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "label": "平台",
+        "options": [
+          {
+            "value": "\u0001g2",
+            "text": "平台",
+            "testid": "scope-option-group-g2",
+            "disabled": false
+          },
+          {
+            "value": "LIVE",
+            "text": "直播",
+            "testid": null,
+            "disabled": false
+          },
+          {
+            "value": "MARKETPLACE",
+            "text": "蝦皮",
+            "testid": null,
+            "disabled": false
+          }
+        ]
+      }
+    ],
+    "topLevel": [
+      {
+        "value": "",
+        "text": "全部通路",
+        "disabled": false
+      }
+    ],
+    "optionTexts": [
+      "全部通路",
+      "自有",
+      "官網",
+      "社群",
+      "平台",
+      "直播",
+      "蝦皮"
+    ]
+  },
+  "g4.groupedAll": {
+    "rows": 4,
+    "firstRow": {
+      "x": 33,
+      "y": 3690.6,
+      "width": 108,
+      "height": 49.5
+    },
+    "table": {
+      "x": 33,
+      "y": 3658.6,
+      "width": 332,
+      "height": 224
+    },
+    "drills": 4
+  },
+  "pb.groupedAll.sheetOpen": {
+    "x": 0,
+    "y": 278,
+    "width": 390,
+    "height": 566
+  },
+  "choose.g1": {
+    "mobile": true,
+    "expandedAfterSelect": "true",
+    "activeAfterSelect": "select[scope-select]:全部通路自有官網社群平台直播蝦皮",
+    "toggleBefore": "自訂期間 · 9/7–9/23",
+    "toggleAfter": "自訂期間 · 9/7–9/23",
+    "activeAfterClose": "button[period-toggle]:自訂期間 · 9/7–9/23"
+  },
+  "summary": {
+    "visibleBefore": "本期 9/7–9/23 對比 上期 8/21–9/6（各 17 天）",
+    "visibleAfter": "本期 9/7–9/23 對比 上期 8/21–9/6（各 17 天）",
+    "titleBefore": "通路：官網、直播、蝦皮、社群；等天數比較；資料到 2026-09-24",
+    "titleAfter": "通路：自有（官網、社群）；等天數比較；資料到 2026-09-24",
+    "panelChildrenBefore": 5,
+    "panelChildrenAfter": 5
+  },
+  "kpiGroup": {
+    "net_revenue": "17.5 萬",
+    "gross_profit": "8.9 萬",
+    "contribution_before_marketing": "7.7 萬",
+    "contribution_after_marketing": "4.8 萬",
+    "contribution_margin": "27.6%"
+  },
+  "pb.groupScope": {
+    "x": 16,
+    "y": 48,
+    "width": 358,
+    "height": 56
+  },
+  "kpiBand.groupScope": {
+    "x": 16,
+    "y": 330,
+    "width": 358,
+    "height": 300
+  },
+  "select.groupScope": {
+    "value": "\u0001g1",
+    "selected": {
+      "value": "\u0001g1",
+      "text": "自有",
+      "group": "自有",
+      "disabled": false,
+      "testid": "scope-option-group-g1"
+    },
+    "groups": [
+      {
+        "label": "自有",
+        "options": [
+          {
+            "value": "\u0001g1",
+            "text": "自有",
+            "testid": "scope-option-group-g1",
+            "disabled": false
+          },
+          {
+            "value": "DTC",
+            "text": "官網",
+            "testid": null,
+            "disabled": false
+          },
+          {
+            "value": "SOCIAL",
+            "text": "社群",
+            "testid": null,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "label": "平台",
+        "options": [
+          {
+            "value": "\u0001g2",
+            "text": "平台",
+            "testid": "scope-option-group-g2",
+            "disabled": false
+          },
+          {
+            "value": "LIVE",
+            "text": "直播",
+            "testid": null,
+            "disabled": false
+          },
+          {
+            "value": "MARKETPLACE",
+            "text": "蝦皮",
+            "testid": null,
+            "disabled": false
+          }
+        ]
+      }
+    ],
+    "topLevel": [
+      {
+        "value": "",
+        "text": "全部通路",
+        "disabled": false
+      }
+    ],
+    "optionTexts": [
+      "全部通路",
+      "自有",
+      "官網",
+      "社群",
+      "平台",
+      "直播",
+      "蝦皮"
+    ]
+  },
+  "pb.groupScope.sheetOpen": {
+    "x": 0,
+    "y": 278,
+    "width": 390,
+    "height": 566
+  },
+  "pages.group": {
+    "overview": {
+      "g4Rows": [
+        "官網只看這個通路",
+        "社群只看這個通路"
+      ],
+      "drills": 2,
+      "targetsNote": 0,
+      "owners蝦皮": [
+        "scope-select > option.: 蝦皮"
+      ],
+      "owners直播": [
+        "scope-select > option.: 直播"
+      ]
+    },
+    "diagnosis": {
+      "secScope": "自有",
+      "rows": 4,
+      "drills": 2,
+      "owners蝦皮": [
+        "scope-select > option.: 蝦皮"
+      ],
+      "owners直播": [
+        "scope-select > option.: 直播"
+      ]
+    },
+    "products": {
+      "scope": "本期 9/7–9/23 對比 上期 8/21–9/6 · 自有 · 金額未稅",
+      "owners蝦皮": [
+        "scope-select > option.: 蝦皮"
+      ],
+      "owners直播": [
+        "scope-select > option.: 直播"
+      ]
+    },
+    "scenarios": {
+      "options": [
+        "官網",
+        "社群"
+      ],
+      "value": "DTC",
+      "afterSocial": {
+        "value": "SOCIAL",
+        "alerts": [],
+        "cardText": "方案 1方案名稱範本選一個範本…維持現況雙 11 檔期砍廣告一半取消免運（物流費自付）漲價 5%（以降折扣模擬）KOL 合作套用範本範本數字只是起點，請改成你的假設選一個範本，這裡會說明它的用途。銷量增減%增減改成+10 表示多賣 10%折扣率調整個百分點增減改成+2 表示折扣率多 2 個百分點每件物流費增減%+5 表示每件物流費漲 5%廣告預算增減%增減改成+20 表示廣告預算多 20%調廣告不會自動帶動銷量，銷量請另填「銷量增減」。一次性費用（元）元例：KOL 合作費、新包材開模費我了解這是試算，不是預測試算還沒有結果：填好假設後按「試算」。草稿（未重新試算）",
+        "others": "其他通路的方案官網 試算 官網這個通路還沒有方案。"
+      }
+    },
+    "actions": {
+      "mainText": "待辦\n\n要做什麼、誰負責、何時檢查\n\n0 · 置頂 0\n匯出本頁\n自訂期間 · 9/7–9/23\n部分資料待補：缺資料的指標顯示「資料待補」，不會當成 0。\n查看 11 項資料問題\n看板\n清單\n尚無待辦。\n\n從健檢結果或會議決議新增。\n\n新增待辦\n\n扣廣告後貢獻不含固定費與稅。指標定義 · 操作導覽\n（另開分頁）\n · 新台幣 · 台北時間",
+      "owners蝦皮": [
+        "scope-select > option.: 蝦皮"
+      ],
+      "owners直播": [
+        "scope-select > option.: 直播"
+      ]
+    },
+    "meeting": {
+      "scopeLine": "會議資料已固定 · 自有 · 上期 8/21–9/6（17 天） · 本期 9/7–9/23（17 天） · 資料到 9/24 用目前資料更新會議",
+      "agenda3Rows": 4,
+      "agenda3Drills": 2,
+      "allDrills": 2,
+      "owners蝦皮": [
+        "scope-select > option.: 蝦皮"
+      ],
+      "owners直播": [
+        "scope-select > option.: 直播"
+      ]
+    },
+    "data": {
+      "scopeChannels": "官網、社群",
+      "channels": "官網、直播、蝦皮、社群"
+    }
+  },
+  "drill.overview": {
+    "text": "只看這個通路",
+    "aria": "只看這個通路：官網",
+    "inTh": 1,
+    "box": {
+      "x": 49,
+      "y": 3640.1,
+      "width": 84,
+      "height": 22
+    },
+    "tab": {
+      "from": "summary[]:表格 · 每週淨營收與扣廣告後貢獻",
+      "reached": true,
+      "active": "button[channel-drill-DTC]:只看這個通路",
+      "focus": {
+        "focusVisible": true,
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "outlineColor": "rgb(31, 90, 79)",
+        "outlineOffset": "2px"
+      }
+    },
+    "afterEnter": {
+      "select": {
+        "value": "DTC",
+        "selected": {
+          "value": "DTC",
+          "text": "官網",
+          "group": "自有",
+          "disabled": false,
+          "testid": null
+        },
+        "groups": [
+          {
+            "label": "自有",
+            "options": [
+              {
+                "value": "\u0001g1",
+                "text": "自有",
+                "testid": "scope-option-group-g1",
+                "disabled": false
+              },
+              {
+                "value": "DTC",
+                "text": "官網",
+                "testid": null,
+                "disabled": false
+              },
+              {
+                "value": "SOCIAL",
+                "text": "社群",
+                "testid": null,
+                "disabled": false
+              }
+            ]
+          },
+          {
+            "label": "平台",
+            "options": [
+              {
+                "value": "\u0001g2",
+                "text": "平台",
+                "testid": "scope-option-group-g2",
+                "disabled": false
+              },
+              {
+                "value": "LIVE",
+                "text": "直播",
+                "testid": null,
+                "disabled": false
+              },
+              {
+                "value": "MARKETPLACE",
+                "text": "蝦皮",
+                "testid": null,
+                "disabled": false
+              }
+            ]
+          }
+        ],
+        "topLevel": [
+          {
+            "value": "",
+            "text": "全部通路",
+            "disabled": false
+          }
+        ],
+        "optionTexts": [
+          "全部通路",
+          "自有",
+          "官網",
+          "社群",
+          "平台",
+          "直播",
+          "蝦皮"
+        ]
+      },
+      "title": "通路：自有 · 官網；等天數比較；資料到 2026-09-24",
+      "drillsLeft": 0,
+      "pb": {
+        "x": 16,
+        "y": 48,
+        "width": 358,
+        "height": 56
+      },
+      "kpi": {
+        "net_revenue": "13.4 萬",
+        "gross_profit": "7.7 萬",
+        "contribution_before_marketing": "6.6 萬",
+        "contribution_after_marketing": "4.1 萬",
+        "contribution_margin": "30.4%"
+      },
+      "focusAfter": "body:跳至主要內容EC ProfitLens部分資料待補 · 資料"
+    }
+  },
+  "drill.diagnosis": {
+    "aria": "只看這個通路：社群",
+    "tab": {
+      "from": "button[]:差額",
+      "reached": true,
+      "active": "button[channel-drill-SOCIAL]:只看這個通路",
+      "focus": {
+        "focusVisible": true,
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "outlineColor": "rgb(31, 90, 79)",
+        "outlineOffset": "2px"
+      }
+    },
+    "afterEnter": {
+      "select": {
+        "value": "SOCIAL",
+        "selected": {
+          "value": "SOCIAL",
+          "text": "社群",
+          "group": "自有",
+          "disabled": false,
+          "testid": null
+        },
+        "groups": [
+          {
+            "label": "自有",
+            "options": [
+              {
+                "value": "\u0001g1",
+                "text": "自有",
+                "testid": "scope-option-group-g1",
+                "disabled": false
+              },
+              {
+                "value": "DTC",
+                "text": "官網",
+                "testid": null,
+                "disabled": false
+              },
+              {
+                "value": "SOCIAL",
+                "text": "社群",
+                "testid": null,
+                "disabled": false
+              }
+            ]
+          },
+          {
+            "label": "平台",
+            "options": [
+              {
+                "value": "\u0001g2",
+                "text": "平台",
+                "testid": "scope-option-group-g2",
+                "disabled": false
+              },
+              {
+                "value": "LIVE",
+                "text": "直播",
+                "testid": null,
+                "disabled": false
+              },
+              {
+                "value": "MARKETPLACE",
+                "text": "蝦皮",
+                "testid": null,
+                "disabled": false
+              }
+            ]
+          }
+        ],
+        "topLevel": [
+          {
+            "value": "",
+            "text": "全部通路",
+            "disabled": false
+          }
+        ],
+        "optionTexts": [
+          "全部通路",
+          "自有",
+          "官網",
+          "社群",
+          "平台",
+          "直播",
+          "蝦皮"
+        ]
+      },
+      "title": "通路：自有 · 社群；等天數比較；資料到 2026-09-24",
+      "secScope": "自有 · 社群",
+      "drillsLeft": 0,
+      "focusAfter": "body:跳至主要內容EC ProfitLens部分資料待補 · 資料"
+    }
+  },
+  "drill.meeting": {
+    "buttonBox": {
+      "x": 62,
+      "y": 567.359375,
+      "width": 84,
+      "height": 22
+    },
+    "afterClick": {
+      "select": {
+        "value": "DTC",
+        "selected": {
+          "value": "DTC",
+          "text": "官網",
+          "group": "自有",
+          "disabled": false,
+          "testid": null
+        },
+        "groups": [
+          {
+            "label": "自有",
+            "options": [
+              {
+                "value": "\u0001g1",
+                "text": "自有",
+                "testid": "scope-option-group-g1",
+                "disabled": false
+              },
+              {
+                "value": "DTC",
+                "text": "官網",
+                "testid": null,
+                "disabled": false
+              },
+              {
+                "value": "SOCIAL",
+                "text": "社群",
+                "testid": null,
+                "disabled": false
+              }
+            ]
+          },
+          {
+            "label": "平台",
+            "options": [
+              {
+                "value": "\u0001g2",
+                "text": "平台",
+                "testid": "scope-option-group-g2",
+                "disabled": false
+              },
+              {
+                "value": "LIVE",
+                "text": "直播",
+                "testid": null,
+                "disabled": false
+              },
+              {
+                "value": "MARKETPLACE",
+                "text": "蝦皮",
+                "testid": null,
+                "disabled": false
+              }
+            ]
+          }
+        ],
+        "topLevel": [
+          {
+            "value": "",
+            "text": "全部通路",
+            "disabled": false
+          }
+        ],
+        "optionTexts": [
+          "全部通路",
+          "自有",
+          "官網",
+          "社群",
+          "平台",
+          "直播",
+          "蝦皮"
+        ]
+      },
+      "title": "通路：自有 · 官網；等天數比較；資料到 2026-09-24",
+      "banner": 1,
+      "scopeLine": "會議資料已固定 · 自有 · 上期 8/21–9/6（17 天） · 本期 9/7–9/23（17 天） · 資料到 9/24",
+      "drillsLeft": 2
+    }
+  },
+  "backup": {
+    "schema": "profitlens-workspace-v5",
+    "channel_settings": {
+      "version": "channel-settings-v1",
+      "channels": [
+        {
+          "code": "DTC",
+          "label": "官網",
+          "group": "g1"
+        },
+        {
+          "code": "LIVE",
+          "label": "直播",
+          "group": "g2"
+        },
+        {
+          "code": "MARKETPLACE",
+          "label": "蝦皮",
+          "group": "g2"
+        },
+        {
+          "code": "SOCIAL",
+          "label": "社群",
+          "group": "g1"
+        }
+      ],
+      "groups": [
+        {
+          "id": "g1",
+          "label": "自有",
+          "order": 0
+        },
+        {
+          "id": "g2",
+          "label": "平台",
+          "order": 1
+        }
+      ]
+    },
+    "filters": [
+      "DTC",
+      "SOCIAL"
+    ]
+  },
+  "subset": {
+    "select": {
+      "value": "\u0002subset",
+      "selected": {
+        "value": "\u0002subset",
+        "text": "2 個通路",
+        "group": null,
+        "disabled": true,
+        "testid": null
+      },
+      "groups": [],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        },
+        {
+          "value": "DTC",
+          "text": "官網",
+          "disabled": false
+        },
+        {
+          "value": "LIVE",
+          "text": "直播",
+          "disabled": false
+        },
+        {
+          "value": "MARKETPLACE",
+          "text": "蝦皮",
+          "disabled": false
+        },
+        {
+          "value": "SOCIAL",
+          "text": "社群",
+          "disabled": false
+        },
+        {
+          "value": "\u0002subset",
+          "text": "2 個通路",
+          "disabled": true
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "官網",
+        "直播",
+        "蝦皮",
+        "社群",
+        "2 個通路"
+      ]
+    },
+    "ariaSnapshot": "",
+    "title": "通路：官網、社群；等天數比較；資料到 2026-09-24",
+    "visible": "本期 9/7–9/23 對比 上期 8/21–9/6（各 17 天）",
+    "kpi": {
+      "net_revenue": "17.5 萬",
+      "gross_profit": "8.9 萬",
+      "contribution_before_marketing": "7.7 萬",
+      "contribution_after_marketing": "4.8 萬",
+      "contribution_margin": "27.6%"
+    },
+    "kpiEqualsGroup": true,
+    "drills": 0,
+    "pb": {
+      "x": 16,
+      "y": 48,
+      "width": 358,
+      "height": 56
+    },
+    "textFit": {
+      "text": "2 個通路",
+      "textWidth": 54,
+      "clientWidth": 0,
+      "innerWidth": -16,
+      "overflow": true,
+      "maxWidth": "none"
+    }
+  },
+  "subset.sheetOpen": {
+    "x": 0,
+    "y": 278,
+    "width": 390,
+    "height": 566
+  },
+  "subset.leave": {
+    "pickError": null,
+    "valueAfterPick": "\u0002subset",
+    "afterPickSocial": {
+      "value": "SOCIAL",
+      "selected": {
+        "value": "SOCIAL",
+        "text": "社群",
+        "group": null,
+        "disabled": false,
+        "testid": null
+      },
+      "optionTexts": [
+        "全部通路",
+        "官網",
+        "直播",
+        "蝦皮",
+        "社群"
+      ],
+      "focus": "select[scope-select]:全部通路官網直播蝦皮社群"
+    },
+    "title": "通路：社群；等天數比較；資料到 2026-09-24"
+  },
+  "subset.leaveAll": {
+    "kpiEqualsAll": true,
+    "select": {
+      "value": "",
+      "selected": {
+        "value": "",
+        "text": "全部通路",
+        "group": null,
+        "disabled": false,
+        "testid": null
+      },
+      "groups": [],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        },
+        {
+          "value": "DTC",
+          "text": "官網",
+          "disabled": false
+        },
+        {
+          "value": "LIVE",
+          "text": "直播",
+          "disabled": false
+        },
+        {
+          "value": "MARKETPLACE",
+          "text": "蝦皮",
+          "disabled": false
+        },
+        {
+          "value": "SOCIAL",
+          "text": "社群",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "官網",
+        "直播",
+        "蝦皮",
+        "社群"
+      ]
+    }
+  },
+  "restoreFull": {
+    "select": {
+      "value": "\u0001g1",
+      "selected": {
+        "value": "\u0001g1",
+        "text": "自有",
+        "group": "自有",
+        "disabled": false,
+        "testid": "scope-option-group-g1"
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網",
+              "testid": null,
+              "disabled": false
+            },
+            {
+              "value": "SOCIAL",
+              "text": "社群",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "平台",
+          "options": [
+            {
+              "value": "\u0001g2",
+              "text": "平台",
+              "testid": "scope-option-group-g2",
+              "disabled": false
+            },
+            {
+              "value": "LIVE",
+              "text": "直播",
+              "testid": null,
+              "disabled": false
+            },
+            {
+              "value": "MARKETPLACE",
+              "text": "蝦皮",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網",
+        "社群",
+        "平台",
+        "直播",
+        "蝦皮"
+      ]
+    },
+    "title": "通路：自有（官網、社群）；等天數比較；資料到 2026-09-24",
+    "kpiEqualsGroup": true
+  },
+  "targets": {
+    "issues": 0,
+    "noteGroup": {
+      "count": 1,
+      "text": "目標只對全部通路或單一通路配對。",
+      "kpiTargets": 0,
+      "box": {
+        "x": 16,
+        "y": 654,
+        "width": 358,
+        "height": 21.6
+      }
+    },
+    "noteAll": {
+      "count": 0,
+      "kpiTargets": 3
+    },
+    "noteSingle": {
+      "count": 0,
+      "kpiTargets": 0
+    },
+    "expectedText": "目標只對全部通路或單一通路配對。"
+  },
+  "ungrouped": {
+    "select": {
+      "value": "\u0001g1",
+      "selected": {
+        "value": "\u0001g1",
+        "text": "自有",
+        "group": "自有",
+        "disabled": false,
+        "testid": "scope-option-group-g1"
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網",
+              "testid": null,
+              "disabled": false
+            },
+            {
+              "value": "SOCIAL",
+              "text": "社群",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "平台",
+          "options": [
+            {
+              "value": "\u0001g2",
+              "text": "平台",
+              "testid": "scope-option-group-g2",
+              "disabled": false
+            },
+            {
+              "value": "MARKETPLACE",
+              "text": "蝦皮",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "未分組",
+          "options": [
+            {
+              "value": "LIVE",
+              "text": "直播",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網",
+        "社群",
+        "平台",
+        "蝦皮",
+        "直播"
+      ]
+    },
+    "pb": {
+      "x": 16,
+      "y": 48,
+      "width": 358,
+      "height": 56
+    }
+  },
+  "longName": {
+    "select": {
+      "value": "\u0001g1",
+      "selected": {
+        "value": "\u0001g1",
+        "text": "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+        "group": "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+        "disabled": false,
+        "testid": "scope-option-group-g1"
+      },
+      "groups": [
+        {
+          "label": "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網",
+              "testid": null,
+              "disabled": false
+            },
+            {
+              "value": "SOCIAL",
+              "text": "社群",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "平台",
+          "options": [
+            {
+              "value": "\u0001g2",
+              "text": "平台",
+              "testid": "scope-option-group-g2",
+              "disabled": false
+            },
+            {
+              "value": "MARKETPLACE",
+              "text": "蝦皮",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "未分組",
+          "options": [
+            {
+              "value": "LIVE",
+              "text": "直播",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+        "官網",
+        "社群",
+        "平台",
+        "蝦皮",
+        "直播"
+      ]
+    },
+    "pb": {
+      "x": 16,
+      "y": 48,
+      "width": 358,
+      "height": 56
+    },
+    "pbPanel": null,
+    "selectBox": null,
+    "textFit": {
+      "text": "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+      "textWidth": 560,
+      "clientWidth": 0,
+      "innerWidth": -16,
+      "overflow": true,
+      "maxWidth": "none"
+    },
+    "title": "通路：自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試（官網、社群）；等天數比較；資料到 2026-09-24",
+    "summaryBox": null
+  },
+  "longName.sheetOpen": {
+    "panel": {
+      "x": 0,
+      "y": 278,
+      "width": 390,
+      "height": 566
+    },
+    "textFit": {
+      "text": "自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試自有通路群組名稱測試",
+      "textWidth": 560,
+      "clientWidth": 356,
+      "innerWidth": 340,
+      "overflow": true,
+      "maxWidth": "none"
+    }
+  },
+  "restoredSettings": {
+    "select": {
+      "value": "\u0001g1",
+      "selected": {
+        "value": "\u0001g1",
+        "text": "自有",
+        "group": "自有",
+        "disabled": false,
+        "testid": "scope-option-group-g1"
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網",
+              "testid": null,
+              "disabled": false
+            },
+            {
+              "value": "SOCIAL",
+              "text": "社群",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "平台",
+          "options": [
+            {
+              "value": "\u0001g2",
+              "text": "平台",
+              "testid": "scope-option-group-g2",
+              "disabled": false
+            },
+            {
+              "value": "LIVE",
+              "text": "直播",
+              "testid": null,
+              "disabled": false
+            },
+            {
+              "value": "MARKETPLACE",
+              "text": "蝦皮",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網",
+        "社群",
+        "平台",
+        "直播",
+        "蝦皮"
+      ]
+    }
+  },
+  "notes": {
+    "sentences": [
+      "顯示名稱只改畫面；CSV、備份與 AI 用的仍是通路代碼。",
+      "群組的健檢只有合計層的規則；扣廣告後為負的提醒只出現在單一通路列。",
+      "試算一次只算一個通路。",
+      "目標只對全部通路或單一通路配對。"
+    ],
+    "summary": "要注意",
+    "expected": [
+      "顯示名稱只改畫面；CSV、備份與 AI 用的仍是通路代碼。",
+      "群組的健檢只有合計層的規則；扣廣告後為負的提醒只出現在單一通路列。",
+      "試算一次只算一個通路。",
+      "目標只對全部通路或單一通路配對。"
+    ]
+  },
+  "axe": {
+    "group.overview": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "group.diagnosis": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "group.meeting": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "group.scenarios": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "group.data": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "drilled.overview": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "drilled.diagnosis": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "drilled.meeting": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "drilled.scenarios": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "drilled.data": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    },
+    "subset.overview": {
+      "blocking": [],
+      "others": [],
+      "hiddenFocusables": []
+    }
+  }
+}

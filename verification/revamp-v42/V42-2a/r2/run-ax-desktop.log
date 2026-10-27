@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [desktop] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/ax-subset.spec.ts:10:5 › R2 ax subset (2.2s)
+
+  1 passed (3.2s)

@@ -1,0 +1,66 @@
+
+Running 60 tests using 1 worker
+
+  ✓   1 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:48:5 › V4-0a 畫面基準 01–09（v3 的 9 個畫面） (5.0s)
+  ✓   2 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:90:5 › V4-0a 畫面基準 10 健檢圖區、11 商品圖區 (1.4s)
+  ✓   3 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:127:5 › V4-0a 畫面基準 12 匯入精靈步驟 4（含稅 inclusive_tax） (623ms)
+  ✓   4 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:146:5 › V4-0a 畫面基準 13 KPI 帶（讀入 targets.csv，達成與落後兩種狀態） (1.1s)
+  ✓   5 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:163:5 › V41-1 畫面基準 14 首頁空狀態（含「操作導覽」入口） (284ms)
+  ✓   6 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:175:5 › V41-1 畫面基準 15 說明首頁首屏（/guide） (272ms)
+  ✓   7 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:187:5 › V41-2a 畫面基準 16 功能區頁首屏（/guide/overview） (245ms)
+  ✓   8 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:201:5 › V42-1b 畫面基準 17 通路設定編輯器展開 (886ms)
+  ✓   9 [desktop] › verification/revamp-v4-capture/baseline.spec.ts:218:5 › V42-2a 畫面基準 18 期間列選到群組 (1.5s)
+  ✓  10 [desktop] › verification/revamp-v4-capture/metrics.spec.ts:284:5 › B2 首屏位置（1440、1280、390）與內容前控制項數 (770ms)
+  ✓  11 [desktop] › verification/revamp-v4-capture/metrics.spec.ts:321:5 › 七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM 節點數 (5.1s)
+  ✓  12 [desktop] › verification/revamp-v4-capture/metrics.spec.ts:392:5 › B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號 (141ms)
+  ✓  13 [desktop] › verification/revamp-v4-capture/metrics.spec.ts:429:5 › V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 HTML 所引用的 /_next/static 腳本） (42ms)
+  ✓  14 [desktop] › verification/revamp-v4-capture/metrics.spec.ts:446:5 › V41-1 說明首頁 /guide 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串 (42ms)
+  ✓  15 [desktop] › verification/revamp-v4-capture/metrics.spec.ts:467:5 › V41-2a 功能區頁 /guide/{area} 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串 (428ms)
+  ✓  16 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:48:5 › V4-0a 畫面基準 01–09（v3 的 9 個畫面） (4.9s)
+  ✓  17 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:90:5 › V4-0a 畫面基準 10 健檢圖區、11 商品圖區 (1.3s)
+  ✓  18 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:127:5 › V4-0a 畫面基準 12 匯入精靈步驟 4（含稅 inclusive_tax） (639ms)
+  ✓  19 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:146:5 › V4-0a 畫面基準 13 KPI 帶（讀入 targets.csv，達成與落後兩種狀態） (1.1s)
+  ✓  20 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:163:5 › V41-1 畫面基準 14 首頁空狀態（含「操作導覽」入口） (291ms)
+  ✓  21 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:175:5 › V41-1 畫面基準 15 說明首頁首屏（/guide） (252ms)
+  ✓  22 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:187:5 › V41-2a 畫面基準 16 功能區頁首屏（/guide/overview） (220ms)
+  ✓  23 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:201:5 › V42-1b 畫面基準 17 通路設定編輯器展開 (874ms)
+  ✓  24 [laptop] › verification/revamp-v4-capture/baseline.spec.ts:218:5 › V42-2a 畫面基準 18 期間列選到群組 (1.5s)
+  ✓  25 [laptop] › verification/revamp-v4-capture/metrics.spec.ts:284:5 › B2 首屏位置（1440、1280、390）與內容前控制項數 (772ms)
+  ✓  26 [laptop] › verification/revamp-v4-capture/metrics.spec.ts:321:5 › 七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM 節點數 (4.5s)
+  -  27 [laptop] › verification/revamp-v4-capture/metrics.spec.ts:392:5 › B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號
+  -  28 [laptop] › verification/revamp-v4-capture/metrics.spec.ts:429:5 › V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 HTML 所引用的 /_next/static 腳本）
+  -  29 [laptop] › verification/revamp-v4-capture/metrics.spec.ts:446:5 › V41-1 說明首頁 /guide 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串
+  -  30 [laptop] › verification/revamp-v4-capture/metrics.spec.ts:467:5 › V41-2a 功能區頁 /guide/{area} 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串
+  ✓  31 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:48:5 › V4-0a 畫面基準 01–09（v3 的 9 個畫面） (4.4s)
+  ✓  32 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:90:5 › V4-0a 畫面基準 10 健檢圖區、11 商品圖區 (1.4s)
+  ✓  33 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:127:5 › V4-0a 畫面基準 12 匯入精靈步驟 4（含稅 inclusive_tax） (598ms)
+  ✓  34 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:146:5 › V4-0a 畫面基準 13 KPI 帶（讀入 targets.csv，達成與落後兩種狀態） (1.1s)
+  ✓  35 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:163:5 › V41-1 畫面基準 14 首頁空狀態（含「操作導覽」入口） (260ms)
+  ✓  36 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:175:5 › V41-1 畫面基準 15 說明首頁首屏（/guide） (257ms)
+  ✓  37 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:187:5 › V41-2a 畫面基準 16 功能區頁首屏（/guide/overview） (225ms)
+  ✓  38 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:201:5 › V42-1b 畫面基準 17 通路設定編輯器展開 (871ms)
+  ✓  39 [tablet] › verification/revamp-v4-capture/baseline.spec.ts:218:5 › V42-2a 畫面基準 18 期間列選到群組 (1.5s)
+  -  40 [tablet] › verification/revamp-v4-capture/metrics.spec.ts:284:5 › B2 首屏位置（1440、1280、390）與內容前控制項數
+  -  41 [tablet] › verification/revamp-v4-capture/metrics.spec.ts:321:5 › 七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM 節點數
+  -  42 [tablet] › verification/revamp-v4-capture/metrics.spec.ts:392:5 › B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號
+  -  43 [tablet] › verification/revamp-v4-capture/metrics.spec.ts:429:5 › V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 HTML 所引用的 /_next/static 腳本）
+  -  44 [tablet] › verification/revamp-v4-capture/metrics.spec.ts:446:5 › V41-1 說明首頁 /guide 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串
+  -  45 [tablet] › verification/revamp-v4-capture/metrics.spec.ts:467:5 › V41-2a 功能區頁 /guide/{area} 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串
+  ✓  46 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:48:5 › V4-0a 畫面基準 01–09（v3 的 9 個畫面） (4.3s)
+  ✓  47 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:90:5 › V4-0a 畫面基準 10 健檢圖區、11 商品圖區 (1.4s)
+  ✓  48 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:127:5 › V4-0a 畫面基準 12 匯入精靈步驟 4（含稅 inclusive_tax） (585ms)
+  ✓  49 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:146:5 › V4-0a 畫面基準 13 KPI 帶（讀入 targets.csv，達成與落後兩種狀態） (1.1s)
+  ✓  50 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:163:5 › V41-1 畫面基準 14 首頁空狀態（含「操作導覽」入口） (237ms)
+  ✓  51 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:175:5 › V41-1 畫面基準 15 說明首頁首屏（/guide） (208ms)
+  ✓  52 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:187:5 › V41-2a 畫面基準 16 功能區頁首屏（/guide/overview） (175ms)
+  ✓  53 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:201:5 › V42-1b 畫面基準 17 通路設定編輯器展開 (904ms)
+  ✓  54 [mobile] › verification/revamp-v4-capture/baseline.spec.ts:218:5 › V42-2a 畫面基準 18 期間列選到群組 (1.6s)
+  ✓  55 [mobile] › verification/revamp-v4-capture/metrics.spec.ts:284:5 › B2 首屏位置（1440、1280、390）與內容前控制項數 (739ms)
+  ✓  56 [mobile] › verification/revamp-v4-capture/metrics.spec.ts:321:5 › 七頁：B1 參考位置、B3 橫向捲動、B8 主層否定句、B9 DOM 節點數 (5.1s)
+  -  57 [mobile] › verification/revamp-v4-capture/metrics.spec.ts:392:5 › B5 First Load JS（/ 的 HTML 所引用的 /_next/static 腳本）與首載 chunk 符號
+  -  58 [mobile] › verification/revamp-v4-capture/metrics.spec.ts:429:5 › V41-0 框架基準：404 頁的 First Load JS（不存在的網址回應 HTML 所引用的 /_next/static 腳本）
+  -  59 [mobile] › verification/revamp-v4-capture/metrics.spec.ts:446:5 › V41-1 說明首頁 /guide 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串
+  -  60 [mobile] › verification/revamp-v4-capture/metrics.spec.ts:467:5 › V41-2a 功能區頁 /guide/{area} 的 First Load JS（量法同 404 框架基準）≤ 框架基準＋5,120，且不含圖表、匯出程式與工作台的字串
+
+  14 skipped
+  46 passed (1.1m)

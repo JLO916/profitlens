@@ -1,0 +1,25 @@
+{
+  "axSelect": [
+    {
+      "role": "combobox",
+      "name": "通路",
+      "value": "2 個通路",
+      "properties": [
+        "invalid=\"false\"",
+        "focusable=true",
+        "hasPopup=\"menu\"",
+        "expanded=false"
+      ]
+    }
+  ],
+  "lastStep": "axOption",
+  "axOption": [
+    {
+      "role": "option",
+      "name": "2 個通路",
+      "properties": [
+        "disabled=true"
+      ]
+    }
+  ]
+}

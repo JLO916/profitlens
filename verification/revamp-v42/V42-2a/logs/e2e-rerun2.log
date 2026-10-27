@@ -1,0 +1,18 @@
+
+Running 12 tests using 1 worker
+
+  ✓   1 [desktop] › tests/e2e/channel-settings.spec.ts:93:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (3.0s)
+  ✓   2 [desktop] › tests/e2e/channel-settings.spec.ts:174:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.5s)
+  ✓   3 [desktop] › tests/e2e/channel-settings.spec.ts:203:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.4s)
+  ✓   4 [laptop] › tests/e2e/channel-settings.spec.ts:93:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (2.8s)
+  ✓   5 [laptop] › tests/e2e/channel-settings.spec.ts:174:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.4s)
+  ✓   6 [laptop] › tests/e2e/channel-settings.spec.ts:203:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.4s)
+  ✓   7 [tablet] › tests/e2e/channel-settings.spec.ts:93:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (2.9s)
+  ✓   8 [tablet] › tests/e2e/channel-settings.spec.ts:174:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.4s)
+  ✓   9 [tablet] › tests/e2e/channel-settings.spec.ts:203:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.3s)
+  ✓  10 [mobile] › tests/e2e/channel-settings.spec.ts:93:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (3.1s)
+  ✓  11 [mobile] › tests/e2e/channel-settings.spec.ts:174:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.4s)
+  ✓  12 [mobile] › tests/e2e/channel-settings.spec.ts:203:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.4s)
+
+  12 passed (36.2s)
+exit=0

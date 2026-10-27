@@ -1,0 +1,812 @@
+{
+  "checked_at": "2026-10-27T21:16:41.575Z",
+  "restore_accepts": [
+    "profitlens-workspace-v5",
+    "profitlens-workspace-v4",
+    "profitlens-workspace-v3",
+    "profitlens-workspace-v2",
+    "profitlens-workspace-v1"
+  ],
+  "rows": [
+    {
+      "dataset": "golden",
+      "version": "v1",
+      "source": "generated",
+      "envelope_bytes": 4725,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v1",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 6303
+      },
+      "ms": 32
+    },
+    {
+      "dataset": "golden",
+      "version": "v2",
+      "source": "generated",
+      "envelope_bytes": 7457,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v2",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 6287
+      },
+      "ms": 35
+    },
+    {
+      "dataset": "golden",
+      "version": "v3",
+      "source": "generated",
+      "envelope_bytes": 7799,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 7884
+      },
+      "ms": 40
+    },
+    {
+      "dataset": "golden",
+      "version": "v4",
+      "source": "generated",
+      "envelope_bytes": 13491,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v4",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 13491
+      },
+      "ms": 58
+    },
+    {
+      "dataset": "golden",
+      "version": "v5",
+      "source": "generated",
+      "envelope_bytes": 13513,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 13513
+      },
+      "ms": 51
+    },
+    {
+      "dataset": "golden",
+      "version": "v5 (channel settings)",
+      "source": "generated",
+      "envelope_bytes": 13742,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": {
+        "version": "channel-settings-v1",
+        "channels": [
+          {
+            "code": "DTC",
+            "label": "自營官網",
+            "group": "g1",
+            "order": 1
+          },
+          {
+            "code": "MARKETPLACE",
+            "group": "g1",
+            "order": 0
+          }
+        ],
+        "groups": [
+          {
+            "id": "g1",
+            "label": "全部平台",
+            "order": 0
+          }
+        ]
+      },
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": {
+          "version": "channel-settings-v1",
+          "channels": [
+            {
+              "code": "DTC",
+              "label": "自營官網",
+              "group": "g1",
+              "order": 1
+            },
+            {
+              "code": "MARKETPLACE",
+              "group": "g1",
+              "order": 0
+            }
+          ],
+          "groups": [
+            {
+              "id": "g1",
+              "label": "全部平台",
+              "order": 0
+            }
+          ]
+        },
+        "envelope_bytes": 13742
+      },
+      "ms": 51
+    },
+    {
+      "dataset": "golden",
+      "version": "v5 (imported)",
+      "source": "generated",
+      "envelope_bytes": 13547,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": "284.00",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": "2026-10-07T06:05Z",
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": "2026-10-07T06:05Z",
+        "channel_settings": null,
+        "envelope_bytes": 13547
+      },
+      "ms": 46
+    },
+    {
+      "dataset": "demo",
+      "version": "v1",
+      "source": "generated",
+      "envelope_bytes": 526087,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v1",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 266983
+      },
+      "ms": 1077
+    },
+    {
+      "dataset": "demo",
+      "version": "v2",
+      "source": "generated",
+      "envelope_bytes": 789501,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v2",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": false,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 266967
+      },
+      "ms": 1074
+    },
+    {
+      "dataset": "demo",
+      "version": "v3",
+      "source": "generated",
+      "envelope_bytes": 268718,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 268803
+      },
+      "ms": 1054
+    },
+    {
+      "dataset": "demo",
+      "version": "v4",
+      "source": "generated",
+      "envelope_bytes": 274490,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v4",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 274490
+      },
+      "ms": 1888
+    },
+    {
+      "dataset": "demo",
+      "version": "v5",
+      "source": "generated",
+      "envelope_bytes": 274512,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 274512
+      },
+      "ms": 2026
+    },
+    {
+      "dataset": "demo",
+      "version": "v5 (channel settings)",
+      "source": "generated",
+      "envelope_bytes": 274741,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v5",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "1269792.73",
+        "previous": "1868626.68",
+        "delta": "-598833.95"
+      },
+      "scenario_contribution": "1336239.46",
+      "actions": 1,
+      "ad_decisions": [
+        "pause"
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 1,
+        "events": 1,
+        "meeting_history": 1,
+        "ui_prefs": {
+          "last_preset": "last28",
+          "view": "list"
+        }
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": {
+        "version": "channel-settings-v1",
+        "channels": [
+          {
+            "code": "DTC",
+            "label": "自營官網",
+            "group": "g1",
+            "order": 1
+          },
+          {
+            "code": "MARKETPLACE",
+            "group": "g1",
+            "order": 0
+          }
+        ],
+        "groups": [
+          {
+            "id": "g1",
+            "label": "全部平台",
+            "order": 0
+          }
+        ]
+      },
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": {
+          "version": "channel-settings-v1",
+          "channels": [
+            {
+              "code": "DTC",
+              "label": "自營官網",
+              "group": "g1",
+              "order": 1
+            },
+            {
+              "code": "MARKETPLACE",
+              "group": "g1",
+              "order": 0
+            }
+          ],
+          "groups": [
+            {
+              "id": "g1",
+              "label": "全部平台",
+              "order": 0
+            }
+          ]
+        },
+        "envelope_bytes": 274741
+      },
+      "ms": 2161
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (desktop)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 20073
+      },
+      "ms": 56
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (laptop)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 20073
+      },
+      "ms": 42
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (tablet)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 20073
+      },
+      "ms": 41
+    },
+    {
+      "dataset": "golden",
+      "version": "v3 (mobile)",
+      "source": "real-file",
+      "envelope_bytes": 19988,
+      "restored": true,
+      "restored_schema_version": "profitlens-workspace-v3",
+      "classification": "valid",
+      "contribution_after_marketing": {
+        "current": "255.00",
+        "previous": "570.00",
+        "delta": "-315.00"
+      },
+      "scenario_contribution": null,
+      "actions": 8,
+      "ad_decisions": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "side_data": {
+        "preprocessing": false,
+        "targets": 0,
+        "events": 0,
+        "meeting_history": 0,
+        "ui_prefs": {}
+      },
+      "review_session": true,
+      "imported_at": null,
+      "channel_settings": null,
+      "dropped_channel_codes": [],
+      "round_trip": {
+        "schema_version": "profitlens-workspace-v5",
+        "restored_schema_version": "profitlens-workspace-v5",
+        "same_amounts": true,
+        "imported_at": null,
+        "channel_settings": null,
+        "envelope_bytes": 20073
+      },
+      "ms": 44
+    }
+  ]
+}

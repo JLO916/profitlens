@@ -1,0 +1,355 @@
+{
+  "select.demo": {
+    "value": "",
+    "selected": {
+      "value": "",
+      "text": "全部通路",
+      "group": null,
+      "disabled": false,
+      "testid": null
+    },
+    "groups": [],
+    "topLevel": [
+      {
+        "value": "",
+        "text": "全部通路",
+        "disabled": false
+      },
+      {
+        "value": "DTC",
+        "text": "官網 · DTC",
+        "disabled": false
+      },
+      {
+        "value": "MARKETPLACE",
+        "text": "平台 · MARKETPLACE",
+        "disabled": false
+      }
+    ],
+    "optionTexts": [
+      "全部通路",
+      "官網 · DTC",
+      "平台 · MARKETPLACE"
+    ]
+  },
+  "lastStep": "kpiAll",
+  "pb.demo": {
+    "x": 244,
+    "y": 104,
+    "width": 500,
+    "height": 127
+  },
+  "kpiBand.demo": {
+    "x": 244,
+    "y": 395,
+    "width": 500,
+    "height": 286
+  },
+  "drills.overview": 0,
+  "targets.demo": {
+    "kpiTargets": 3,
+    "note": 0,
+    "noteText": 0
+  },
+  "drills.diagnosis": 0,
+  "drills.meeting": 0,
+  "drills.meetingPage": 0,
+  "single.noGroup": {
+    "pickInfo": {
+      "mobile": false,
+      "expandedAfterSelect": null,
+      "activeAfterSelect": "select[scope-select]:全部通路官網 · DTC平台 · MARKETPLACE",
+      "toggleBefore": null,
+      "toggleAfter": null,
+      "activeAfterClose": "select[scope-select]:全部通路官網 · DTC平台 · MARKETPLACE"
+    },
+    "select": {
+      "value": "DTC",
+      "selected": {
+        "value": "DTC",
+        "text": "官網 · DTC",
+        "group": null,
+        "disabled": false,
+        "testid": null
+      },
+      "groups": [],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        },
+        {
+          "value": "DTC",
+          "text": "官網 · DTC",
+          "disabled": false
+        },
+        {
+          "value": "MARKETPLACE",
+          "text": "平台 · MARKETPLACE",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "官網 · DTC",
+        "平台 · MARKETPLACE"
+      ]
+    },
+    "title": "通路：官網 · DTC；等天數比較；資料到 2026-08-24",
+    "drills": 0
+  },
+  "oneMember.all": {
+    "select": {
+      "value": "",
+      "selected": {
+        "value": "",
+        "text": "全部通路",
+        "group": null,
+        "disabled": false,
+        "testid": null
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網 · DTC",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "未分組",
+          "options": [
+            {
+              "value": "MARKETPLACE",
+              "text": "平台 · MARKETPLACE",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網 · DTC",
+        "平台 · MARKETPLACE"
+      ]
+    },
+    "pb": {
+      "x": 244,
+      "y": 104,
+      "width": 500,
+      "height": 127
+    },
+    "drills": 2,
+    "note": 0,
+    "kpiTargets": 3
+  },
+  "oneMember.pickedGroup": {
+    "select": {
+      "value": "DTC",
+      "selected": {
+        "value": "DTC",
+        "text": "官網 · DTC",
+        "group": "自有",
+        "disabled": false,
+        "testid": null
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網 · DTC",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "未分組",
+          "options": [
+            {
+              "value": "MARKETPLACE",
+              "text": "平台 · MARKETPLACE",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網 · DTC",
+        "平台 · MARKETPLACE"
+      ]
+    },
+    "title": "通路：自有（官網 · DTC）；等天數比較；資料到 2026-08-24",
+    "drills": 0,
+    "note": 1,
+    "noteText": "目標只對全部通路或單一通路配對。",
+    "kpiTargets": 0,
+    "kpiTargetTexts": [],
+    "pb": {
+      "x": 244,
+      "y": 104,
+      "width": 500,
+      "height": 127
+    }
+  },
+  "oneMember.ungroupedPick": {
+    "select": {
+      "value": "MARKETPLACE",
+      "selected": {
+        "value": "MARKETPLACE",
+        "text": "平台 · MARKETPLACE",
+        "group": "未分組",
+        "disabled": false,
+        "testid": null
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網 · DTC",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "未分組",
+          "options": [
+            {
+              "value": "MARKETPLACE",
+              "text": "平台 · MARKETPLACE",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網 · DTC",
+        "平台 · MARKETPLACE"
+      ]
+    },
+    "title": "通路：平台 · MARKETPLACE；等天數比較；資料到 2026-08-24",
+    "note": 0
+  },
+  "oneMember.backToAll": {
+    "select": {
+      "value": "",
+      "selected": {
+        "value": "",
+        "text": "全部通路",
+        "group": null,
+        "disabled": false,
+        "testid": null
+      },
+      "groups": [
+        {
+          "label": "自有",
+          "options": [
+            {
+              "value": "\u0001g1",
+              "text": "自有",
+              "testid": "scope-option-group-g1",
+              "disabled": false
+            },
+            {
+              "value": "DTC",
+              "text": "官網 · DTC",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        },
+        {
+          "label": "未分組",
+          "options": [
+            {
+              "value": "MARKETPLACE",
+              "text": "平台 · MARKETPLACE",
+              "testid": null,
+              "disabled": false
+            }
+          ]
+        }
+      ],
+      "topLevel": [
+        {
+          "value": "",
+          "text": "全部通路",
+          "disabled": false
+        }
+      ],
+      "optionTexts": [
+        "全部通路",
+        "自有",
+        "官網 · DTC",
+        "平台 · MARKETPLACE"
+      ]
+    },
+    "title": "通路：官網 · DTC、平台 · MARKETPLACE；等天數比較；資料到 2026-08-24",
+    "drills": 2,
+    "note": 0
+  },
+  "kpiAll": {
+    "net_revenue": "785.1 萬",
+    "gross_profit": "285.8 萬",
+    "contribution_before_marketing": "195.9 萬",
+    "contribution_after_marketing": "127.0 萬",
+    "contribution_margin": "16.2%"
+  }
+}

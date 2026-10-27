@@ -1,5 +1,19 @@
 # Decision log
 
+## 2026-10-28｜v4.2 V42-2a：群組層與單一通路層（D-V42-2、10、12 的落地；D-V42-35＝A）
+
+使用者 2026-10-28 回覆「V42-2a 開工，其他依建議」。工作流：設計文件先定案（選取值優先順序、範圍文字規則、按鈕條件、稽核 20 條的修法），A（核心）與 C（精確性測試）並行，B（稽核修法、按鈕、限制句）與 D1（頁面狀態、M1、testid、畫面基準 18）並行，D2（E2E）與 R1（唯讀審查）並行，R2（瀏覽器審查），修正；程式 `74230d7`。
+
+- **D-V42-10＝A 的落地**：同一個原生 `<select>`，`<optgroup>` 每群組一組（群組選項的值是控制字元前綴＋群組 id；`SUBSET_OPTION_VALUE` 給只讀的「{n} 個通路」）；沒有群組時 markup 逐位元組相同。**選取值優先順序**（PRD §4.1 沒寫的兩個邊界）：恰好一個通路 → 那個通路（含只有一個成員的群組、只有一個通路的資料集，與 v4.1.3 相同）；集合等於全部 → 全部通路（含包含全部通路的群組）；集合等於某群組成員 → 群組；其餘 → 子集。驗收時 `GUIDE_MEDIA=check` 抓到 import-wizard 影片的單一通路樣本因「全部先於單一」變成「全部通路」，改回「單一先於全部」（`74230d7`）。
+- **D-V42-2＝A 的落地**：「只看這個通路」只在資料集有群組且範圍 > 1 通路時渲染（示範資料不預設群組，D-V42-13，所以畫面 01、02、05、08 與說明媒體 0 差異）；按了走既有單一通路篩選；重算後焦點移到期間列的通路選單（390 移到期間按鈕；審查 R2-1）。
+- **範圍文字（GLOSSARY #8）**：`NameResolver` 帶群組；`scopeChannelsLabel`：群組 → 群組名、群組內單一通路 → 「{群組名} · {通路名}」、其餘 → 成員清單；期間摘要 title 與 sr-only「{群組名}（成員）」。稽核 20 條之外另補 6 處可見文字（健檢 sec-scope、本期三件事、健檢結果標題、G10 副標、會議摘要脈絡句、會議頁固定範圍一行）；仍列成員的位置（資料來源頁「目前看的通路」、健檢事實句、抽屜成員行、試算頁基準標題、列印版頁首、Excel 摘要通路列、週會摘要 Markdown meta、還原預覽句）刻意不改，留給 H8 與 V42-5。
+- **D-V42-12＝A 的落地**：「要注意」四句（GLOSSARY §2）；目標限制句只在範圍等於某群組且 > 1 通路、有目標檔時顯示（單一成員的群組選了就是單一通路，目標照常配對；審查 R2-3）；試算頁群組範圍只列成員；沒有 `Scope.kind "group"`、不碰 `targets.ts`。
+- **labels**：aria 鍵命名 `drillChannelAria`（不是 `drillAria`）——copy-scan 把 X／XAria 當占位符變體，兩者占位符不同就會計入 `placeholderVariantMismatch`（棘輪 0）。
+- **畫面基準 18**：原生 `<select>` 的下拉清單截不到，18 定義為「選到群組後的期間列」元素截圖（示範資料建群組「自有」＝DTC；390 截底部面板）。
+- **影響**：`/` First Load 523,697（V42-0 +3,992，門檻 527,897）；B9 不變（資料來源 +3）；Lighthouse 三次五項在門檻內（D-V42-35＝A 首次記錄 benchmarkIndex 3,349／3,350／3,371）；新增檔只有 `tests/channel-groups.test.ts`、`tests/e2e/channel-groups.spec.ts`；收尾 commit {{CLOSEOUT}}（未 push）。
+- **只記錄的 nit**（不修）：其餘仍列成員的範圍文字（R1-6；見範圍文字那條）；`evidenceSubtitle` 子字串比對；`filter_hash` 測試在兩檔重複；`period-bar.test` 的原始碼子字串斷言；40 字群組名在關閉的選單被截斷（原生 `<select>`）；有群組時 G4 列首欄變寬、390 按鈕換行 +9 px；768 期間列高度由最寬選項文字決定（既有）。
+- **流程教訓**：workflow 的 worktree 留在 `.claude/worktrees/` 時主檢出的 `eslint .` 會掃到副本，併入後先移除；完整 E2E 會重生 `verification/review-v2-a-*` 與 `revamp-R6/*` 的產物，照前例不提交、以 `git checkout --` 還原。
+
 ## 2026-10-28｜V42-1b 的 Lighthouse 補量（使用者 2026-10-27「V42-2a 開工前先補量 Lighthouse」、2026-10-28「負載還是太高的話就先用現在的量補進去」）
 
 - **做法**：HEAD `6c3b4c9`（`src` 與 `637323a` 只差 `src/i18n/guide.zh-TW.ts` 一行「── V42-1b 錨點」註解，建置產物相同：載入示範資料的主要 chunk `794-9fe765eb012f0e09.js` 與 10-27 的報告同名）重新建置（BUILD_ID `J6sNZe2XmXB4u1ezT1s6g`）起 PUBLIC_DEMO 於 3100，`scripts/lighthouse-pages.mjs` 三次；閘門（1 分鐘負載 < 2.5）2026-10-27 21:10 起等了 90 分鐘沒開（負載 8 降到 3.2，最低 2.66；session 內以 `ps` 觀察，吃 CPU 的是 Spotlight 的 `mds_stores`、`spotlightknowledged` 與使用者的 Chrome，未存檔），延長到 3 小時後第 1 次 2026-10-27 23:10 開跑（1 分鐘負載 2.22）；之後 1 分鐘負載在 2.66 到 10.73 之間起伏（多在 3 到 5），沒有再低於 2.5，第 2、3 次依使用者指示不等閘門、2026-10-28 00:28／00:30 在負載 6.30／6.80 下量。證據 `verification/revamp-v42/V42-1b/lighthouse-lowload/`（`run1/` 含六份 HTML 報告，`run2/`、`run3/` 只留 metrics，第 2、3 次的 HTML 在摘錄後刪掉了、沒有保留；`driver.log` 是閘門與三次的紀錄）。`.gitignore` 的 `*.log` 排除了 `driver.log`，10-27 收尾引用的 `vitest.log`、`lighthouse-ab/drive.log` 也因此一直沒進 repo，三個檔本次以 `git add -f` 加入；commit `755f67e`（未 push），commit 後 `git diff --stat 625bfa5 755f67e` 與 `872662d 755f67e` 對禁區路徑都為空。

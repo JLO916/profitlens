@@ -1,0 +1,26 @@
+
+> profitlens@4.1.3 audit:ui
+> node scripts/ui-audit.mjs --json verification/revamp-v42/V42-2a/ui-audit.json
+
+UI 靜態基準（scripts/ui-audit.mjs）
+寫死色碼（:root 以外相異 hex）     0  globals.css 0／元件 CSS 0／TSX 0；token 定義區 24
+相異圓角值                         4  不含 @media print：4
+相異字級值                        11  不含 @media print：8
+非 0 字距                          0  宣告數
+裝飾性 rotate(                     0  已排除 @keyframes spin、.diagnosis-summary::before
+JSX 文字節點含箭頭                 3  → ↗ ▸ ▾
+JSX 全大寫 eyebrow                 0  /^[A-Z ]{4,}$/
+JSX 裝飾字元                       0  ①–⑳ ★ ☆ ⓘ ●
+CSS content 裝飾字元               0  content: "▾" 等
+.button-row 置中                   0  justify-content: center
+巢狀卡片選擇器                     0  .panel .panel、.panel [class*=card]（.board-card 除外）
+linear-gradient                    0  
+box-shadow                         0  --shadow-overlay 與 none 除外
+JSX 文字節點含中文                 0  
+元件字串常值含中文                 0  屬性值、變數等（註解不計）
+labels「注意：」開頭               0  含「注意：」出現次數 0
+labels 箭頭字元                    0  字元數
+靜態 data-testid（相異）         269  出現 272 次；動態屬性 81 處；testId 屬性 15
+相異 class 選擇器                956  CSS 檔 2、TSX 檔 90
+labels 其餘：circledNumbers=0、decorativeChars=0、exclamations=0、emoji=0、allCaps=0、pipes=0、blacklistSynonym=12、blacklistJargon=0、blacklistTone=0、blacklistEmotion=0、placeholderMalformed=0、placeholderVariantMismatch=0、l1ClauseOverLimit=0
+JSON 已寫入 verification/revamp-v42/V42-2a/ui-audit.json

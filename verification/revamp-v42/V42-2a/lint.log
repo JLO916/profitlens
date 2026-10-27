@@ -1,0 +1,4 @@
+
+> profitlens@4.1.3 lint
+> eslint . --max-warnings=0
+

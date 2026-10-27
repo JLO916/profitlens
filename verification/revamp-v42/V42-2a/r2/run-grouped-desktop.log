@@ -1,0 +1,7 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [desktop] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/grouped-flow.spec.ts:13:5 › R2 grouped flow (9.9s)
+
+  1 passed (10.7s)
+exit=0

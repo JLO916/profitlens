@@ -1,0 +1,10 @@
+desktop-1440 [["首頁（空狀態，navigation）",100,100,"26/31",3,0,""],["載入示範資料（timespan）",null,null,"23/23",141.7,0,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"6/7",153.648,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"6/6",0,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"18/18",0,0.002,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"6/7",198.555,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"6/6",0,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"6/6",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+desktop-1440 lazy chunks {"count":10,"insideTimespans":[]}
+desktop-1440 environment {"benchmarkIndex":3370,"chrome":"156.0.0.0","benchmarkIndexBySteps":[3173,3370,3338,3361,3364,3332,3360,3340,3344,3272,3328,3264,3317,3319,3324]}
+mobile-390 [["首頁（空狀態，navigation）",100,97,"25/32",178,0,""],["載入示範資料（timespan）",null,null,"21/23",982.893,0.001,""],["經營總覽（snapshot）",100,null,"1/1",null,null,""],["切到通路健檢（timespan）",null,null,"19/22",752.797,0,""],["通路健檢（snapshot）",100,null,"1/1",null,null,""],["切到商品毛利（timespan）",null,null,"19/20",107.714,0,""],["商品毛利（snapshot）",100,null,"1/1",null,null,""],["切到假設試算（timespan）",null,null,"20/20",14.306,0,""],["假設試算（snapshot）",100,null,"1/1",null,null,""],["切到會議紀錄（timespan）",null,null,"19/22",1000.416,0,""],["會議紀錄（snapshot）",100,null,"1/1",null,null,""],["切到資料來源（timespan）",null,null,"20/20",25.4,0,""],["資料來源（snapshot）",100,null,"1/1",null,null,""],["切到待辦（timespan）",null,null,"6/6",0,0,""],["待辦（snapshot）",100,null,"1/1",null,null,""]]
+mobile-390 lazy chunks {"count":10,"insideTimespans":[]}
+mobile-390 environment {"benchmarkIndex":3350,"chrome":"156.0.0.0","benchmarkIndexBySteps":[3236,3350,3324,3335,3112,3315,3088,3281,3281,3350,3323,3270,3306,3275,3301]}
+desktop-1440 /guide [100,100,100,100,0,0,502.782,"",""]
+desktop-1440 /guide/overview [100,100,100,100,0,0,539.013,"",""]
+mobile-390 /guide [100,98,100,100,0,22,2425.134,"",""]
+mobile-390 /guide/overview [100,98,100,100,0,12,2478.303,"",""]

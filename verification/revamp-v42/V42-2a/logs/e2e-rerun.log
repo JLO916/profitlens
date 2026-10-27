@@ -1,0 +1,184 @@
+
+Running 20 tests using 1 worker
+
+  ✓   1 [desktop] › tests/e2e/channel-groups.spec.ts:217:5 › V42-2a 群組範圍：期間列選「自有」後 KPI 帶五格＝Node 端群組快照、選中的是 optgroup「自有」內的群組選項；健檢、商品毛利、試算、會議、資料來源都在群組範圍；G4 點「只看這個通路」切到群組內單一通路（自有 · 官網）再選回群組；沒有目標時沒有目標限制句 (2.9s)
+  ✓   2 [desktop] › tests/e2e/channel-groups.spec.ts:270:5 › V42-2a 備份與還原：群組範圍的備份帶 channel_settings 與成員代碼；重新開頁還原後選單仍選中「自有」；群組清空的備份還原後選單是只讀的「2 個通路」、期間摘要列成員、沒有「只看這個通路」；再還原完整備份後總覽、健檢、會議在群組範圍 axe 0 個 serious／critical (4.3s)
+  ✘   3 [desktop] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (1.7s)
+  ✓   4 [desktop] › tests/e2e/channel-settings.spec.ts:173:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.5s)
+  ✓   5 [desktop] › tests/e2e/channel-settings.spec.ts:202:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.3s)
+  ✓   6 [laptop] › tests/e2e/channel-groups.spec.ts:217:5 › V42-2a 群組範圍：期間列選「自有」後 KPI 帶五格＝Node 端群組快照、選中的是 optgroup「自有」內的群組選項；健檢、商品毛利、試算、會議、資料來源都在群組範圍；G4 點「只看這個通路」切到群組內單一通路（自有 · 官網）再選回群組；沒有目標時沒有目標限制句 (2.8s)
+  ✓   7 [laptop] › tests/e2e/channel-groups.spec.ts:270:5 › V42-2a 備份與還原：群組範圍的備份帶 channel_settings 與成員代碼；重新開頁還原後選單仍選中「自有」；群組清空的備份還原後選單是只讀的「2 個通路」、期間摘要列成員、沒有「只看這個通路」；再還原完整備份後總覽、健檢、會議在群組範圍 axe 0 個 serious／critical (4.2s)
+  ✘   8 [laptop] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (1.7s)
+  ✓   9 [laptop] › tests/e2e/channel-settings.spec.ts:173:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.5s)
+  ✓  10 [laptop] › tests/e2e/channel-settings.spec.ts:202:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.4s)
+  ✓  11 [tablet] › tests/e2e/channel-groups.spec.ts:217:5 › V42-2a 群組範圍：期間列選「自有」後 KPI 帶五格＝Node 端群組快照、選中的是 optgroup「自有」內的群組選項；健檢、商品毛利、試算、會議、資料來源都在群組範圍；G4 點「只看這個通路」切到群組內單一通路（自有 · 官網）再選回群組；沒有目標時沒有目標限制句 (2.6s)
+  ✓  12 [tablet] › tests/e2e/channel-groups.spec.ts:270:5 › V42-2a 備份與還原：群組範圍的備份帶 channel_settings 與成員代碼；重新開頁還原後選單仍選中「自有」；群組清空的備份還原後選單是只讀的「2 個通路」、期間摘要列成員、沒有「只看這個通路」；再還原完整備份後總覽、健檢、會議在群組範圍 axe 0 個 serious／critical (4.2s)
+  ✘  13 [tablet] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (1.7s)
+  ✓  14 [tablet] › tests/e2e/channel-settings.spec.ts:173:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.4s)
+  ✓  15 [tablet] › tests/e2e/channel-settings.spec.ts:202:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.4s)
+  ✓  16 [mobile] › tests/e2e/channel-groups.spec.ts:217:5 › V42-2a 群組範圍：期間列選「自有」後 KPI 帶五格＝Node 端群組快照、選中的是 optgroup「自有」內的群組選項；健檢、商品毛利、試算、會議、資料來源都在群組範圍；G4 點「只看這個通路」切到群組內單一通路（自有 · 官網）再選回群組；沒有目標時沒有目標限制句 (2.9s)
+  ✓  17 [mobile] › tests/e2e/channel-groups.spec.ts:270:5 › V42-2a 備份與還原：群組範圍的備份帶 channel_settings 與成員代碼；重新開頁還原後選單仍選中「自有」；群組清空的備份還原後選單是只讀的「2 個通路」、期間摘要列成員、沒有「只看這個通路」；再還原完整備份後總覽、健檢、會議在群組範圍 axe 0 個 serious／critical (4.6s)
+  ✘  18 [mobile] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 (1.8s)
+  ✓  19 [mobile] › tests/e2e/channel-settings.spec.ts:173:5 › V42-1b 通路設定：不合規則的名稱（前面有空格）列出規則句、狀態句空白、不套用；改成合規的名稱後再套用就通過 (1.5s)
+  ✓  20 [mobile] › tests/e2e/channel-settings.spec.ts:202:5 › V42-1b 通路設定：套用之後、重算完成之前繼續打字，打的字不會被父層傳回的設定蓋掉；套用成功時沒有成員的群組當場從草稿去掉 (1.4s)
+
+
+  1) [desktop] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   "官網直營",
+    -   "蝦皮商城",
+    +   "官網直營只看這個通路",
+    +   "蝦皮商城只看這個通路",
+      ]
+
+      44 | async function expectDiagnosisNames(page: Page, names: string[]) {
+      45 |   await expect(diagnosisRows(page)).toHaveCount(names.length);
+    > 46 |   expect((await diagnosisRows(page).allTextContents()).map(text => text.trim()).sort()).toEqual([...names].sort());
+         |                                                                                         ^
+      47 | }
+      48 | const noHorizontalScroll = (page: Page) => page.evaluate(() => { const root = document.scrollingElement ?? document.documentElement; return root.scrollWidth <= root.clientWidth; });
+      49 | /** 重算中的內容區（dashboard：applyFilters 期間 .view-content 標 aria-busy，舊內容保持掛載）。 */
+        at expectDiagnosisNames (/Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:46:89)
+        at /Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:136:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [laptop] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   "官網直營",
+    -   "蝦皮商城",
+    +   "官網直營只看這個通路",
+    +   "蝦皮商城只看這個通路",
+      ]
+
+      44 | async function expectDiagnosisNames(page: Page, names: string[]) {
+      45 |   await expect(diagnosisRows(page)).toHaveCount(names.length);
+    > 46 |   expect((await diagnosisRows(page).allTextContents()).map(text => text.trim()).sort()).toEqual([...names].sort());
+         |                                                                                         ^
+      47 | }
+      48 | const noHorizontalScroll = (page: Page) => page.evaluate(() => { const root = document.scrollingElement ?? document.documentElement; return root.scrollWidth <= root.clientWidth; });
+      49 | /** 重算中的內容區（dashboard：applyFilters 期間 .view-content 標 aria-busy，舊內容保持掛載）。 */
+        at expectDiagnosisNames (/Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:46:89)
+        at /Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:136:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-laptop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-laptop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-laptop/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-laptop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [tablet] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   "官網直營",
+    -   "蝦皮商城",
+    +   "官網直營只看這個通路",
+    +   "蝦皮商城只看這個通路",
+      ]
+
+      44 | async function expectDiagnosisNames(page: Page, names: string[]) {
+      45 |   await expect(diagnosisRows(page)).toHaveCount(names.length);
+    > 46 |   expect((await diagnosisRows(page).allTextContents()).map(text => text.trim()).sort()).toEqual([...names].sort());
+         |                                                                                         ^
+      47 | }
+      48 | const noHorizontalScroll = (page: Page) => page.evaluate(() => { const root = document.scrollingElement ?? document.documentElement; return root.scrollWidth <= root.clientWidth; });
+      49 | /** 重算中的內容區（dashboard：applyFilters 期間 .view-content 標 aria-busy，舊內容保持掛載）。 */
+        at expectDiagnosisNames (/Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:46:89)
+        at /Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:136:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-tablet/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-tablet/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-tablet/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-tablet/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [mobile] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Array [
+    -   "官網直營",
+    -   "蝦皮商城",
+    +   "官網直營只看這個通路",
+    +   "蝦皮商城只看這個通路",
+      ]
+
+      44 | async function expectDiagnosisNames(page: Page, names: string[]) {
+      45 |   await expect(diagnosisRows(page)).toHaveCount(names.length);
+    > 46 |   expect((await diagnosisRows(page).allTextContents()).map(text => text.trim()).sort()).toEqual([...names].sort());
+         |                                                                                         ^
+      47 | }
+      48 | const noHorizontalScroll = (page: Page) => page.evaluate(() => { const root = document.scrollingElement ?? document.documentElement; return root.scrollWidth <= root.clientWidth; });
+      49 | /** 重算中的內容區（dashboard：applyFilters 期間 .view-content 標 aria-busy，舊內容保持掛載）。 */
+        at expectDiagnosisNames (/Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:46:89)
+        at /Users/j-work/ProfitLens/tests/e2e/channel-settings.spec.ts:136:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-mobile/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-mobile/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-mobile/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/channel-settings-V42-1b-通路-6fd8f-channel-settings，重新開頁後還原再出現-mobile/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    [desktop] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+    [laptop] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+    [tablet] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+    [mobile] › tests/e2e/channel-settings.spec.ts:92:5 › V42-1b 通路設定：改名、建群組、套用；顯示名稱出現在範圍文字、期間列、總覽與健檢；備份帶 channel_settings，重新開頁後還原再出現 
+  16 passed (1.0m)
+exit=1

@@ -1,0 +1,9 @@
+
+Running 3 tests using 1 worker
+
+  ✓  1 [laptop] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/demo-flow.spec.ts:10:5 › R2 demo flow (4.2s)
+  ✓  2 [tablet] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/demo-flow.spec.ts:10:5 › R2 demo flow (3.7s)
+  ✓  3 [mobile] › ../../../private/tmp/claude-502/-Users-j-work-ProfitLens/dbb9107e-e7d5-4aed-a614-47ec6e660af0/scratchpad/v42/v42-2a/r2/specs/demo-flow.spec.ts:10:5 › R2 demo flow (4.2s)
+
+  3 passed (13.8s)
+exit=0

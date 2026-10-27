@@ -1,5 +1,17 @@
 # Status
 
+## V42-2a 群組層與單一通路層（v4.2 第四批，2026-10-28）
+
+使用者 2026-10-28 回覆「V42-2a 開工，其他依建議」（D-V42-35＝A）。基準 v4.1.3＝`3bb1924`，開工錨點 `9a3756c`，程式 `74230d7`（代理 A `0711002`、C `dc1edd1`、B `05b0a88`、D1 `067a668`、D2 與 R1 修正 `3298344`、R2 修正 `1d67e95`、驗收修正 `4ea8067`、`6262fd0`、`74230d7`）。D-V42-1 的補充問題（是否已匯入過自己的多通路資料）仍沒有回覆，不擋本批。
+
+**內容**：期間列的通路選單改成同一個原生 `<select>` 的兩層（每群組一個 `<optgroup>`：群組選項＋成員，沒有群組的通路放最後一組「未分組」；沒有群組時 markup 與 v4.1.3 逐位元組相同，只多 `data-testid="scope-select"`；範圍是沒有對應群組的子集時顯示只讀的「{n} 個通路」）；選群組就是 `applyFilters` 帶成員代碼（A 級，`createSnapshot` 不變，沒有 `Scope.kind "group"`）；範圍文字認得群組（`scopeChannelsLabel`／`scopeDetailText`：群組名、「{群組名} · {通路名}」、期間摘要 title「{群組名}（成員）」；`scopeLabel`、`diagnosisScopeLabel`、抽屜副標與子集稽核的 20 條位置都改，另補 6 處可見的範圍文字）；G4 精簡表與通路寬表的通路列加「只看這個通路」（只在資料集有群組且範圍 > 1 通路時渲染，所以示範資料的畫面與說明媒體 0 差異；按了走既有的單一通路篩選，重算後焦點移到期間列）；試算頁在群組範圍只列成員；通路設定區「要注意」四句（GLOSSARY §2）；總覽在群組範圍（> 1 通路）且有目標時一行「目標只對全部通路或單一通路配對。」。新 labels 9 個 key（`shell.periodBarV42.*` 2、`shell.scopeV42.*` 2、`diagnosis.channelsV42.*` 5）。D-V42-35＝A：`scripts/lighthouse-pages.mjs` 寫 `lighthouse.environment`（benchmarkIndex、Chrome 版本）。
+
+**驗收**（程式 `74230d7`；收尾 {{CLOSEOUT}}，未 push）：unit 174 檔、3,743 全過（最終程式 07:31 重跑，存 `verification/revamp-v42/V42-2a/vitest.log`）；lint 0；typecheck 通過；contrast 85／85；E2E **1,163 passed、0 failed、29 skipped**（34.2 分鐘；最終建置 `74230d7`，LOCAL 伺服器 3100）。過程：第一次完整執行 1,159／4／29，4 個失敗是 V42-1b `channel-settings.spec.ts` 案例 A × 4 尺寸的舊期望（通路選單單層清單、健檢寬表通路格的純文字），依兩層選單與按鈕更新期望（`4ea8067`、`6262fd0`）後該 spec 12／12、`channel-groups.spec.ts` 8／8，再以最終建置跑完整套。axe 四尺寸 28／28／28／26 個狀態 serious 與 critical 都 0（`axe.json`）；network-log 下載集合 5 種（analysis_csv、excel、pptx、decision_json 等，與 v4 相同）、非 GET 0、POST 0（`network-log.json`）；keyboard-walk 1440 七頁 18 個里程碑全部可達、`aria-hidden` 內停留點 0，新里程碑「期間列通路選單」在 1440 與 768 第 2 個 Tab 到達（`reachedBy inside`），390 選單在關閉的底部面板內不計入（`keyboard-walk.json`）；畫面基準新 18 × 4（選到群組後的期間列元素截圖）、其餘 68 張 0 差異（允許變動的 01 到 09、13 實測 0）；`/` First Load 523,697（V42-0 +3,992，門檻 527,897）；`"channel-settings"` 首載 0 次；說明頁 131,461；B9 與 V42-1b 相同（資料來源 +3）；axe 四尺寸全 0；`GUIDE_MEDIA=check` 47／47（第一輪抓到 import-wizard 影片 apply 畫格差異：單一通路樣本的選單從「官網」變成「全部通路」，把 `channelSelection` 改成「恰好一個」先於「全部」後 0 差異）；launch-check 本機 13＋19；備份矩陣 17 列全部還原；禁區與邊界五條為空；Lighthouse 三次 390 TBT 中位數 952.2／760.7／86.2／935.2／14.9，五項在門檻內、四項低於 V42-0（開跑 1 分鐘負載 4.31／2.95／2.36，benchmarkIndex 3,349／3,350／3,371，Chrome 156；a11y 全 100）；精確性 `tests/channel-groups.test.ts`（群組＝成員 bigint 和、分割＝全部、null 傳遞、橋接 reconciled、INVALID_CHANNEL_FILTER、filter_hash）。
+
+**審查**：R1 major 4（畫面基準 18 的單一成員群組斷言；E2E spec 尚未併入；testid 列與 M1；會議頁固定範圍一行）、R2 major 2（鍵盤下鑽後焦點掉到 body；四處範圍文字仍列成員）＋ R2-3 視同 major（單一成員群組的目標限制句；示範資料的群組一定是單一成員）；都已修；nit 10 件（R1 6、R2 4；R1-5 與 R2-3 同一件，視同 major 已修）：7 件只記錄、R1-8（收尾文件）由本次收尾處理（驗收文件 §5）。
+
+**沒有做**：群組合計列（V42-2b）；仍列成員的範圍文字（資料來源頁「目前看的通路」、健檢事實句、抽屜成員行、試算頁基準標題、列印版頁首、Excel 摘要通路列、週會摘要 Markdown meta、還原預覽句）留給 H8 用字與 V42-5 的人讀匯出核對；preview 給 H8 需使用者當次同意 push（未 push）；H8（V42-2a 後）、H9（V42-4 後）未執行／待人工；H6 上線後補。
+
 ## V42-1b 通路設定：編輯器、Excel 對照列與 E2E（v4.2 第三批，2026-10-27）
 
 使用者 2026-10-27 回覆「開始動工」。基準 v4.1.3＝`3bb1924`，開工錨點 `d588788`，程式 `637323a`。D-V42-1 的補充問題（是否已匯入過自己的多通路資料）仍沒有回覆，不擋本批。
