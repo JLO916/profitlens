@@ -5,7 +5,7 @@ import type { ComparisonMode, Period, RuleCode } from "../domain/types";
 import { fill, labels } from "../i18n";
 import { ACTION_EXECUTION_STATUSES, actionDocuments, type ActionExecutionStatus, type ActionWorkspace } from "./action-workspace";
 import { formatSavedDateTime } from "./auto-save";
-import { channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "./copy";
+import { channelLabel, conversionSentence, scopeChannelsLabel, snapshotResolver } from "./copy";
 import { makeResolver, type NameResolver } from "./channel-settings";
 import { decisionSignature } from "./decision";
 import { diagnosisScopeLabel } from "./diagnosis-group";
@@ -382,8 +382,9 @@ export function compareWithLastMeeting(current: { snapshot: WorkspaceSnapshot; r
   const notComparable = { kpis: [], priorities: { last: [], current: [] } };
   if (snapshot.dataset_hash !== last.source_fixed.dataset_hash) return { kind: "different_dataset", last, note: labels.meeting.form.noComparable, ...notComparable, ...tracked };
   if (!sameSet(scope.channels, last.source_fixed.channels)) {
+    // V42-2a（子集稽核第 11a 條）：兩個占位符都走解析器——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」；sameSet 不改。
     const resolver = snapshotResolver(snapshot);
-    return { kind: "different_dataset", last, note: fill(copy.differentChannels, { last: channelsLabel(last.source_fixed.channels, resolver), current: channelsLabel(scope.channels, resolver) }), ...notComparable, ...tracked };
+    return { kind: "different_dataset", last, note: fill(copy.differentChannels, { last: scopeChannelsLabel(last.source_fixed.channels, resolver), current: scopeChannelsLabel(scope.channels, resolver) }), ...notComparable, ...tracked };
   }
   const summary = buildManagerSummary(snapshot, { importanceThreshold: current.review?.importance_threshold, conversion: current.conversion, targets: current.targets ?? undefined });
   const kpis = meetingKpis(summary).map(row => {
@@ -443,7 +444,8 @@ export function exportMeetingMarkdown(meeting: Meeting, comparison?: MeetingComp
     fill(copy.mdPeriod, { period: labels.shell.periods.previous, range: formatPeriodExport(fixed.periods.previous.start, fixed.periods.previous.end) }),
     fill(copy.mdPeriod, { period: labels.shell.periods.current, range: formatPeriodExport(fixed.periods.current.start, fixed.periods.current.end) }),
     fill(copy.mdField, { field: labels.exports.csv.columns.comparison_mode, value: comparisonModeLabel(fixed.periods.comparison_mode) }),
-    fill(copy.mdField, { field: labels.exports.csv.columns.channels, value: md(channelsLabel(fixed.channels, resolver)) }),
+    // V42-2a（子集稽核第 11b 條）：通路欄走解析器（群組名／「{群組名} · {通路名}」）；source_fixed.channels 本身仍是通路代碼。
+    fill(copy.mdField, { field: labels.exports.csv.columns.channels, value: md(scopeChannelsLabel(fixed.channels, resolver)) }),
     // 門檻是使用者設定的精確值，取到分（L3）。
     fill(copy.mdThreshold, { field: labels.meeting.form.threshold, amount: formatAmount(meeting.thresholds.importance, "L3") }), "",
     copy.mdBasis, "", ...fixed.basis.map(text => `- ${md(text)}`), ...(fixed.preprocessing ? [`- ${md(fixed.preprocessing)}`] : []), "",

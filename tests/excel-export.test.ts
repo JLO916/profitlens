@@ -19,7 +19,7 @@ import { channelConclusion } from "@/application/chart-takeaways";
 import type { ExportVariant } from "@/application/export-variants";
 import { productHighlights } from "@/application/product-highlights";
 import { bridgeWaterfall, profitWaterfall } from "@/application/waterfall";
-import { channelLabel, conversionSentence, scopeLabel, snapshotResolver } from "@/application/copy";
+import { channelLabel, channelsLabel, conversionSentence, scopeLabel, snapshotResolver } from "@/application/copy";
 import { heatSectionModel } from "@/components/diagnosis/heat-section";
 import { RATE_METRICS, ratesModel, RATES_TABLE_COLUMNS } from "@/components/diagnosis/rates-section";
 import { sharePerHundredText, shareSectionModel, shareTableCell, SHARE_TABLE_COLUMNS } from "@/components/diagnosis/share-section";
@@ -28,6 +28,7 @@ import { encodeCsv } from "@/application/export";
 import { downloadBinary } from "@/application/download";
 import { CHANNEL_SETTINGS_VERSION, orderedChannels, type ChannelSettings } from "@/application/channel-settings";
 import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
 import { buildExcelWorkbook, countCell, EXCEL_CELL_TEXT_LIMIT, EXCEL_MIME, EXCEL_NUMBER_FORMATS, excelHeader, excelSheetName, excelText, exportExcel, moneyCell, ratioCell, writeExcel, type ExcelCell, type ExcelExportInput, type ExcelSheet, type ExcelWorkbook } from "@/application/excel-export";
 import { formatPeriodExport, metricDefinitions, MINUS } from "@/application/presentation";
 import type { TaxConversion } from "@/application/tax-basis";
@@ -902,5 +903,65 @@ describe("V42-1b 指標定義工作表的「通路設定」對照列：只在快
     expect(withSettings).toHaveLength(labels.glossary.basis.items.length + 1);
     // 同一份輸入的標準版仍有對照列（閘門只擋客戶報告版）。
     expect(basisRows(buildExcelWorkbook({ ...(await synthetic(SETTINGS)), variant: "standard" })).some(row => row[col.basis.section] === v.heading)).toBe(true);
+  });
+});
+
+// ── V42-2a 子集稽核第 1 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：匯出 Excel 在群組範圍與群組內單一通路範圍下的範圍文字。
+// chartDataSections 的 chartScope.channels 改走 scopeChannelsLabel（只餵 G13／G14 的 varianceSectionModel／paretoSectionModel 副標，工作表本身不寫出副標），
+// 工作表看得到的範圍文字是摘要工作表關鍵差額的「範圍」欄（scopeLabel，V42-2a 起認得群組）與「通路」列（仍列成員）。沒有群組的 golden／示範逐字不變。
+describe("V42-2a 子集稽核第 1 條：群組範圍與群組內單一通路範圍的 Excel 範圍文字", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+  const s = copy.summary, column = copy.columns.summary;
+  async function scoped(channels: string[]): Promise<ExcelExportInput> {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    const snapshot = await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS);
+    return { summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace(), products: compareProducts(dataset, snapshot.report.scope).rows, channelSettings: SYNTHETIC_CHANNEL_SETTINGS };
+  }
+  const summaryRows = (input: ExcelExportInput) => records(sheetOf(buildExcelWorkbook(input), "summary"));
+  const keyDeltaScopes = (rows: Record<string, string | number | null>[]) => rows.filter(row => row[column.section] === s.sections.keyDeltas).map(row => row[column.scope]);
+  const channelsRow = (rows: Record<string, string | number | null>[]) => rows.find(row => row[column.section] === s.sections.scope && row[column.item] === s.items.channels)?.[column.detail];
+
+  it("群組範圍（DTC＋SOCIAL＝自有）：關鍵差額的範圍寫群組名、通路列仍列成員（官網、社群）；活頁簿八張工作表照常建出、圖表資料照常有段", async () => {
+    const input = await scoped(["DTC", "SOCIAL"]);
+    const rows = summaryRows(input);
+    const scopes = keyDeltaScopes(rows);
+    expect(scopes.length).toBeGreaterThan(0);
+    expect(new Set(scopes)).toEqual(new Set([G1]));
+    expect(channelsRow(rows)).toBe(channelsLabel(["DTC", "SOCIAL"], snapshotResolver(input.snapshot)));
+    const book = buildExcelWorkbook(input);
+    expect(book.sheets.map(sheet => sheet.name)).toEqual(SHEET_NAMES);
+    expect(records(book.sheets.find(sheet => sheet.name === labels.exports.chartsV4.excel.sheet)!).some(row => row[copy.columns.basis.section] === labels.overview.sections.bridge)).toBe(true);
+    // 群組範圍不等於全部通路：G13／G14 的範圍字走子集分支（scopeChannelsLabel＝群組名，不是「全部通路」）。
+    expect(input.dataset.manifest.channels.every(channel => input.snapshot.report.scope.channels.includes(channel))).toBe(false);
+  });
+
+  it("群組內單一通路範圍（DTC）：關鍵差額的範圍仍是 kind all 的「合計（官網）」、通路列是「官網」；三件事裡 kind channel 的範圍寫「自有 · 官網」", async () => {
+    const input = await scoped(["DTC"]);
+    const rows = summaryRows(input);
+    const resolver = snapshotResolver(input.snapshot);
+    expect(new Set(keyDeltaScopes(rows))).toEqual(new Set([scopeLabel({ kind: "all", channels: ["DTC"] }, resolver)]));
+    expect(channelsRow(rows)).toBe(DTC_NAME);
+    const channelScoped = input.summary.priorities.filter(item => item.primary.scope.kind === "channel");
+    for (const item of channelScoped) expect(scopeLabel(item.primary.scope, resolver)).toBe(MEMBER);
+    expect(rows.filter(row => row[column.section] === s.sections.topThree && row[column.scope] === MEMBER)).toHaveLength(channelScoped.length);
+  });
+
+  it("沒有群組（golden、示範、沒有設定的合成資料）：關鍵差額的範圍是「合計（成員清單）」、通路列是 channelsLabel 的成員清單——與今天逐字相同", async () => {
+    for (const name of ["golden", "demo"]) {
+      const { dataset, snapshot } = await load(fixture(name));
+      const resolver = snapshotResolver(snapshot);
+      const rows = summaryRows({ summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace() });
+      expect(new Set(keyDeltaScopes(rows)), name).toEqual(new Set([`${labels.overview.sections.total}（${channelsLabel(snapshot.report.scope.channels, resolver)}）`]));
+      expect(channelsRow(rows), name).toBe(channelsLabel(snapshot.report.scope.channels, resolver));
+    }
+    const plain = synthetic4ChannelInput();
+    const dataset = validateDataset(plain).dataset!;
+    const snapshot = await createSnapshot(dataset, { channels: ["DTC", "SOCIAL"] }, await hashInput(plain));
+    const rows = summaryRows({ summary: buildManagerSummary(snapshot), snapshot, dataset, actions: emptyActionWorkspace() });
+    expect(new Set(keyDeltaScopes(rows))).toEqual(new Set([`${labels.overview.sections.total}（DTC、SOCIAL）`]));
+    expect(channelsRow(rows)).toBe("DTC、SOCIAL");
   });
 });

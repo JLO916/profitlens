@@ -20,6 +20,8 @@ import type { AnalysisFilters } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
 import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
+import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
 /*
  * V3-5 商品毛利頁（PRD §7.3、§6.3 #36、F18；§9.4 C3／C10／C14／C15）。伺服器端渲染（所有彈出層都是關著的）：
@@ -372,5 +374,35 @@ describe("V4-4 商品頁 G13：product-best 在 chart-products-variance 內；�
         expect(evidence.filter).toBeUndefined();
       }
     }
+  });
+});
+
+// ── V42-2a 子集稽核第 19 條（verification/revamp-v42/V42-0-subset-audit.md；DESIGN §5）：商品毛利頁範圍副標與 G13、G14 的 ctx（chartScope.channels）走 scopeChannelsLabel。
+describe("V42-2a 子集稽核第 19 條：商品毛利頁的範圍副標認得群組", () => {
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const DTC_NAME = SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === "DTC")!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: DTC_NAME });
+  const scopeLine = (snapshot: Awaited<ReturnType<typeof createSnapshot>>, channels: string) => `<p class="product-scope" data-testid="product-scope">${fill(page.scope, { current: formatPeriodL1(snapshot.report.current.period.start, snapshot.report.current.period.end, { days: false, anchor: snapshot.data_as_of }), previous: formatPeriodL1(snapshot.report.previous.period.start, snapshot.report.previous.period.end, { days: false, anchor: snapshot.data_as_of }), channels })}</p>`;
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    const snapshot = await createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS);
+    return { html: renderToStaticMarkup(createElement(ProductComparisonPanel, { dataset, snapshot, onEvidence: noop })), snapshot };
+  }
+
+  it("群組（DTC＋SOCIAL＝自有）→ 群組名；群組內單一通路（DTC）→ 自有 · 官網；沒有對應群組的子集（DTC＋LIVE）→ 成員清單；全部通路 → 全部通路", async () => {
+    const group = await scoped(["DTC", "SOCIAL"]);
+    expect(group.html).toContain(scopeLine(group.snapshot, G1));
+    const single = await scoped(["DTC"]);
+    expect(single.html).toContain(scopeLine(single.snapshot, MEMBER));
+    const subset = await scoped(["DTC", "LIVE"]);
+    expect(subset.html).toContain(scopeLine(subset.snapshot, channelsLabel(["DTC", "LIVE"], snapshotResolver(subset.snapshot))));
+    const all = await scoped(["DTC", "LIVE", "MARKETPLACE", "SOCIAL"]);
+    expect(all.html).toContain(scopeLine(all.snapshot, labels.shell.periodBar.filter.allChannels));
+  });
+
+  it("沒有群組（golden 單一通路 DTC）：與 channelsLabel 逐字相同（與今天相同）", async () => {
+    const dtc = await render("golden", { filters: { channels: ["DTC"] } });
+    expect(dtc.html).toContain(scopeLine(dtc.snapshot, channelsLabel(["DTC"], snapshotResolver(dtc.snapshot))));
   });
 });

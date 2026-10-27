@@ -4,7 +4,7 @@ import { channelLabel, channelsLabel, scopeLabel, snapshotResolver } from "@/app
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "@/application/workspace";
 import type { Scope } from "@/domain/types";
 import { validateDataset } from "@/domain/validation";
-import { labels } from "@/i18n";
+import { fill, labels } from "@/i18n";
 import { fixture } from "./helpers/fixtures";
 import { synthetic4ChannelInput } from "./helpers/synthetic-4-channel";
 
@@ -50,15 +50,16 @@ describe("V42-1a 快照的通路名稱", () => {
     expect(json(named.products)).toBe(json(plain.products));
     expect(named.report.scope.channels).toEqual(["DTC", "MARKETPLACE"]);
   });
-  it("試算頁式的單一通路快照：scopeLabel 與期間摘要的範圍文字等於設定的顯示名稱；沒有名稱的通路退回代碼", async () => {
+  it("試算頁式的單一通路快照：scopeLabel 寫「{群組名} · {顯示名稱}」（V42-2a：DTC 屬於群組「自有」）、channelsLabel 仍等於設定的顯示名稱；沒有名稱的通路退回代碼", async () => {
     const { dataset, hash } = await prepared();
     const single = await createSnapshot(dataset, { channels: ["DTC"] }, hash, SETTINGS);
     const resolver = snapshotResolver(single);
-    expect(scopeLabel(scopeOf(single), resolver)).toBe("官網");
+    // V42-2a（PRD §4.2 第 2 點、GLOSSARY #8）：單一通路屬於群組時，scopeLabel 寫「{群組名} · {通路名}」；channelsLabel 不變。
+    expect(scopeLabel(scopeOf(single), resolver)).toBe(fill(labels.shell.scopeV42.memberOfGroup, { group: "自有", channel: "官網" }));
     expect(channelsLabel(single.report.scope.channels, resolver)).toBe("官網");
     expect(channelLabel("SOCIAL", resolver)).toBe("SOCIAL");
     const social = await createSnapshot(dataset, { channels: ["SOCIAL"] }, hash, SETTINGS);
-    expect(scopeLabel(scopeOf(social), snapshotResolver(social))).toBe("SOCIAL");
+    expect(scopeLabel(scopeOf(social), snapshotResolver(social))).toBe(fill(labels.shell.scopeV42.memberOfGroup, { group: "自有", channel: "SOCIAL" }));
     const all = await createSnapshot(dataset, {}, hash, SETTINGS);
     expect(scopeLabel(scopeOf(all), snapshotResolver(all))).toBe(`${labels.overview.sections.total}（官網、LIVE、MARKETPLACE、SOCIAL）`);
   });

@@ -14,7 +14,7 @@ import { exportProductsCsv } from "@/application/export";
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
 import { formatSavedDateTime } from "@/application/auto-save";
 import { buildManagerSummary } from "@/application/manager-summary";
-import { categoryLabel, channelLabel, channelsLabel, conversionSentence, snapshotResolver } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, conversionSentence, scopeChannelsLabel, snapshotResolver } from "@/application/copy";
 import { makeResolver, type ChannelSettings } from "@/application/channel-settings";
 import type { TaxConversion } from "@/application/tax-basis";
 import { exportTargetsCsv, targetDisplay, targetsCsvTemplate, type TargetIssue, type TargetSet } from "@/application/targets";
@@ -234,8 +234,9 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null,
   <HeatSection snapshot={snapshot} onEvidence={onEvidence} />
   {/* ── V4-3b B：G12 五項比率每週走勢（<details>，收合時掛載）插在這裡（G11 之後、通路寬表之前） */}
   <RatesSection snapshot={snapshot} onEvidence={onEvidence} />
+  {/* V42-2a（子集稽核第 23 條）：範圍文字走解析器——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」；沒有群組時仍是成員清單。 */}
   <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
-    <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, resolver)}</span></div>
+    <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{scopeChannelsLabel(summary.scope.channels, resolver)}</span></div>
     <p className="sub">{diagnosisPanel.channelTableCaution}</p>
     <ChannelWideTable variant="diagnosis" summary={summary} snapshot={snapshot} onEvidence={onEvidence} onDrill={onDrill} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />
   </section>

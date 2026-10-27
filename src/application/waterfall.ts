@@ -1,7 +1,7 @@
 import Decimal from "decimal.js";
 import { chartColors } from "@/application/chart-theme";
 import { channelLabel, formatHeadlineAmount, snapshotResolver } from "@/application/copy";
-import type { NameResolver } from "@/application/channel-settings";
+import { findGroupByMembers, type NameResolver } from "@/application/channel-settings";
 import { deltaTone, deltaWord, formatAmountL1, formatAmountL3, formatEmpty, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
 import type { WorkspaceSnapshot } from "@/application/workspace";
 import { AMOUNT_FIELDS, type AmountField, type Metric, type MetricName, type Metrics } from "@/domain/types";
@@ -266,7 +266,8 @@ export function profitWaterfall(snapshot: WorkspaceSnapshot, scope: "all" | stri
     : fill(perHundredValue.isNegative() && !perHundredValue.isZero() ? copy.title.negative : copy.title.positive, { n: perHundredValue.abs().toFixed(1) });
 
   const everyChannel = !!options.allChannels && options.allChannels.length > 0 && options.allChannels.every(channel => report.scope.channels.includes(channel));
-  const scopeLabel = scope === "all" ? (everyChannel ? labels.shell.periodBar.filter.allChannels : labels.overview.sections.total) : channelLabel(scope, resolver);
+  // V42-2a（子集稽核第 8 條）：合計的範圍文字——全部通路寫「全部通路」；範圍等於某群組的成員集合時寫群組名；其他子集維持「合計」。通路範圍不變（channelLabel）。
+  const scopeLabel = scope === "all" ? (everyChannel ? labels.shell.periodBar.filter.allChannels : findGroupByMembers(resolver.groups, report.scope.channels)?.label ?? labels.overview.sections.total) : channelLabel(scope, resolver);
   const rows: ProfitRow[] = PROFIT_WATERFALL_METRICS.map(({ metric, kind }) => {
     const value = metricOf(metric);
     return { id: metric, metric, label: metricDefinitions[metric].label, kind, value, share: ratio(exact(value.value), netRevenue) };

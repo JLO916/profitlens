@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { ASSIST_KPI_VERSION } from "@/application/assist-kpi";
+import { findGroupByMembers } from "@/application/channel-settings";
 import type { EventSet } from "@/application/events";
 import { achievement, achievementText, matchTargets, mismatchText, targetDisplay, TARGET_METRICS, type TargetMetric, type TargetRow, type TargetSet } from "@/application/targets";
 import { favorableDirectionOf, formatAmount, formatEmpty, formatMetric, formatSignedDelta, metricDefinitions, type Layer } from "@/application/presentation";
@@ -48,6 +49,8 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
   const [advancedSeen, setAdvancedSeen] = useState(periodOpen);
   // R4：目標只在期間完全相同時顯示達成率；檔期只標示，不改任何計算。
   const targetMatches = matchTargets(targets, { current_period: report.current.period, channels: report.scope.channels, allChannels: allChannels ?? report.scope.channels });
+  // V42-2a（D-V42-12；PRD §4.3）：範圍等於某群組的成員集合且有目標檔時，KPI 帶之後一行限制句「目標只對全部通路或單一通路配對。」（targets.ts 不動，部分多選本來就配不到）。
+  const groupTargetsNote = targets !== null && findGroupByMembers(snapshot.channel_groups ?? [], report.scope.channels) !== null;
   // 目標數字可追溯：抽屜列出實際與目標、公式「實際 ÷ 目標」、targets.csv 檔名與行號。V4-10：抽成函式，G8 的目標格與 KPI 帶的目標 number-link 開同一個抽屜。
   const targetEvidence = (metric: TargetMetric, row: TargetRow): EvidenceSelection => {
     const actual = report.current.metrics[metric];
@@ -81,6 +84,7 @@ export function Overview({ snapshot, onEvidence, onCreateAction, periodOpen = fa
     <WeeklySnapshot snapshot={snapshot} datasetName={datasetName} missingItems={missingItems} actionsSummary={actionsSummary} allChannels={allChannels} meetingEntry={meetingEntry} />
 
     <KpiBand snapshot={snapshot} onEvidence={onEvidence} onBasis={onBasis} onNavigate={onNavigate} missingItems={missingItems} targets={kpiTargets} />
+    {groupTargetsNote && <p className="note kpi-targets-note">{labels.diagnosis.channelsV42.limits.targets}</p>}
 
     <TopThree snapshot={snapshot} onEvidence={onEvidence} onCreateAction={onCreateAction} events={events} onOpenDiagnosis={onNavigate ? () => onNavigate("diagnosis") : undefined} />
     {/* V3-4b 區塊 5「貢獻變化拆解」（C17 瀑布＋橋接表＋平衡檢核）與區塊 6「本期利潤結構」（F2 四層瀑布，範圍切換只影響本圖） */}

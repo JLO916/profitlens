@@ -61,7 +61,9 @@ describe("V42-1b 通路設定區（SSR）", () => {
     expect(html).toContain(`<button type="button" class="ui-btn ui-btn-secondary">${ui.buttons.addGroup}</button><button type="button" class="ui-btn ui-btn-primary">${ui.buttons.apply}</button>`);
     expect(html).not.toContain('role="alert"');
     expect(html).toContain('<p class="channel-settings-status" role="status"></p>');
-    expect(html).toContain(`<details class="channel-settings-notes"><summary>${ui.notes.summary}</summary><p>${ui.notes.names}</p></details>`);
+    // V42-2a（D-V42-12；GLOSSARY §2）：「要注意」改成四句，每句一個 <p>——名稱句之後接群組層的三句限制（規則卡、試算、目標）。
+    const limits = labels.diagnosis.channelsV42.limits;
+    expect(html).toContain(`<details class="channel-settings-notes"><summary>${ui.notes.summary}</summary><p>${ui.notes.names}</p><p>${limits.rules}</p><p>${limits.scenario}</p><p>${limits.targets}</p></details>`);
     // 表頭一列只是視覺（aria-hidden），裡面沒有可聚焦的東西。
     expect(html).toMatch(/<div class="channel-settings-head" aria-hidden="true">(<span>[^<]*<\/span>){4}<\/div>/);
   });

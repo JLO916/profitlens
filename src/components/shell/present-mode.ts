@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Period } from "@/domain/types";
-import { channelsLabel, snapshotResolver } from "@/application/copy";
+import { scopeChannelsLabel, snapshotResolver } from "@/application/copy";
 import { periodDays } from "@/application/presentation";
 import type { ReviewSession } from "@/application/review-session";
 import type { WorkspaceSnapshot } from "@/application/workspace";
@@ -63,6 +63,7 @@ export function presentEscapeExits(event: Pick<KeyboardEvent, "key" | "defaultPr
 /**
  * F22（§9.7「隱藏側欄與期間列，只留一行期間文字」）：投影中頁首的一行期間文字＝期間列的期間摘要（formatPeriodL1，同 periodSummary）＋通路。
  * 會議紀錄頁有會議時用會議固定的範圍（議程數字的來源），否則用目前檢視的範圍；全部通路寫「全部通路」（同總覽一句話下方的範圍行）。
+ * V42-2a（子集稽核第 17 條）：子集走解析器——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」；沒有群組時仍是成員清單（逐字不變）。
  */
 export function presentPeriodText(snapshot: WorkspaceSnapshot, review: Pick<ReviewSession, "meeting_filters" | "data_as_of"> | null, allChannels: readonly string[]): string {
   const { report } = snapshot;
@@ -70,7 +71,7 @@ export function presentPeriodText(snapshot: WorkspaceSnapshot, review: Pick<Revi
   const filters = review?.meeting_filters ?? null;
   const selected = filters ? filters.channels : report.scope.channels;
   const everyChannel = allChannels.length > 0 && allChannels.every(channel => selected.includes(channel));
-  const channels = everyChannel ? labels.shell.periodBar.filter.allChannels : channelsLabel(selected, snapshotResolver(snapshot));
+  const channels = everyChannel ? labels.shell.periodBar.filter.allChannels : scopeChannelsLabel(selected, snapshotResolver(snapshot));
   const { text } = periodSummary(filters && review
     ? { previous: filters.previous_period, current: filters.current_period, previousDays: days(filters.previous_period), currentDays: days(filters.current_period), comparisonMode: filters.comparison_mode, channelsText: channels, dataAsOf: review.data_as_of }
     : { previous: report.previous.period, current: report.current.period, previousDays: report.comparison.previous_days, currentDays: report.comparison.current_days, comparisonMode: report.comparison.mode, channelsText: channels, dataAsOf: snapshot.data_as_of });

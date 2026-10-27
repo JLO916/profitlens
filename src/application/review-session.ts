@@ -9,7 +9,7 @@ import { buildManagerSummary, type SummaryDecisionContext } from './manager-summ
 import { resolveScenarioReference, type ScenarioSelectionRef, type ScenarioSource, type ScenarioWorkspace } from './scenario-workspace';
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from './workspace';
 import { fill, labels } from '../i18n';
-import { channelLabel, channelsLabel } from './copy';
+import { scopeChannelsLabel } from './copy';
 import { makeResolver, type ChannelSettings, type NameResolver } from './channel-settings';
 import { formatAmountL2, formatPercentNumber, formatPointsValue } from './presentation';
 
@@ -117,7 +117,10 @@ export async function rebuildReviewSnapshot(review: ReviewSession, settings?: Ch
   buildManagerSummary(snapshot, { importanceThreshold: review.importance_threshold });
   return snapshot;
 }
-/** V42-1a（子集稽核 12c）：resolver 給時，方案與待辦的範圍文字用它解析通路名稱；沒給時沿用各列資料集的隱含預設（示範別名），輸出逐字不變。 */
+/**
+ * V42-1a（子集稽核 12c）：resolver 給時，方案與待辦的範圍文字用它解析通路名稱；沒給時沿用各列資料集的隱含預設（示範別名），輸出逐字不變。
+ * V42-2a（12c、12d）：兩處都改走 scopeChannelsLabel——方案的單一通路屬於群組時寫「{群組名} · {通路名}」，待辦的範圍等於某群組的成員集合時寫群組名；沒有群組時與 channelLabel／channelsLabel 逐字相同。
+ */
 export function buildReviewDecisionContext(review: ReviewSession, scenarios: ScenarioWorkspace, actions: ActionWorkspace, resolver?: NameResolver): SummaryDecisionContext {
   validateReviewSession(review, scenarios);
   const documents = actionDocuments(actions);
@@ -126,14 +129,14 @@ export function buildReviewDecisionContext(review: ReviewSession, scenarios: Sce
     selectedScenarioIds: review.selected_scenarios.map(reviewScenarioId), reviewName: review.name, notes: review.notes, decisionState: REVIEW_DECISION_LABELS[review.decision_state],
     scenarios: review.selected_scenarios.map(ref => {
       const { context, version, status } = resolveScenarioReference(scenarios, ref);
-      return { id: reviewScenarioId(ref), name: fill(ui.scenarioNameWithRevision, { name: version.name, revision: version.revision }), status: status === 'current' && review.status === 'current' ? 'current' : 'stale', scopeLabel: `${fill(ui.scenarioScope, { channel: channelLabel(ref.channel, resolver ?? makeResolver(undefined, context.session.dataset_id)), start: context.session.period.start, end: context.session.period.end })}${status === 'superseded' ? ` · ${ui.scenarioSuperseded}` : status === 'historical' ? ` · ${ui.scenarioHistorical}` : ''}`, baseline: context.session.baseline.amounts.contribution_after_marketing, contribution: version.result.contribution, delta: version.result.delta, binding: { context_id: context.id, plan_revision: version.revision, dataset_hash: context.session.dataset_hash, filter_hash: context.session.filter_hash, metric_version: context.session.metric_version, scenario_version: context.session.scenario_version, period: context.session.period, channels: context.session.scope.channels, sources: context.session.sources }, assumptions: [fill(ui.assumptionVolume, { value: formatPercentNumber(version.inputs.volume_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionDiscount, { value: formatPointsValue(version.inputs.discount_change_pp, 'L2') }), fill(ui.assumptionFulfillment, { value: formatPercentNumber(version.inputs.fulfillment_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionAdSpend, { value: formatPercentNumber(version.inputs.ad_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionOneOff, { value: fill(labels.format.units.yuan, { value: formatAmountL2(version.inputs.one_time_cost) }) }), ...version.result.assumptions] };
+      return { id: reviewScenarioId(ref), name: fill(ui.scenarioNameWithRevision, { name: version.name, revision: version.revision }), status: status === 'current' && review.status === 'current' ? 'current' : 'stale', scopeLabel: `${fill(ui.scenarioScope, { channel: scopeChannelsLabel([ref.channel], resolver ?? makeResolver(undefined, context.session.dataset_id)), start: context.session.period.start, end: context.session.period.end })}${status === 'superseded' ? ` · ${ui.scenarioSuperseded}` : status === 'historical' ? ` · ${ui.scenarioHistorical}` : ''}`, baseline: context.session.baseline.amounts.contribution_after_marketing, contribution: version.result.contribution, delta: version.result.delta, binding: { context_id: context.id, plan_revision: version.revision, dataset_hash: context.session.dataset_hash, filter_hash: context.session.filter_hash, metric_version: context.session.metric_version, scenario_version: context.session.scenario_version, period: context.session.period, channels: context.session.scope.channels, sources: context.session.sources }, assumptions: [fill(ui.assumptionVolume, { value: formatPercentNumber(version.inputs.volume_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionDiscount, { value: formatPointsValue(version.inputs.discount_change_pp, 'L2') }), fill(ui.assumptionFulfillment, { value: formatPercentNumber(version.inputs.fulfillment_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionAdSpend, { value: formatPercentNumber(version.inputs.ad_change_pct, 'L2', { signed: true }) }), fill(ui.assumptionOneOff, { value: fill(labels.format.units.yuan, { value: formatAmountL2(version.inputs.one_time_cost) }) }), ...version.result.assumptions] };
     }),
     actions: review.action_bindings.map(binding => {
       const action = documents.find(row => row.id === binding.action_id);
       const bound = action && action.binding.context_id === binding.context_id && action.binding_revision === binding.binding_revision && action.binding.dataset_hash === review.dataset_hash;
       const historical = action?.binding_history.find(row => row.context_id === binding.context_id && row.revision === binding.binding_revision);
       const original = bound ? action.binding : historical;
-      return { id: binding.action_id, problem: action?.problem || ui.actionProblemMissing, action: bound ? action.action : ui.actionUnbound, owner: bound ? action.owner_role : '', deadline: bound ? action.deadline : '', risk: bound ? action.stop_condition : '', pinned: review.pinned_action_ids.includes(binding.action_id), executionStatus: bound ? EXECUTION_STATUS_LABELS[action.execution_status] : undefined, executionNotes: bound ? action.progress_notes : undefined, status: !bound || review.status === 'historical' || action.status === 'stale' ? 'stale' : action.status === 'confirmed' ? 'current' : 'draft', scopeLabel: original ? fill(ui.actionScope, { channels: channelsLabel(original.scope.channels, resolver ?? makeResolver(undefined, action?.binding.dataset_id ?? '')), start: original.period.start, end: original.period.end }) : ui.actionScopeUnavailable };
+      return { id: binding.action_id, problem: action?.problem || ui.actionProblemMissing, action: bound ? action.action : ui.actionUnbound, owner: bound ? action.owner_role : '', deadline: bound ? action.deadline : '', risk: bound ? action.stop_condition : '', pinned: review.pinned_action_ids.includes(binding.action_id), executionStatus: bound ? EXECUTION_STATUS_LABELS[action.execution_status] : undefined, executionNotes: bound ? action.progress_notes : undefined, status: !bound || review.status === 'historical' || action.status === 'stale' ? 'stale' : action.status === 'confirmed' ? 'current' : 'draft', scopeLabel: original ? fill(ui.actionScope, { channels: scopeChannelsLabel(original.scope.channels, resolver ?? makeResolver(undefined, action?.binding.dataset_id ?? '')), start: original.period.start, end: original.period.end }) : ui.actionScopeUnavailable };
     }),
   };
 }

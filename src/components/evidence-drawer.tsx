@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import { channelLabel, channelsLabel, scopeChannelsLabel, snapshotResolver } from "@/application/copy";
 import { makeResolver, type NameResolver } from "@/application/channel-settings";
 import { applyEvidenceFilter, evidenceFilterText, hasEvidenceFilter, scopedEvidenceFilter, type EvidenceFilter } from "@/application/evidence-filter";
 import { ladderMetrics } from "@/application/evidence-ladder";
@@ -112,11 +112,14 @@ function sourceValue(field: string, value: string): string {
  * V3-5（§7.8）：標題列副標「{範圍} · {期間}」，例如「全部通路 · 本期 7/13–8/23」「影響金額 · 合計（…） · 7/13–8/23」。
  * 期間用 formatPeriodL1（M/D，不附天數；以資料到的年份為準，跨年才寫年份）；與報表本期或上期相同時前面加「本期」「上期」。
  * 沒有 scopeLabel 時範圍就是通路（涵蓋資料集全部通路時寫「全部通路」）；scopeLabel 沒寫出通路時另附「通路：…」（v2 範圍行的資訊不少）。只組字，不做任何計算。
+ * V42-2a（子集稽核第 14 條；PRD §4.2 第 2 點）：通路文字走解析器——範圍等於某群組的成員集合時寫群組名、群組內單一通路寫「{群組名} · {通路名}」；
+ * scopeLabel 已寫出群組名或成員清單時都算「已寫出通路」。沒有群組時兩者相同，輸出逐字不變。不改 EvidenceFilter。
  */
 export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "channels" | "scopeLabel">, options: { resolver: NameResolver; anchor?: string; allChannels?: readonly string[]; report?: { current: { period: Period }; previous: { period: Period } }; yoy?: Period }): string {
   const sorted = (list: readonly string[]) => [...list].sort().join("|");
   const all = options.allChannels !== undefined && options.allChannels.length > 0 && sorted(options.allChannels) === sorted(evidence.channels);
-  const listed = evidence.channels.length ? channelsLabel(evidence.channels, options.resolver) : copy.noChannels;
+  const members = evidence.channels.length ? channelsLabel(evidence.channels, options.resolver) : copy.noChannels;
+  const listed = evidence.channels.length ? scopeChannelsLabel(evidence.channels, options.resolver) : copy.noChannels;
   const channels = all ? copy.allChannels : listed;
   const range = formatPeriodL1(evidence.period.start, evidence.period.end, { anchor: options.anchor, days: false });
   const same = (period: Period | undefined) => period !== undefined && period.start === evidence.period.start && period.end === evidence.period.end;
@@ -124,7 +127,7 @@ export function evidenceSubtitle(evidence: Pick<EvidenceSelection, "period" | "c
   const name = same(options.report?.current.period) ? labels.shell.periods.current : same(options.report?.previous.period) ? labels.shell.periods.previous : same(options.yoy) ? labels.shell.periods.presets.yoy : null;
   const period = name ? fill(v3.periodNamed, { name, range }) : range;
   if (!evidence.scopeLabel) return fill(v3.subtitle, { scope: channels, period });
-  const named = evidence.scopeLabel.includes(listed) || (all && evidence.scopeLabel.includes(copy.allChannels));
+  const named = evidence.scopeLabel.includes(listed) || evidence.scopeLabel.includes(members) || (all && evidence.scopeLabel.includes(copy.allChannels));
   return named ? fill(v3.subtitle, { scope: evidence.scopeLabel, period }) : fill(v3.subtitleChannels, { scope: evidence.scopeLabel, period, channels });
 }
 

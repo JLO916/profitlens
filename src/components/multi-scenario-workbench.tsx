@@ -31,6 +31,8 @@ export interface MultiScenarioWorkbenchProps {
 /**
  * R5-3 進頁即表單：本頁自己選一個通路（不改全站篩選），預設＝全站範圍只有一個通路時的那個通路，否則第一個通路。
  * 單通路快照：全站範圍剛好就是該通路時直接沿用，否則另建；scenario context 與「方案 1」在第一次編輯或計算時才寫入 state。
+ * V42-2a（子集稽核第 15 條；PRD §4.2 第 1 點、D-V42-12「試算一次只算一個通路。」）：全站範圍是 2 到 n−1 個通路（群組範圍或沒有對應群組的子集）時，
+ * 通路選單只列範圍內的通路（manifest 順序）、預設第一個成員；全部通路或單一通路時仍列 manifest 全部。試算本身仍是單一通路快照。
  */
 export function MultiScenarioWorkbench({ source, state, setState, onEvidence, onSelectForReview, onExport, onContextChange, active }: MultiScenarioWorkbenchProps) {
   const [built, setBuilt] = useState<PreparedChannel | null>(null);
@@ -39,8 +41,9 @@ export function MultiScenarioWorkbench({ source, state, setState, onEvidence, on
   const idBase = useId();
   // V42-1a：通路名稱讀快照的 channel_names（沒有設定時是示範別名的隱含預設）。
   const alias = snapshotResolver(source.snapshot);
-  const channels = source.dataset.manifest.channels;
+  const manifestChannels = source.dataset.manifest.channels;
   const scope = source.snapshot.report.scope;
+  const channels = scope.channels.length > 1 && scope.channels.length < manifestChannels.length ? manifestChannels.filter(code => scope.channels.includes(code)) : manifestChannels;
   // 全站通路範圍改變時，本頁回到新的預設通路：範圍一變就丟掉本頁的選擇（A→B→A 不會讓 A 時期的選擇復活）。
   const scopeKey = decisionSignature(scope.channels);
   const [choiceScope, setChoiceScope] = useState(scopeKey);

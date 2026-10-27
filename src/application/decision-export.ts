@@ -1,4 +1,4 @@
-import { channelsLabel, csvHeader, scopeLabel } from "./copy";
+import { csvHeader, scopeChannelsLabel, scopeLabel } from "./copy";
 import { makeResolver, type NameResolver } from "./channel-settings";
 import { SCENARIO_ASSUMPTIONS, SCENARIO_FORMULAS, calculateScenario, type ScenarioReason } from "../domain/scenarios";
 import { analyzeScenarioSensitivity, type ScenarioSensitivityAnalysis } from "../domain/scenario-sensitivity";
@@ -198,13 +198,14 @@ export function exportDecisionMarkdown(session: DecisionSession, scenarios: read
   const periodText = (period: Period) => `${period.start}～${period.end}`;
   const comparisonMode = session.comparison.mode === "calendar_months" ? labels.shell.periods.calendarMonths : labels.shell.periods.sameDays;
   // V3-7 §7.9：「# 標題」之後緊接版頭四行（兩期取這份試算建立時的範圍），其後各段順序與數值不變。
+  // V42-2a（子集稽核第 10 條）：主層「資料來源」的範圍（scope）走解析器——群組範圍寫群組名、群組內單一通路寫「{群組名} · {通路名}」；CSV 與 JSON 維持通路代碼。
   const header = buildExportHeader({
     datasetName: options.datasetName ?? session.dataset_id, metricVersion: session.metric_version, generatedAt: options.generatedAt ?? new Date(),
     amountBasis: options.amountBasis ?? (extraLimitations.length ? "inclusive" : "exclusive"),
     scope: { previous: session.scope.previous_period, current: session.scope.current_period, previousDays: session.comparison.previous_days, currentDays: session.comparison.current_days },
   });
   const lines = [`# ${copy.title}`, "", ...markdownExportHeader(header), "", fill(copy.statusLine, { status: session.stale ? copy.statusStale : copy.statusCurrent }), "", `## ${copy.sectionSource}`, "",
-    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: channelsLabel(session.scope.channels, resolver), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
+    ...mdFields({ dataset_id: session.dataset_id, data_as_of: session.data_as_of, currency: session.currency, timezone: session.timezone, period: formatPeriodExport(session.period.start, session.period.end), scope: scopeChannelsLabel(session.scope.channels, resolver), comparison_mode: comparisonMode, previous_days: session.comparison.previous_days, current_days: session.comparison.current_days, filenames: session.filenames }),
     "", ...mdTechnical(mdFields({ schema_version: session.schema_version, scenario_version: session.scenario_version, metric_version: session.metric_version, dataset_hash: session.dataset_hash, filter_hash: session.filter_hash, amount_basis: session.amount_basis, revision: session.revision, snapshot_signature: session.snapshot_signature, comparison: session.comparison, sources: session.sources, stale_reasons: session.stale_reasons }, false)),
     "", `## ${labels.scenarios.sections.scenarioBaseline}`, "", labels.exports.common.amountUnitNote, "", ...mdFields(amountFields(session.baseline.amounts)), "", ...mdFields(rateFields({ ...session.baseline.rates })),
     "", ...mdTechnical([...mdFields({ version: session.baseline.version, eligible: session.baseline.eligible, coverage_confirmed: session.baseline.coverage_confirmed, reasons: session.baseline.reasons }, false), "", ...mdFields(amountFields(session.baseline.amounts, "L3"), false)]),

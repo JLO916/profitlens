@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { checkChartMarkup } from "../scripts/lib/chart-scan.mjs";
 import { CHANNEL_WEEKS_MAX_CHANNELS, CHANNEL_WEEKS_VERSION, channelWeeks } from "@/application/chart-channel-weeks";
 import { chartColors } from "@/application/chart-theme";
-import { channelLabel, snapshotResolver } from "@/application/copy";
+import { channelLabel, channelsLabel, snapshotResolver } from "@/application/copy";
+import { Diagnosis } from "@/components/workspace-panels";
+import { SYNTHETIC_CHANNEL_SETTINGS } from "./helpers/page-states";
 import { evidenceFilterText } from "@/application/evidence-filter";
 import { buildManagerSummary } from "@/application/manager-summary";
 import { deltaTone, formatAmountL2, formatAmountL3, formatPeriodL1, formatSignedDelta, metricDefinitions } from "@/application/presentation";
@@ -395,5 +397,63 @@ describe("AI 區收合（AI 解釋 · 狀態）", () => {
     const off = renderToStaticMarkup(<AiCollapse capability={{ available: false, reason: "DISABLED", provider: "openai" }}><p>x</p></AiCollapse>);
     expect(off).not.toContain(copy.publicNote);
     expect(off).toContain("<p>x</p></details>");
+  });
+});
+
+// ── V42-2a（docs/revamp-v4.2/06_BATCHES.md V42-2a 第 3 項；DESIGN §4、§5 第 23 條；D-V42-2）：通路寬表兩個變體的「只看這個通路」與健檢頁 sec-scope 的範圍文字。
+describe("V42-2a 通路寬表的「只看這個通路」與健檢頁的範圍文字", () => {
+  const drillCopy = labels.diagnosis.channelsV42;
+  const G1 = SYNTHETIC_CHANNEL_SETTINGS.groups.find(group => group.id === "g1")!.label;
+  const nameOf = (code: string) => SYNTHETIC_CHANNEL_SETTINGS.channels.find(entry => entry.code === code)!.label!;
+  const MEMBER = fill(labels.shell.scopeV42.memberOfGroup, { group: G1, channel: nameOf("DTC") });
+  async function scoped(channels: string[]) {
+    const input = synthetic4ChannelInput();
+    const dataset = validateDataset(input).dataset!;
+    return createSnapshot(dataset, { channels }, await hashInput(input), SYNTHETIC_CHANNEL_SETTINGS);
+  }
+  const renderWide = (snap: WorkspaceSnapshot, variant: "default" | "diagnosis", props: { snapshot?: WorkspaceSnapshot; onDrill?: (channel: string) => void }) => renderToStaticMarkup(<ChannelWideTable summary={buildManagerSummary(snap)} onEvidence={noop} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} variant={variant} snapshot={props.snapshot} onDrill={props.onDrill} />);
+  const button = (code: string) => `<button type="button" class="ui-btn ui-btn-text channel-drill" data-testid="channel-drill-${code}" aria-label="${fill(drillCopy.drillChannelAria, { channel: nameOf(code) })}">${drillCopy.drill}</button>`;
+  const drills = (html: string) => [...html.matchAll(/data-testid="channel-drill-([^"]+)"/g)].map(match => match[1]);
+
+  it("群組範圍（DTC＋SOCIAL＝自有）＋快照＋onDrill：diagnosis 與 default 變體每列一個 channel-drill-{code}，放在通路格 th[scope=row] 內的通路名之後", async () => {
+    const snap = await scoped(["DTC", "SOCIAL"]);
+    for (const variant of ["diagnosis", "default"] as const) {
+      const html = renderWide(snap, variant, { snapshot: snap, onDrill: noop });
+      expect([...drills(html)].sort(), variant).toEqual(["DTC", "SOCIAL"]);
+      const rows = rowsOf(html, "tbody");
+      expect(rows, variant).toHaveLength(2);
+      for (const row of rows) {
+        const [first] = cells(row);
+        expect(first.tag, variant).toBe("th");
+        expect(attr(first.attrs, "scope"), variant).toBe("row");
+        const code = /data-testid="channel-drill-([^"]+)"/.exec(first.html)![1];
+        expect(first.html.startsWith(nameOf(code)), `${variant} ${code}`).toBe(true);
+        expect(first.html.endsWith(button(code)), `${variant} ${code}`).toBe(true);
+      }
+    }
+  });
+
+  it("不渲染：golden（沒有群組）、群組但單一通路範圍、沒傳 onDrill、沒傳快照 → 0 個；golden 有沒有 onDrill 的 markup 逐位元組相同", async () => {
+    const group = await scoped(["DTC", "SOCIAL"]), single = await scoped(["DTC"]), plain = await snapshot();
+    for (const variant of ["diagnosis", "default"] as const) {
+      expect(drills(renderWide(plain, variant, { snapshot: plain, onDrill: noop })), `${variant} golden`).toEqual([]);
+      expect(renderWide(plain, variant, { snapshot: plain, onDrill: noop }), variant).toBe(renderWide(plain, variant, { snapshot: plain }));
+      expect(drills(renderWide(single, variant, { snapshot: single, onDrill: noop })), `${variant} single`).toEqual([]);
+      expect(drills(renderWide(group, variant, { snapshot: group })), `${variant} no onDrill`).toEqual([]);
+      expect(drills(renderWide(group, variant, { onDrill: noop })), `${variant} no snapshot`).toEqual([]);
+    }
+  });
+
+  it("健檢頁 sec-scope（第 23 條）：群組 → 自有；群組內單一通路 → 自有 · 官網；golden → channelsLabel 的成員清單；健檢頁的通路寬表（傳了快照與 onDrill）每列一個按鈕、golden 0 個", async () => {
+    const group = await scoped(["DTC", "SOCIAL"]);
+    const html = renderToStaticMarkup(<Diagnosis snapshot={group} onEvidence={noop} onDrill={noop} />);
+    expect(html).toContain(`<span class="sec-scope">${G1}</span>`);
+    expect([...drills(byTestId(html, "channel-compare"))].sort()).toEqual(["DTC", "SOCIAL"]);
+    const single = await scoped(["DTC"]);
+    expect(renderToStaticMarkup(<Diagnosis snapshot={single} onEvidence={noop} onDrill={noop} />)).toContain(`<span class="sec-scope">${MEMBER}</span>`);
+    const plain = await snapshot();
+    const goldenHtml = renderToStaticMarkup(<Diagnosis snapshot={plain} onEvidence={noop} onDrill={noop} />);
+    expect(goldenHtml).toContain(`<span class="sec-scope">${channelsLabel(plain.report.scope.channels, snapshotResolver(plain))}</span>`);
+    expect(goldenHtml).not.toContain("channel-drill");
   });
 });

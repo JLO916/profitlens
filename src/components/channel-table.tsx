@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type MouseEvent } from "react";
+import { useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import type { ManagerSummary as SummaryData, SummaryEvidence } from "@/application/manager-summary";
 import { CHANNEL_WEEKS_MAX_CHANNELS, CHANNEL_WEEKS_VERSION, channelWeeks, channelWeeksAvailable, recentChannelWeeks, type ChannelWeek, type ChannelWeeks, type ChannelWeekSeries, type ChannelWeekValue } from "@/application/chart-channel-weeks";
 import { channelLabel, snapshotResolver } from "@/application/copy";
@@ -35,10 +35,24 @@ interface ChannelWideTableProps { summary: SummaryData; onEvidence: (evidence: E
 export function ChannelWideTable({ summary, onEvidence, ariaLabel, caption, variant = "default", snapshot, onDrill }: ChannelWideTableProps) {
   if (variant === "diagnosis") return <DiagnosisChannelTable summary={summary} onEvidence={onEvidence} ariaLabel={ariaLabel} caption={caption} snapshot={snapshot} onDrill={onDrill} />;
   const resolver = snapshot && snapshot.report.dataset_id === summary.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, summary.dataset_id);
+  const drill = channelDrillTarget(snapshot, onDrill);
   const columnHeaders = (["net_revenue", "contribution_after_marketing"] as const).flatMap(name => [`${labels.shell.periods.previous}${metricDefinitions[name].shortLabel}`, `${labels.shell.periods.current}${metricDefinitions[name].shortLabel}`, `${metricDefinitions[name].shortLabel}${labels.exports.csv.suffix.change}`]);
   // V3-10 收尾：可及名稱含可見數字（Lighthouse label-content-name-mismatch；抽屜標題 evidence.title 不變）。
   const amount = (evidence: SummaryEvidence, signed = false) => { const shown = evidence.metric.value === null ? labels.shell.status.missing : signed ? formatSignedDelta(evidence.metric.value, "L2") : formatAmountL2(evidence.metric.value); return <button type="button" className="number-link" onClick={() => onEvidence(evidence)} aria-label={fill(labels.overview.channelsV3.wideAmountAria, { title: evidence.title, value: shown })}>{shown}</button>; };
-  return <div className="table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}><table><caption>{fill(labels.overview.channelTable.unitCaption, { caption })}</caption><thead><tr><th scope="col">{labels.overview.channelTable.channelHeader}</th>{columnHeaders.map(header => <th key={header} scope="col">{header}</th>)}</tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, resolver)}{row.contribution.transition === "turned_negative" && <span className={styles.transition}>{labels.overview.channelTable.turnedNegative}</span>}{row.contribution.transition === "turned_positive" && <span className={styles.transition}>{labels.overview.channelTable.turnedPositive}</span>}</th>{([row.revenue, row.contribution]).flatMap((metric) => (["previous", "current", "change"] as const).map(period => <td key={`${metric.metric}-${period}`} className={period === "change" ? metric.evidence.change.metric.value === null ? "neutral" : toneClass(deltaTone(metric.metric, metric.evidence.change.metric.value, "L2")) : ""}>{amount(metric.evidence[period], period === "change")}</td>))}</tr>)}</tbody></table></div>;
+  return <div className="table-scroll" tabIndex={0} role="region" aria-label={ariaLabel}><table><caption>{fill(labels.overview.channelTable.unitCaption, { caption })}</caption><thead><tr><th scope="col">{labels.overview.channelTable.channelHeader}</th>{columnHeaders.map(header => <th key={header} scope="col">{header}</th>)}</tr></thead><tbody>{summary.channels.map(row => <tr key={row.channel}><th scope="row">{channelLabel(row.channel, resolver)}{row.contribution.transition === "turned_negative" && <span className={styles.transition}>{labels.overview.channelTable.turnedNegative}</span>}{row.contribution.transition === "turned_positive" && <span className={styles.transition}>{labels.overview.channelTable.turnedPositive}</span>}{drill && <ChannelDrillButton channel={row.channel} label={channelLabel(row.channel, resolver)} onDrill={drill} />}</th>{([row.revenue, row.contribution]).flatMap((metric) => (["previous", "current", "change"] as const).map(period => <td key={`${metric.metric}-${period}`} className={period === "change" ? metric.evidence.change.metric.value === null ? "neutral" : toneClass(deltaTone(metric.metric, metric.evidence.change.metric.value, "L2")) : ""}>{amount(metric.evidence[period], period === "change")}</td>))}</tr>)}</tbody></table></div>;
+}
+
+/**
+ * V42-2a（D-V42-2；PRD §4.2 第 1 點）：通路格的「只看這個通路」——兩個變體共用。只在有 onDrill、傳入的 snapshot 有至少一個群組、範圍通路數 > 1 時渲染
+ * （示範資料沒有群組 → 健檢 05 與會議 08 的畫面 0 差異；沒傳快照的呼叫端不渲染；已是單一通路時沒有意義）。回傳要呼叫的 onDrill，條件不成立時 null。
+ */
+function channelDrillTarget(snapshot: WorkspaceSnapshot | undefined, onDrill: ((channel: string) => void) | undefined): ((channel: string) => void) | null {
+  if (onDrill === undefined || !snapshot || (snapshot.channel_groups?.length ?? 0) === 0 || snapshot.report.scope.channels.length <= 1) return null;
+  return onDrill;
+}
+/** 「只看這個通路」按鈕（channel-drill-{code}）：可見文字包含在可及名稱裡（label-content-name-mismatch 不觸發）；按了就是既有的單一通路篩選（dashboard 的 applyFilters）。 */
+function ChannelDrillButton({ channel, label, onDrill }: { channel: string; label: string; onDrill: (channel: string) => void }): ReactNode {
+  return <button type="button" className="ui-btn ui-btn-text channel-drill" data-testid={`channel-drill-${channel}`} aria-label={fill(labels.diagnosis.channelsV42.drillChannelAria, { channel: label })} onClick={() => onDrill(channel)}>{labels.diagnosis.channelsV42.drill}</button>;
 }
 
 type ChannelRow = SummaryData["channels"][number];
@@ -170,9 +184,10 @@ export function ChannelWeeksDetails({ data, channels, resolver, anchor, onEviden
 }
 // ── V4-3a B 結束
 
-function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapshot }: Omit<ChannelWideTableProps, "variant">) {
+function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapshot, onDrill }: Omit<ChannelWideTableProps, "variant">) {
   const [sort, setSort] = useState<ChannelSort>(DEFAULT_CHANNEL_SORT);
   const resolver = snapshot && snapshot.report.dataset_id === summary.dataset_id ? snapshotResolver(snapshot) : makeResolver(undefined, summary.dataset_id);
+  const drill = channelDrillTarget(snapshot, onDrill);
   const rows = sortChannelRows(summary.channels, sort);
   // V4-3a G7b：只依快照的報表與週列計算（排序切換不重算）；沒傳快照時（既有呼叫端）不多任何欄。
   const report = snapshot?.report, weeks = snapshot?.weeks;
@@ -205,7 +220,7 @@ function DiagnosisChannelTable({ summary, onEvidence, ariaLabel, caption, snapsh
         const turned = deltaWord("contribution_after_marketing", row.contribution.change.value, { previous: row.contribution.previous.value });
         const group = channelDiagnosis(summary, row.channel);
         return <tr key={row.channel} role="row">
-          <th role="rowheader" scope="row" className="channel-cell" data-label={labels.overview.channelTable.channelHeader} data-list-role="primary">{channelLabel(row.channel, resolver)}</th>
+          <th role="rowheader" scope="row" className="channel-cell" data-label={labels.overview.channelTable.channelHeader} data-list-role="primary">{channelLabel(row.channel, resolver)}{drill && <ChannelDrillButton channel={row.channel} label={channelLabel(row.channel, resolver)} onDrill={drill} />}</th>
           {GROUPS.flatMap(name => PERIODS.map(period => {
             const metric = metricOf(row, name);
             const value = metric.evidence[period].metric.value;
