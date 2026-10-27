@@ -6,14 +6,15 @@ import type { TaxConversion } from "./tax-basis";
 import { importIssueMessage, type IssueMessageContext, type IssueRef } from "./import";
 import { asciiMinus, formatAmountL1, formatRateL3, formatSignedDelta, metricDefinitions, MINUS } from "./presentation";
 import type { WorkspaceSnapshot } from "./workspace";
-import { makeResolver, type NameResolver } from "./channel-settings";
+import { findGroupByMembers, findGroupOfChannel, makeResolver, type NameResolver } from "./channel-settings";
 
 // R2 文案機制：示範通路 alias、標題用「萬」金額、規則卡文案模板、CSV 標題列。全部只做呈現，不碰 domain 數值。
 // V42-1a（D-V42-14）：四個名稱函式只收 NameResolver（快照的 channel_names；沒有設定時是該資料集的隱含預設——synthetic-demo* 套示範別名，輸出與 v4.1.2 逐字相同）。過渡期的 alias: boolean 與 demoAlias 已在整合時移除（isDemoDataset 在 channel-settings.ts）。
+// V42-2a（PRD §4.1、§4.2；GLOSSARY #8）：解析器帶快照的 channel_groups，範圍文字認得群組（scopeChannelsLabel、scopeDetailText、scopeLabel）；沒有群組時每個函式的輸出與 v4.1.3 逐字相同。
 
-/** 由快照取名稱解析器：有 channel_names 就用它，否則用該資料集的隱含預設（示範別名）。 */
-export function snapshotResolver(snapshot: Pick<WorkspaceSnapshot, "channel_names" | "report">): NameResolver {
-  return makeResolver(snapshot.channel_names, snapshot.report.dataset_id);
+/** 由快照取名稱解析器：有 channel_names 就用它，否則用該資料集的隱含預設（示範別名）。V42-2a：帶 channel_groups（沒有時 []）。 */
+export function snapshotResolver(snapshot: Pick<WorkspaceSnapshot, "channel_names" | "channel_groups" | "report">): NameResolver {
+  return makeResolver(snapshot.channel_names, snapshot.report.dataset_id, snapshot.channel_groups ?? []);
 }
 export function channelLabel(channel: string, resolver: NameResolver): string {
   return resolver.channel(channel);
@@ -24,10 +25,29 @@ export function channelsLabel(channels: readonly string[], resolver: NameResolve
 export function categoryLabel(category: string, resolver: NameResolver): string {
   return resolver.category(category);
 }
-/** 「合計（官網 · DTC、平台 · MARKETPLACE）」／「官網 · DTC」／「官網 · DTC／SKU-001」 */
+/**
+ * V42-2a：範圍的通路文字——集合恰好等於某群組的成員 → 群組名；恰好一個通路且屬於群組 → 「{群組名} · {通路名}」（GLOSSARY #8）；其餘 → channelsLabel（成員清單）。
+ * 只有一個成員的群組、範圍是那個通路時也寫群組名（findGroupByMembers 先於 memberOfGroup）。
+ */
+export function scopeChannelsLabel(channels: readonly string[], resolver: NameResolver): string {
+  const group = findGroupByMembers(resolver.groups, channels);
+  if (group) return group.label;
+  if (channels.length === 1) {
+    const owner = findGroupOfChannel(resolver.groups, channels[0]);
+    if (owner) return fillTemplate(labels.shell.scopeV42.memberOfGroup, { group: owner.label, channel: channelLabel(channels[0], resolver) });
+  }
+  return channelsLabel(channels, resolver);
+}
+/** V42-2a：期間摘要的 title 與 sr-only（summaryDetail 的 {channels}）：群組 → 「{群組名}（成員清單）」；群組內單一通路 → 「{群組名} · {通路名}」；其餘 → 成員清單。 */
+export function scopeDetailText(channels: readonly string[], resolver: NameResolver): string {
+  const group = findGroupByMembers(resolver.groups, channels);
+  if (group) return fillTemplate(labels.shell.scopeV42.groupWithMembers, { group: group.label, members: channelsLabel(group.members, resolver) });
+  return scopeChannelsLabel(channels, resolver);
+}
+/** 「合計（官網 · DTC、平台 · MARKETPLACE）」／「官網 · DTC」／「官網 · DTC／SKU-001」；V42-2a：合計範圍等於某群組的成員時只寫群組名，單一通路屬於群組時寫「{群組名} · {通路名}」。 */
 export function scopeLabel(scope: Scope, resolver: NameResolver): string {
-  const channels = channelsLabel(scope.channels, resolver);
-  if (scope.kind === "all") return `${labels.overview.sections.total}（${channels}）`;
+  if (scope.kind === "all") return findGroupByMembers(resolver.groups, scope.channels)?.label ?? `${labels.overview.sections.total}（${channelsLabel(scope.channels, resolver)}）`;
+  const channels = scopeChannelsLabel(scope.channels, resolver);
   return scope.sku ? `${channels}／${scope.sku}` : channels;
 }
 

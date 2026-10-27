@@ -4,6 +4,9 @@ import { useEffect, useRef, useState, type FormEvent, type RefObject } from "rea
 import type { AnalysisFilters, ComparisonMode, Period } from "@/domain/types";
 import type { PeriodPreset } from "@/application/period-presets";
 import { formatPeriodL1 } from "@/application/presentation";
+import { channelSelection, groupIdOfOption, groupOptionValue, SUBSET_OPTION_VALUE } from "@/application/channel-settings";
+import { channelLabel, scopeDetailText, snapshotResolver } from "@/application/copy";
+import type { WorkspaceSnapshot } from "@/application/workspace";
 import { fill, labels } from "@/i18n";
 
 // V3-3 A2：期間列（C23）、自訂期間 popover（C14）、需要處理橫幅（C22）、手機期間底部面板。
@@ -11,6 +14,8 @@ import { fill, labels } from "@/i18n";
 // - 桌機與手機是同一份 DOM：手機只用 CSS 把期間列收成一顆按鈕，點開後同一個面板改成底部面板；日期欄位 id 只有一份。
 // - 自訂期間 popover 與手機底部面板都用 CSS（data-open）隱藏，內容保持掛載，不做條件渲染。
 // - D-V3-10＝A：快捷單擊就套用；只有在自訂期間裡手動改日期才需要按「套用」。
+// V42-2a（D-V42-10；PRD §4.1）：通路選單改兩層（同一個原生 <select>）——每個群組一個 <optgroup>（群組本身一個選項＋成員通路）、沒有群組的通路放最後一組「未分組」；
+// 沒有任何群組時 markup 與 v4.1.3 逐位元組相同（只多 data-testid="scope-select"）；範圍是沒有對應群組的子集時最後加一個只讀選項「{n} 個通路」。行高與 class 不變。
 
 export type PeriodDates = { previousStart: string; previousEnd: string; currentStart: string; currentEnd: string };
 /** 目前已套用的範圍（取自快照），用來寫期間摘要與手機按鈕文字。 */
@@ -51,8 +56,12 @@ const Chevron = () => <svg className="period-chevron" width={16} height={16} vie
 /** 只有看得到的元素才接焦點（手機上自訂期間按鈕是 display:none；桌機上手機按鈕是 display:none）。 */
 const focusIfShown = (element: HTMLElement | null) => { if (element && element.getClientRects().length > 0) element.focus(); };
 
+export type ChannelOption = { value: string; label: string };
+/** V42-2a：一個群組在選單裡的一組（value 是帶控制字元前綴的群組選項值，members 依 manifest 順序）。 */
+export type ChannelGroupOption = { id: string; label: string; value: string; members: ChannelOption[] };
 export type PeriodBarProps = {
-  channel: { value: string; options: { value: string; label: string }[]; onChange: (value: string) => void };
+  /** options＝未分組的通路（沒有群組時就是全部）；groups 空或未給＝單層選單；subset 為正整數時最後加只讀的「{n} 個通路」（value 指到它）。 */
+  channel: { value: string; options: ChannelOption[]; groups?: ChannelGroupOption[]; subset?: number | null; onChange: (value: string) => void };
   presets: PeriodPreset[];
   /** 快捷的 aria-pressed（沿用 v2：與表單目前的日期與比較方式相同）。 */
   isPressed: (preset: PeriodPreset) => boolean;
@@ -69,6 +78,52 @@ export type PeriodBarProps = {
   /** V4-8a（D-V3-35＝A）：按了不可用（aria-disabled）的快捷：不套用、手機面板不關（同 v3），只通知 dashboard（去年同期的理由改成按了才顯示）。 */
   onUnavailablePreset?: (preset: PeriodPreset) => void;
 };
+
+export type ChannelSelectModel = { value: string; options: ChannelOption[]; groups: ChannelGroupOption[]; subset: number | null; channelsText: string };
+/**
+ * V42-2a（D-V42-10；PRD §4.1）：期間列通路選單的模型（dashboard 與 tests/helpers/page-states.tsx 的 shellPage 共用）。
+ * 通路依 manifest 順序（order 欄位本批不套到期間列，同 V42-1b）；群組依快照 channel_groups 的順序，成員依 manifest 順序；未分組的通路在 options。
+ * value 依 channelSelection（全部 ""、單一通路代碼、群組選項值、子集 SUBSET_OPTION_VALUE）；channelsText 依 scopeDetailText（群組寫「{群組名}（成員）」，給期間摘要的 title 與 sr-only）。
+ * 沒有群組時 options 與 value 與 v4.1.3 相同（子集除外：v4.1.3 顯示「全部通路」，現在是只讀的「{n} 個通路」）。
+ */
+export function channelSelectModel(input: { snapshot: Pick<WorkspaceSnapshot, "report" | "channel_names" | "channel_groups">; manifestChannels: readonly string[] }): ChannelSelectModel {
+  const { snapshot, manifestChannels } = input;
+  const resolver = snapshotResolver(snapshot);
+  const groups = snapshot.channel_groups ?? [];
+  const option = (code: string): ChannelOption => ({ value: code, label: channelLabel(code, resolver) });
+  const grouped = new Set(groups.flatMap(group => group.members));
+  const channels = snapshot.report.scope.channels;
+  const selection = channelSelection(channels, manifestChannels, groups);
+  const value = selection.kind === "all" ? "" : selection.kind === "channel" ? selection.code : selection.kind === "group" ? groupOptionValue(selection.group.id) : SUBSET_OPTION_VALUE;
+  return {
+    value,
+    options: manifestChannels.filter(code => !grouped.has(code)).map(option),
+    groups: groups.map(group => ({ id: group.id, label: group.label, value: groupOptionValue(group.id), members: manifestChannels.filter(code => group.members.includes(code)).map(option) })),
+    subset: selection.kind === "subset" ? selection.count : null,
+    channelsText: scopeDetailText(channels, resolver),
+  };
+}
+/** V42-2a：選單選項值 → 要套用的通路（A 級，之後走既有的 applyFilters）：「全部通路」→ manifest 全部；群組 → 成員；只讀的子集選項或不認得的群組 → null（不動）；其餘 → 單一通路。 */
+export function channelsForOption(value: string, model: Pick<ChannelSelectModel, "groups">, manifestChannels: readonly string[]): string[] | null {
+  if (value === "") return [...manifestChannels];
+  if (value === SUBSET_OPTION_VALUE) return null;
+  const groupId = groupIdOfOption(value);
+  if (groupId === null) return [value];
+  const group = model.groups.find(item => item.id === groupId);
+  return group ? group.members.map(member => member.value) : null;
+}
+/** V42-2a：選單的選項——沒有群組時與 v4.1.3 相同（只有通路選項）；有群組時每群組一個 <optgroup>，未分組的通路放最後一組；子集的只讀選項一律在最後。 */
+function channelOptions(channel: PeriodBarProps["channel"]) {
+  const plain = (options: ChannelOption[]) => options.map(option => <option key={option.value} value={option.value}>{option.label}</option>);
+  const groups = channel.groups ?? [];
+  const subset = channel.subset != null && channel.subset > 0 ? <option value={SUBSET_OPTION_VALUE} disabled>{fill(labels.shell.periodBarV42.subsetCount, { n: channel.subset })}</option> : null;
+  if (groups.length === 0) return <>{plain(channel.options)}{subset}</>;
+  return <>
+    {groups.map(group => <optgroup key={group.id} label={group.label}><option value={group.value} data-testid={`scope-option-group-${group.id}`}>{group.label}</option>{plain(group.members)}</optgroup>)}
+    {channel.options.length > 0 && <optgroup label={labels.shell.periodBarV42.ungrouped}>{plain(channel.options)}</optgroup>}
+    {subset}
+  </>;
+}
 
 export function PeriodBar({ channel, presets, isPressed, onPreset, comparisonMode, onComparisonMode, dates, onDates, onSubmit, applyRef, scope, busy = false, onUnavailablePreset }: PeriodBarProps) {
   const [customOpen, setCustomOpen] = useState(false);
@@ -115,7 +170,7 @@ export function PeriodBar({ channel, presets, isPressed, onPreset, comparisonMod
     <div className="period-sheet-scrim" aria-hidden="true" onClick={closeSheet} />
     <div id="period-bar-panel" className="period-bar-panel" role="region" aria-label={labels.shell.periodBarV3.regionAria}>
       <div className="period-sheet-head"><p className="period-sheet-title">{labels.shell.periodBarV3.sheetTitle}</p><button ref={sheetCloseRef} type="button" className="ui-btn ui-btn-secondary" onClick={closeSheet}>{labels.shell.periodBarV3.sheetClose}</button></div>
-      <label className="period-channel"><span className="sr-only">{labels.shell.periodBar.filter.channel}</span><select className="ui-field-control" aria-label={labels.shell.periodBar.filter.channel} value={channel.value} onChange={event => channel.onChange(event.target.value)}><option value="">{labels.shell.periodBar.filter.allChannels}</option>{channel.options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      <label className="period-channel"><span className="sr-only">{labels.shell.periodBar.filter.channel}</span><select className="ui-field-control" aria-label={labels.shell.periodBar.filter.channel} data-testid="scope-select" value={channel.value} onChange={event => channel.onChange(event.target.value)}><option value="">{labels.shell.periodBar.filter.allChannels}</option>{channelOptions(channel)}</select></label>
       <div className="ui-segmented period-presets" role="group" aria-label={labels.shell.sections.presetGroup} data-testid="period-presets">
         {presets.map(preset => <button key={preset.id} type="button" className="preset" aria-disabled={preset.status !== "ready" || undefined} aria-describedby={preset.status === "ready" ? undefined : `preset-reason-${preset.id}`} title={preset.status === "ready" ? undefined : preset.reason} aria-pressed={isPressed(preset)} onClick={() => choose(preset)}>{preset.label}</button>)}
         {presets.filter(preset => preset.status !== "ready").map(preset => <span key={preset.id} id={`preset-reason-${preset.id}`} className="sr-only">{fill(labels.shell.periodBar.filter.presetReason, { preset: preset.label, reason: preset.status === "unavailable" ? preset.reason : "" })}</span>)}

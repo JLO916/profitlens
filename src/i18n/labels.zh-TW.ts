@@ -444,6 +444,20 @@ export const shell = {
     /** 首頁空狀態按鈕列下方一行（陳述句；空狀態不用問句，docs/revamp-v3/01_PRD.md §7.10）。 */
     homeHint: "操作導覽：每一頁怎麼用",
   },
+  // ── V42-2a 錨點：期間列兩層通路選單與群組範圍文字（D-V42-2、D-V42-10；PRD §4.1、§4.2；用詞照 docs/revamp-v4.2/GLOSSARY.md #4、#5、#8）。
+  //    沒有群組的資料集（示範、golden）不會用到任何一個；「只看這個通路」與三句限制在 diagnosis.channelsV42（同批另一處）。
+  periodBarV42: {
+    /** 期間列選單最後一組 <optgroup> 的標題：沒有指派群組的通路（GLOSSARY #4）。 */
+    ungrouped: "未分組",
+    /** 範圍是子集但沒有對應群組（還原用不同設定做的備份）時的只讀選項（GLOSSARY #5；D-V42-10）；期間摘要另列出成員。 */
+    subsetCount: "{n} 個通路",
+  },
+  scopeV42: {
+    /** 單一通路屬於群組時的範圍寫法（GLOSSARY #8；「 · 」同 v3 §8.4）：期間摘要、抽屜 scopeLabel、匯出範圍文字。 */
+    memberOfGroup: "{group} · {channel}",
+    /** 群組範圍的期間摘要 title 與 sr-only：群組名加成員清單。 */
+    groupWithMembers: "{group}（{members}）",
+  },
 } as const;
 
 // ── overview：經營總覽：KPI、三件事、趨勢、拆解、通路比較、期間合計

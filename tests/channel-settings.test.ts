@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { categoryLabel, channelLabel, channelsLabel, scopeLabel } from "@/application/copy";
+import { categoryLabel, channelLabel, channelsLabel, scopeLabel, snapshotResolver } from "@/application/copy";
 import {
-  CHANNEL_SETTINGS_VERSION, defaultChannelSettings, isDemoDataset, isValidChannelName, makeResolver, normalizeChannelSettings, orderedChannels,
-  resolveChannelGroups, resolveChannelNames, snapshotChannelFields, validateChannelSettings, type ChannelSettings,
+  CHANNEL_SETTINGS_VERSION, channelSelection, defaultChannelSettings, findGroupByMembers, findGroupOfChannel, GROUP_OPTION_PREFIX, groupIdOfOption, groupOptionValue,
+  isDemoDataset, isGroupableChannelCode, isValidChannelName, makeResolver, normalizeChannelSettings, orderedChannels,
+  resolveChannelGroups, resolveChannelNames, snapshotChannelFields, SUBSET_OPTION_VALUE, validateChannelSettings, type ChannelSettings, type ResolvedChannelGroup,
 } from "@/application/channel-settings";
+import { createSnapshot, hashInput } from "@/application/workspace";
+import { validateDataset } from "@/domain/validation";
+import { fixture } from "./helpers/fixtures";
 import { labels } from "@/i18n";
 
 // V42-1a（PRD §3.1、§11.1 第 1 列）：名稱驗證四條規則與不重複、不在 manifest 的代碼被丟掉、群組依成員集合解析（順序無關）、order 穩定排序、
@@ -151,5 +155,96 @@ describe("channel-settings：與預設比對後的正規化（備份寫出用）
     const fields = snapshotChannelFields(settings([{ code: "DTC", label: "官網", group: "own" }, { code: "SOCIAL", group: "own" }, { code: "SHOPEE", label: "蝦皮" }], [{ id: "own", label: "自有", order: 0 }]), "synthetic-4-channel-v1", FOUR);
     expect(fields).toEqual({ channel_names: { DTC: "官網" }, channel_groups: [{ id: "own", label: "自有", members: ["DTC", "SOCIAL"] }] });
     expect(snapshotChannelFields(settings([{ code: "DTC", label: "DTC" }]), DEMO_ID, DEMO_CHANNELS)).toEqual({ channel_names: { DTC: "DTC", MARKETPLACE: labels.data.demoChannelAlias.MARKETPLACE }, channel_groups: [] });
+  });
+});
+
+// ── V42-2a（PRD §4.1、§4.2；D-V42-10；docs/revamp-v4.2/06_BATCHES.md V42-2a 第 1、2 項）：群組查找、期間列的選取值（含兩個邊界）、控制字元代碼不可分組、選項值前綴往返。
+describe("V42-2a channel-settings：群組查找、選取值與選項值", () => {
+  const OWN: ResolvedChannelGroup = { id: "own", label: "自有", members: ["DTC", "SOCIAL"] };
+  const PLATFORM: ResolvedChannelGroup = { id: "platform", label: "平台", members: ["LIVE", "MARKETPLACE"] };
+  const SOLO: ResolvedChannelGroup = { id: "solo", label: "只有直播", members: ["LIVE"] };
+  const EVERYTHING: ResolvedChannelGroup = { id: "all", label: "全部平台", members: [...FOUR] };
+  const GROUPS = [OWN, PLATFORM];
+
+  it("findGroupByMembers：集合恰好相等才命中，與通路或成員的順序無關、重複的代碼視為一個；子集、超集、空陣列與沒有群組都回 null", () => {
+    expect(findGroupByMembers(GROUPS, ["DTC", "SOCIAL"])).toBe(OWN);
+    expect(findGroupByMembers(GROUPS, ["SOCIAL", "DTC"])).toBe(OWN);
+    expect(findGroupByMembers(GROUPS, ["SOCIAL", "DTC", "DTC"])).toBe(OWN);
+    expect(findGroupByMembers(GROUPS, ["MARKETPLACE", "LIVE"])).toBe(PLATFORM);
+    expect(findGroupByMembers([{ id: "x", label: "x", members: ["SOCIAL", "DTC"] }], ["DTC", "SOCIAL"])?.id).toBe("x");
+    expect(findGroupByMembers(GROUPS, ["DTC"])).toBeNull();
+    expect(findGroupByMembers(GROUPS, ["DTC", "SOCIAL", "LIVE"])).toBeNull();
+    expect(findGroupByMembers(GROUPS, ["DTC", "LIVE"])).toBeNull();
+    expect(findGroupByMembers(GROUPS, [])).toBeNull();
+    expect(findGroupByMembers([], ["DTC", "SOCIAL"])).toBeNull();
+  });
+
+  it("findGroupOfChannel：成員含該代碼的群組；不在任何群組回 null", () => {
+    expect(findGroupOfChannel(GROUPS, "SOCIAL")).toBe(OWN);
+    expect(findGroupOfChannel(GROUPS, "LIVE")).toBe(PLATFORM);
+    expect(findGroupOfChannel(GROUPS, "SHOPEE")).toBeNull();
+    expect(findGroupOfChannel([], "DTC")).toBeNull();
+  });
+
+  it("channelSelection 四種：集合等於全部 → all；恰好一個 → channel；等於某群組的成員 → group；其餘 → subset（count＝通路數）", () => {
+    expect(channelSelection(FOUR, FOUR, GROUPS)).toEqual({ kind: "all" });
+    expect(channelSelection(["SOCIAL", "MARKETPLACE", "DTC", "LIVE"], FOUR, GROUPS)).toEqual({ kind: "all" });
+    expect(channelSelection(["DTC"], FOUR, GROUPS)).toEqual({ kind: "channel", code: "DTC" });
+    expect(channelSelection(["SOCIAL", "DTC"], FOUR, GROUPS)).toEqual({ kind: "group", group: OWN });
+    expect(channelSelection(["MARKETPLACE", "LIVE"], FOUR, GROUPS)).toEqual({ kind: "group", group: PLATFORM });
+    expect(channelSelection(["DTC", "LIVE"], FOUR, GROUPS)).toEqual({ kind: "subset", count: 2 });
+    expect(channelSelection(["DTC", "LIVE", "SOCIAL"], FOUR, GROUPS)).toEqual({ kind: "subset", count: 3 });
+    // 沒有群組（示範、golden）：只有全部、單一通路與子集。
+    expect(channelSelection([...DEMO_CHANNELS], DEMO_CHANNELS, [])).toEqual({ kind: "all" });
+    expect(channelSelection(["MARKETPLACE"], DEMO_CHANNELS, [])).toEqual({ kind: "channel", code: "MARKETPLACE" });
+    expect(channelSelection(["DTC", "SOCIAL"], FOUR, [])).toEqual({ kind: "subset", count: 2 });
+  });
+
+  it("兩個邊界：群組包含全部通路時仍是「全部通路」；只有一個成員的群組、範圍是那個通路時仍是單一通路", () => {
+    expect(channelSelection(FOUR, FOUR, [EVERYTHING])).toEqual({ kind: "all" });
+    expect(channelSelection(["LIVE"], FOUR, [SOLO])).toEqual({ kind: "channel", code: "LIVE" });
+    // findGroupByMembers 本身兩者都命中（範圍文字走它：單一成員群組的範圍寫群組名，見 tests/copy.test.ts）。
+    expect(findGroupByMembers([EVERYTHING], FOUR)).toBe(EVERYTHING);
+    expect(findGroupByMembers([SOLO], ["LIVE"])).toBe(SOLO);
+  });
+
+  it("含控制字元的通路代碼不可分組：validateChannelSettings 丟掉 group（不列入 invalidNames）、resolveChannelGroups 不列為成員；顯示名稱照常", () => {
+    const odd = "A\u0001B", manifest = ["DTC", odd] as const;
+    expect(isGroupableChannelCode("DTC")).toBe(true);
+    expect(isGroupableChannelCode("官網 · 2026")).toBe(true);
+    expect(isGroupableChannelCode(odd)).toBe(false);
+    expect(isGroupableChannelCode("A\u007fB")).toBe(false);
+    expect(isGroupableChannelCode("A\tB")).toBe(false);
+    const input = settings([{ code: "DTC", group: "g1" }, { code: odd, label: "怪代碼", group: "g1" }], [{ id: "g1", label: "自有", order: 0 }]);
+    const result = validateChannelSettings(input, manifest);
+    expect(result.settings.channels).toEqual([{ code: "DTC", group: "g1" }, { code: odd, label: "怪代碼" }]);
+    expect(result.invalidNames).toEqual([]);
+    expect(result.droppedCodes).toEqual([]);
+    expect(resolveChannelGroups(input, manifest)).toEqual([{ id: "g1", label: "自有", members: ["DTC"] }]);
+    expect(resolveChannelNames(input, "golden-v1", manifest)).toEqual({ [odd]: "怪代碼" });
+    // 只有這種代碼的群組沒有成員，就不出現。
+    expect(resolveChannelGroups(settings([{ code: odd, group: "g1" }], [{ id: "g1", label: "自有", order: 0 }]), manifest)).toEqual([]);
+  });
+
+  it("選項值：群組值＝控制字元前綴＋id，往返取回 id；通路代碼、空字串、子集值與只有前綴都不是群組值；前綴與子集值不會是合法的通路名稱", () => {
+    expect(GROUP_OPTION_PREFIX).toBe("\u0001");
+    expect(SUBSET_OPTION_VALUE).toBe("\u0002subset");
+    expect(groupOptionValue("g1")).toBe("\u0001g1");
+    expect(groupIdOfOption(groupOptionValue("g1"))).toBe("g1");
+    expect(groupIdOfOption(groupOptionValue("own 2"))).toBe("own 2");
+    for (const value of ["", "DTC", "g1", "subset", SUBSET_OPTION_VALUE, GROUP_OPTION_PREFIX]) expect(groupIdOfOption(value), JSON.stringify(value)).toBeNull();
+    expect(isValidChannelName(groupOptionValue("g1"))).toBe(false);
+    expect(isValidChannelName(SUBSET_OPTION_VALUE)).toBe(false);
+    expect(isGroupableChannelCode(groupOptionValue("g1"))).toBe(false);
+  });
+
+  it("makeResolver 第 3 個參數 groups 預設 []；snapshotResolver 讀快照的 channel_groups（沒有時 []）", async () => {
+    expect(makeResolver(undefined, DEMO_ID).groups).toEqual([]);
+    expect(makeResolver(undefined, "golden-v1", GROUPS).groups).toBe(GROUPS);
+    const input = fixture("golden"), dataset = validateDataset(input).dataset!, hash = await hashInput(input);
+    const plain = await createSnapshot(dataset, {}, hash);
+    expect(snapshotResolver(plain).groups).toEqual([]);
+    const grouped = await createSnapshot(dataset, {}, hash, settings([{ code: "DTC", group: "g1" }, { code: "MARKETPLACE", group: "g1" }], [{ id: "g1", label: "全部平台", order: 0 }]));
+    expect(snapshotResolver(grouped).groups).toEqual([{ id: "g1", label: "全部平台", members: ["DTC", "MARKETPLACE"] }]);
   });
 });

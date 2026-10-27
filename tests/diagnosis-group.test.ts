@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { contributionImpact, diagnosisGroups, diagnosisScopeLabel, impactMagnitude, parseImportanceThreshold, summaryScopes, SUMMARY_SCOPE_LIMIT, TOP_PRIORITY_COUNT, type DiagnosisGroup } from "../src/application/diagnosis-group";
 import { buildManagerSummary, contributionImpact as summaryContributionImpact, exportManagerSummaryMarkdown } from "../src/application/manager-summary";
 import { ruleCopy, snapshotResolver } from "../src/application/copy";
-import { makeResolver } from "../src/application/channel-settings";
+import { makeResolver, type ResolvedChannelGroup } from "../src/application/channel-settings";
 import { formatSignedDelta, MINUS } from "../src/application/presentation";
 import { createSnapshot, hashInput, type WorkspaceSnapshot } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
@@ -231,6 +231,44 @@ describe("threshold, priorities and omitted count", () => {
     expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, plain)).toBe("DTC");
     expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, demoNames)).toBe(labels.data.demoChannelAlias.DTC);
     expect(diagnosisScopeLabel({ kind: "sku", channels: ["MARKETPLACE"], sku: "B" }, plain)).toBe(fill(labels.meeting.managerSummary.skuScope, { channels: "MARKETPLACE", sku: "B" }));
+  });
+});
+
+// ── V42-2a（PRD §4.1 末段；docs/revamp-v4.2/06_BATCHES.md V42-2a 第 2、6 項）：diagnosisScopeLabel 認得群組——群組範圍、群組內單一通路、無對應群組的子集；健檢列的標籤跟著快照的 channel_groups。
+describe("V42-2a diagnosisScopeLabel 與健檢列的範圍標籤認得群組", () => {
+  const groups: ResolvedChannelGroup[] = [{ id: "own", label: "自有", members: ["DTC", "SOCIAL"] }];
+  const grouped = makeResolver({ DTC: "官網", SOCIAL: "社群" }, "synthetic-4-channel-v1", groups);
+  const member = fill(labels.shell.scopeV42.memberOfGroup, { group: "自有", channel: "官網" });
+
+  it("群組範圍（kind all、集合等於成員）→ 群組名；群組內單一通路 → 「{群組名} · {通路名}」（SKU 仍接 ／SKU）；沒有對應群組的子集或單一通路的合計 → 合計；群組外的通路 → 通路名", () => {
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC", "SOCIAL"] }, grouped)).toBe("自有");
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["SOCIAL", "DTC"] }, grouped)).toBe("自有");
+    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, grouped)).toBe(member);
+    expect(diagnosisScopeLabel({ kind: "sku", channels: ["DTC"], sku: "B" }, grouped)).toBe(fill(labels.meeting.managerSummary.skuScope, { channels: member, sku: "B" }));
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC", "LIVE"] }, grouped)).toBe(labels.overview.sections.total);
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC", "LIVE", "MARKETPLACE", "SOCIAL"] }, grouped)).toBe(labels.overview.sections.total);
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC"] }, grouped)).toBe(labels.overview.sections.total);
+    expect(diagnosisScopeLabel({ kind: "channel", channels: ["LIVE"] }, grouped)).toBe("LIVE");
+    // 沒有群組：與 v4.1.3 逐字相同。
+    const plain = makeResolver({ DTC: "官網" }, "synthetic-4-channel-v1");
+    expect(diagnosisScopeLabel({ kind: "all", channels: ["DTC", "SOCIAL"] }, plain)).toBe(labels.overview.sections.total);
+    expect(diagnosisScopeLabel({ kind: "channel", channels: ["DTC"] }, plain)).toBe("官網");
+  });
+
+  it("diagnosisGroups 把快照的 channel_groups 交給解析器：golden 兩通路都在群組時，合計列寫群組名、通路列寫「{群組名} · {通路}」；排序、金額與沒有群組時相同", async () => {
+    const base = await snapshot();
+    const everything: ResolvedChannelGroup[] = [{ id: "g1", label: "全部平台", members: ["DTC", "MARKETPLACE"] }];
+    const result = diagnosisGroups({ ...base, channel_groups: everything });
+    const discount = find(result.groups, "DISCOUNT_BURDEN_UP");
+    expect(discount.scopes.map(row => row.label)).toEqual(["全部平台", fill(labels.shell.scopeV42.memberOfGroup, { group: "全部平台", channel: "DTC" }), fill(labels.shell.scopeV42.memberOfGroup, { group: "全部平台", channel: "MARKETPLACE" })]);
+    expect(find(result.groups, "NEGATIVE_CHANNEL_CM").scopes.map(row => row.label)).toEqual([fill(labels.shell.scopeV42.memberOfGroup, { group: "全部平台", channel: "MARKETPLACE" })]);
+    const plain = diagnosisGroups(base);
+    expect(result.groups.map(group => [group.rule, group.impact_cents, group.headline])).toEqual(plain.groups.map(group => [group.rule, group.impact_cents, group.headline]));
+    expect(result.groups.map(group => group.scopes.map(row => row.diagnostic.id))).toEqual(plain.groups.map(group => group.scopes.map(row => row.diagnostic.id)));
+    expect(find(plain.groups, "DISCOUNT_BURDEN_UP").scopes.map(row => row.label)).toEqual([labels.overview.sections.total, "DTC", "MARKETPLACE"]);
+    // 群組不等於範圍（只有 DTC 在群組）：合計列仍寫「合計」，DTC 列寫「{群組名} · DTC」。
+    const partial = diagnosisGroups({ ...base, channel_groups: [{ id: "g1", label: "自營", members: ["DTC"] }] });
+    expect(find(partial.groups, "DISCOUNT_BURDEN_UP").scopes.map(row => row.label)).toEqual([labels.overview.sections.total, "自營", "MARKETPLACE"]);
   });
 });
 

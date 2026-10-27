@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { makeResolver } from "../src/application/channel-settings";
-import { channelLabel, channelsLabel, csvHeader, csvHeaderKey, formatHeadlineAmount, ruleCopy, scopeLabel } from "../src/application/copy";
+import { makeResolver, type ResolvedChannelGroup } from "../src/application/channel-settings";
+import { channelLabel, channelsLabel, csvHeader, csvHeaderKey, formatHeadlineAmount, ruleCopy, scopeChannelsLabel, scopeDetailText, scopeLabel, snapshotResolver } from "../src/application/copy";
 import { createSnapshot, hashInput } from "../src/application/workspace";
 import { validateDataset } from "../src/domain/validation";
 import { fill, labels } from "../src/i18n";
@@ -90,5 +90,79 @@ describe("R2 CSV headers read 「中文 (key)」 while keys stay machine-readabl
     expect(csvHeader("unknown_column")).toBe("unknown_column");
     expect(csvHeaderKey(csvHeader("net_revenue"))).toBe("net_revenue");
     expect(csvHeaderKey("plain")).toBe("plain");
+  });
+});
+
+// ── V42-2a（PRD §4.1、§4.2；GLOSSARY #8；docs/revamp-v4.2/06_BATCHES.md V42-2a 第 2 項）：範圍文字認得群組——群組範圍、群組內單一通路、無對應群組的子集；沒有群組時逐字不變。
+describe("V42-2a 範圍文字認得群組（scopeChannelsLabel、scopeDetailText、scopeLabel）", () => {
+  const groups: ResolvedChannelGroup[] = [{ id: "own", label: "自有", members: ["DTC", "SOCIAL"] }, { id: "platform", label: "平台", members: ["LIVE", "MARKETPLACE"] }];
+  const names = { DTC: "官網", SOCIAL: "社群", MARKETPLACE: "蝦皮", LIVE: "直播" };
+  const grouped = makeResolver(names, "synthetic-4-channel-v1", groups);
+  const member = fill(labels.shell.scopeV42.memberOfGroup, { group: "自有", channel: "官網" });
+
+  it("群組範圍：scopeChannelsLabel 與 scopeLabel（kind all）只寫群組名；scopeDetailText 寫「{群組名}（成員）」；通路順序無關", () => {
+    expect(scopeChannelsLabel(["DTC", "SOCIAL"], grouped)).toBe("自有");
+    expect(scopeChannelsLabel(["SOCIAL", "DTC"], grouped)).toBe("自有");
+    expect(scopeLabel({ kind: "all", channels: ["DTC", "SOCIAL"] }, grouped)).toBe("自有");
+    expect(scopeLabel({ kind: "all", channels: ["MARKETPLACE", "LIVE"] }, grouped)).toBe("平台");
+    expect(scopeDetailText(["DTC", "SOCIAL"], grouped)).toBe(fill(labels.shell.scopeV42.groupWithMembers, { group: "自有", members: "官網、社群" }));
+    expect(scopeDetailText(["SOCIAL", "DTC"], grouped)).toBe("自有（官網、社群）");
+    expect(scopeDetailText(["LIVE", "MARKETPLACE"], grouped)).toBe("平台（直播、蝦皮）");
+  });
+
+  it("群組內的單一通路：「{群組名} · {通路名}」（半形空格＋U+00B7＋半形空格）；SKU 仍接「／{sku}」；kind all 的單一通路仍寫合計（…）", () => {
+    expect(member).toBe("自有 · 官網");
+    expect(scopeChannelsLabel(["DTC"], grouped)).toBe(member);
+    expect(scopeChannelsLabel(["LIVE"], grouped)).toBe("平台 · 直播");
+    expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, grouped)).toBe(member);
+    expect(scopeLabel({ kind: "sku", channels: ["DTC"], sku: "SKU-1" }, grouped)).toBe(`${member}／SKU-1`);
+    expect(scopeDetailText(["DTC"], grouped)).toBe(member);
+    expect(scopeLabel({ kind: "all", channels: ["DTC"] }, grouped)).toBe(`${labels.overview.sections.total}（官網）`);
+  });
+
+  it("沒有對應群組的子集：維持成員清單；kind all 寫合計（…）；全部通路也是合計（…）", () => {
+    expect(scopeChannelsLabel(["DTC", "LIVE"], grouped)).toBe("官網、直播");
+    expect(scopeLabel({ kind: "all", channels: ["DTC", "LIVE"] }, grouped)).toBe(`${labels.overview.sections.total}（官網、直播）`);
+    expect(scopeDetailText(["DTC", "LIVE"], grouped)).toBe("官網、直播");
+    expect(scopeLabel({ kind: "all", channels: ["DTC", "LIVE", "MARKETPLACE", "SOCIAL"] }, grouped)).toBe(`${labels.overview.sections.total}（官網、直播、蝦皮、社群）`);
+    // 不在任何群組的單一通路：通路名。
+    const partial = makeResolver(names, "synthetic-4-channel-v1", [groups[0]]);
+    expect(scopeChannelsLabel(["LIVE"], partial)).toBe("直播");
+    expect(scopeLabel({ kind: "channel", channels: ["LIVE"] }, partial)).toBe("直播");
+    expect(scopeDetailText(["LIVE"], partial)).toBe("直播");
+  });
+
+  it("只有一個成員的群組：範圍是那個通路時寫群組名（findGroupByMembers 先於 memberOfGroup）", () => {
+    const solo = makeResolver(names, "synthetic-4-channel-v1", [{ id: "solo", label: "只有直播", members: ["LIVE"] }]);
+    expect(scopeChannelsLabel(["LIVE"], solo)).toBe("只有直播");
+    expect(scopeLabel({ kind: "channel", channels: ["LIVE"] }, solo)).toBe("只有直播");
+    expect(scopeLabel({ kind: "all", channels: ["LIVE"] }, solo)).toBe("只有直播");
+    expect(scopeDetailText(["LIVE"], solo)).toBe("只有直播（直播）");
+  });
+
+  it("沒有群組時每個函式的輸出與 v4.1.3 逐字相同（groups 未給＝[]；示範別名與代碼兩種解析器）", () => {
+    for (const resolver of [demo, plain, makeResolver(undefined, "golden-v1", []), makeResolver({ DTC: "官網" }, "golden-v1")]) {
+      expect(resolver.groups).toEqual([]);
+      for (const channels of [["DTC"], ["DTC", "MARKETPLACE"], ["MARKETPLACE", "DTC"], ["SHOPEE"]]) {
+        expect(scopeChannelsLabel(channels, resolver)).toBe(channelsLabel(channels, resolver));
+        expect(scopeDetailText(channels, resolver)).toBe(channelsLabel(channels, resolver));
+        expect(scopeLabel({ kind: "all", channels }, resolver)).toBe(`${labels.overview.sections.total}（${channelsLabel(channels, resolver)}）`);
+      }
+      expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, resolver)).toBe(channelLabel("DTC", resolver));
+      expect(scopeLabel({ kind: "sku", channels: ["DTC"], sku: "SKU-1" }, resolver)).toBe(`${channelLabel("DTC", resolver)}／SKU-1`);
+    }
+  });
+
+  it("snapshotResolver 讀快照的 channel_groups：沒有時 groups 是 []（golden 的範圍文字不變）；有時範圍文字認得群組", async () => {
+    const base = await snapshot();
+    const all = { kind: "all" as const, channels: base.report.scope.channels };
+    expect(snapshotResolver(base).groups).toEqual([]);
+    expect(scopeLabel(all, snapshotResolver(base))).toBe(`${labels.overview.sections.total}（DTC、MARKETPLACE）`);
+    const everything: ResolvedChannelGroup[] = [{ id: "g1", label: "全部平台", members: ["DTC", "MARKETPLACE"] }];
+    const resolver = snapshotResolver({ ...base, channel_groups: everything });
+    expect(resolver.groups).toBe(everything);
+    expect(scopeLabel(all, resolver)).toBe("全部平台");
+    expect(scopeLabel({ kind: "channel", channels: ["DTC"] }, resolver)).toBe(fill(labels.shell.scopeV42.memberOfGroup, { group: "全部平台", channel: "DTC" }));
+    expect(scopeDetailText(base.report.scope.channels, resolver)).toBe("全部平台（DTC、MARKETPLACE）");
   });
 });

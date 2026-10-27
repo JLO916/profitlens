@@ -21,8 +21,8 @@ import { downloadText } from "@/application/download";
 import { buildManagerSummary, exportManagerSummaryMarkdown } from "@/application/manager-summary";
 import { periodPresets, type PeriodPreset } from "@/application/period-presets";
 import { fill, labels } from "@/i18n";
-import { channelLabel, channelsLabel, ruleCopy, snapshotResolver } from "@/application/copy";
-import { makeResolver, type ChannelSettings } from "@/application/channel-settings";
+import { ruleCopy, snapshotResolver } from "@/application/copy";
+import type { ChannelSettings } from "@/application/channel-settings";
 import { AnalysisChannelLimitError, AnalysisPeriodLimitError } from "@/application/limits";
 import { MultiScenarioWorkbench } from "./multi-scenario-workbench";
 import { MeetingEntry, currentViewDecisionContext, downloadMeetingMarkdown } from "./meeting-entry";
@@ -49,7 +49,7 @@ import { ExportMenu } from "./shell/export-menu";
 import { PageHeader, ShellFooter } from "./shell/page-chrome";
 
 // V3-3 A2 imports（期間列／橫幅／手機期間底部面板的子元件）
-import { NeedsAttention, PeriodBar, presetFilters } from "./shell/period-bar";
+import { channelSelectModel, channelsForOption, NeedsAttention, PeriodBar, presetFilters } from "./shell/period-bar";
 // V3-8 C imports（首次進入／載入中／錯誤的頁面型容器）
 import { ErrorState, FirstRunState, LoadingState, PanelErrorState, PanelLoadingState } from "./shell/page-states";
 
@@ -385,6 +385,11 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
     if (!active) return;
     void applyFilters({ ...active.snapshot.report.scope }, settings);
   }
+  /** V42-2a（D-V42-2；PRD §4.2）：G4 精簡表與通路寬表的「只看這個通路」——與選單選單一通路走同一條路（applyFilters 帶該通路；A 級）；總覽、健檢、會議三處共用。 */
+  function drillChannel(channel: string) {
+    if (!active) return;
+    void applyFilters({ ...active.snapshot.report.scope, channels: [channel] });
+  }
   // V3-3（D-V3-10＝A）：快捷單擊就套用，與「套用」按鈕走同一個 applyFilters；只有在自訂期間裡手動改日期才需要按「套用」。
   // R4 備份 v4 的 ui_prefs：記住上次用的快捷（只記錄，還原時不自動套用）。
   const [lastPreset, setLastPreset] = useState<string | undefined>(undefined);
@@ -575,7 +580,8 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
   const presets = active ? periodPresets(active.dataset.manifest, { previous: { start: dates.previousStart, end: dates.previousEnd }, current: { start: dates.currentStart, end: dates.currentEnd }, comparison_mode: comparisonMode }) : [];
   const presetMatches = (preset: PeriodPreset) => preset.status === "ready" && preset.comparison_mode === comparisonMode && preset.previous.start === dates.previousStart && preset.previous.end === dates.previousEnd && preset.current.start === dates.currentStart && preset.current.end === dates.currentEnd;
   // V42-1a：期間列的通路名稱讀快照的 channel_names（沒有設定時是示範別名的隱含預設）；沒有資料時不會用到。
-  const alias = active ? snapshotResolver(active.snapshot) : makeResolver(undefined, "");
+  // V42-2a（D-V42-10；PRD §4.1）：改成兩層選單的模型——選取值認得群組與子集、範圍文字對群組寫群組名（channelSelectModel；解析器由它取自快照）。
+  const channelModel = active ? channelSelectModel({ snapshot: active.snapshot, manifestChannels: active.dataset.manifest.channels }) : { value: "", options: [], groups: [], subset: null, channelsText: "" };
   // 會議頁的目標（同一份資料才帶進摘要）；固定物件身分，避免每次 render 重算會議摘要。
   const meetingTargets = useMemo(() => active ? { set: active.targets ?? null, allChannels: active.dataset.manifest.channels } : null, [active]);
   // V3-2a：「資料就緒」改為「資料到 {date}」（§8.3 #26）；資料到的日期已在狀態文字內，旁邊只留資料集名稱。
@@ -615,10 +621,10 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         {/* V3-3 A2：期間列（C23，sticky）＋需要處理橫幅（C22）。套用中（loading）期間列保持掛載，焦點留在剛按的快捷上；橫幅只在有內容時出現。 */}
         {active && (visible || status === "loading") && <div className="period-wrap" hidden={importing || undefined}>
           <PeriodBar
-            channel={{ value: active.snapshot.report.scope.channels.length > 1 ? "" : active.snapshot.report.scope.channels[0], options: active.dataset.manifest.channels.map(channel => ({ value: channel, label: channelLabel(channel, alias) })), onChange: value => void applyFilters({ ...active.snapshot.report.scope, channels: value === "" ? active.dataset.manifest.channels : [value] }) }}
+            channel={{ value: channelModel.value, options: channelModel.options, groups: channelModel.groups, subset: channelModel.subset, onChange: value => { const channels = channelsForOption(value, channelModel, active.dataset.manifest.channels); if (channels) void applyFilters({ ...active.snapshot.report.scope, channels }); } }}
             presets={presets} isPressed={presetMatches} onPreset={choosePreset} onUnavailablePreset={requestYoyHint}
             comparisonMode={comparisonMode} onComparisonMode={setComparisonMode} dates={dates} onDates={setDates} onSubmit={submitDates} applyRef={applyRef}
-            scope={{ previous: active.snapshot.report.previous.period, current: active.snapshot.report.current.period, previousDays: active.snapshot.report.comparison.previous_days, currentDays: active.snapshot.report.comparison.current_days, comparisonMode: active.snapshot.report.comparison.mode, channelsText: channelsLabel(active.snapshot.report.scope.channels, alias), dataAsOf: active.snapshot.data_as_of }}
+            scope={{ previous: active.snapshot.report.previous.period, current: active.snapshot.report.current.period, previousDays: active.snapshot.report.comparison.previous_days, currentDays: active.snapshot.report.comparison.current_days, comparisonMode: active.snapshot.report.comparison.mode, channelsText: channelModel.channelsText, dataAsOf: active.snapshot.data_as_of }}
             busy={status === "loading"} />
           {visible && <NeedsAttention filterError={filterError} partialIssues={status === "partial" ? active.dataset.issues.length : null} onViewIssues={() => setPanel("data")} yoyReason={presets.flatMap(preset => preset.id === "yoy" && preset.status === "unavailable" ? [preset.reason] : [])[0] ?? null} yoyHintVisible={yoyHintRequested} />}
         </div>}
@@ -631,7 +637,7 @@ export function Dashboard({ analytics = false }: { analytics?: boolean }) {
         {/* V41-4 O2（CLS）：切頁時內容區整塊換成新頁，所以 .view-content 與頁尾跟著頁（頁尾另加 ready：骨架換成內容時）換新節點，不沿用上一頁的節點。
             沿用時，390 頁首多一列本頁動作（商品毛利、資料來源）會讓 .view-content 整塊下移 56px，短頁（待辦）會讓頁尾從畫面外移進首屏，都被算成版面位移；
             換新節點後是新內容出現，不算位移。版面與內容不變（各頁本來就各自掛載自己的面板）。 */}
-        {visible && ready && <div key={`${active.id}:${panel}`} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} />}{panel === "meeting" && <MeetingPage onGoToScenarios={() => { setPanel("scenarios"); setEvidence(null); }} source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace importedAt={importedAt} dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} channelSettings={active.channel_settings ?? null} onApplyChannelSettings={applyChannelSettings} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
+        {visible && ready && <div key={`${active.id}:${panel}`} className="view-content" aria-busy={refiltering || undefined} hidden={importing || undefined}>{panel === "overview" && <Overview snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} periodOpen={periodOpen} onPeriodToggle={setPeriodOpen} targets={active.targets} events={active.events} allChannels={active.dataset.manifest.channels} onBasis={() => setBasisOpen(true)} onNavigate={id => { setPanel(id); setEvidence(null); }} datasetName={datasetLabels[active.id] ?? active.dataset.manifest.dataset_id} missingItems={issues.length} actionsSummary={overviewActions} meetingEntry={<MeetingEntry review={reviewSession} history={meetingHistory} datasetHash={active.snapshot.dataset_hash} onOpen={() => { setPanel("meeting"); setEvidence(null); }} />} onDrill={drillChannel} />}{panel === "meeting" && <MeetingPage onGoToScenarios={() => { setPanel("scenarios"); setEvidence(null); }} onDrill={drillChannel} source={active} conversion={active.conversion} targets={meetingTargets} summaryContext={{ datasetName: datasetLabels[active.id] ?? active.dataset.manifest.dataset_id, missingItems: issues.length, allChannels: active.dataset.manifest.channels }} scenarioWorkspace={scenarioWorkspace} actionWorkspace={actionWorkspace} review={reviewSession} history={meetingHistory} onChange={setReview} onEvidence={reviewEvidence} onRefreshSource={refreshReviewSource} onCreateAction={(diagnostic, review) => void draftFromReview(diagnostic, review)} onFinalize={finalizeCurrentMeeting} onRemoveMeeting={removeMeetingRecord} />}{panel === "diagnosis" && <><Diagnosis snapshot={active.snapshot} onEvidence={setEvidence} onCreateAction={draftFromDiagnostic} events={active.events} onDrill={drillChannel} /><AiCollapse capability={aiCapability}><AiPanel key={restoreEpoch} capability={aiCapability} snapshot={active.snapshot} revision={active.revision} onEvidence={setEvidence} /></AiCollapse></>}{panel === "products" && <ProductComparisonPanel dataset={active.dataset} snapshot={active.snapshot} onEvidence={setEvidence} filenames={active.filenames} conversion={active.conversion} />}{panel === "data" && <DataWorkspace importedAt={importedAt} dataset={active.dataset} snapshot={active.snapshot} filenames={active.filenames} mappings={active.mappings} conversion={active.conversion} targets={active.targets} events={active.events} targetIssues={targetIssues} eventIssues={eventIssues} channelSettings={active.channel_settings ?? null} onApplyChannelSettings={applyChannelSettings} onTargets={file => void readSideFile("targets", file)} onEvents={file => void readSideFile("events", file)} onRemoveTargets={() => removeSideFile("targets")} onRemoveEvents={() => removeSideFile("events")} onRemoveTargetRow={line => removeSideRow("targets", line)} onRemoveEventRow={line => removeSideRow("events", line)} />}</div>}
         {active && <div hidden={!visible || panel !== "scenarios"}><MultiScenarioWorkbench active={!!visible && panel === "scenarios"} source={active} state={scenarioWorkspace} setState={setScenarios} onExport={exportDecision} onEvidence={setEvidence} onSelectForReview={selectForReview} onContextChange={setScenarioFocus} /></div>}
         {visible && ready && panel === "actions" && <ActionsWorkbench workspace={actionWorkspace} onChange={setActionWorkspace} source={active} onEvidence={actionEvidence} onExport={exportDecision} view={actionsView} onViewChange={setActionsView} />}
         <ShellFooter key={`${panel}:${ready}`} analytics={analytics} onBasis={() => setBasisOpen(true)} />

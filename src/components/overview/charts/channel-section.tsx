@@ -47,6 +47,8 @@ type ChannelRow = ChannelConclusionRow & { previousValue: number | null; current
 export interface ChannelSectionProps {
   snapshot: WorkspaceSnapshot;
   onEvidence: (evidence: EvidenceSelection) => void;
+  /** V42-2a（D-V42-2；PRD §4.2）：精簡表通路列的「只看這個通路」（channel-drill-{code}）；只在 snapshot.channel_groups 有群組且範圍通路數 > 1 時渲染（示範資料 0 差異）。接線先到，按鈕由同批的稽核修法一併加。 */
+  onDrill?: (channel: string) => void;
 }
 
 /**

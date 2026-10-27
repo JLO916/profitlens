@@ -220,7 +220,9 @@ export function DataWorkspace({ dataset, snapshot, filenames, mappings, conversi
   </>;
 }
 
-export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void; events?: EventSet | null }) {
+export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null, onDrill }: { snapshot: WorkspaceSnapshot; onEvidence: EvidenceHandler; onCreateAction?: (diagnostic: WorkspaceSnapshot["report"]["diagnostics"][number]) => void; events?: EventSet | null;
+  /** V42-2a（D-V42-2）：通路寬表通路格的「只看這個通路」——dashboard 以該通路重算（applyFilters）；只傳給 ChannelWideTable，按鈕只在資料集有群組時渲染。 */
+  onDrill?: (channel: string) => void }) {
   const summary = useMemo(() => buildManagerSummary(snapshot), [snapshot]);
   const resolver = snapshotResolver(snapshot);
   // V3-5（PRD §7.2）：健檢結果先放（這是結論；一個規則一列，與三件事同一套 diagnosisGroups）→ 各通路兩期比較（通路寬表 diagnosis 變體）；AI 區塊由 dashboard 接在最後（預設收合）。
@@ -235,7 +237,7 @@ export function Diagnosis({ snapshot, onEvidence, onCreateAction, events = null 
   <section className="panel channel-compare" aria-labelledby="channel-table-heading" data-testid="channel-compare">
     <div className="sec-head"><div className="sec-title"><h2 id="channel-table-heading">{labels.diagnosis.tableV3.heading}</h2></div><span className="sec-scope">{channelsLabel(summary.scope.channels, resolver)}</span></div>
     <p className="sub">{diagnosisPanel.channelTableCaution}</p>
-    <ChannelWideTable variant="diagnosis" summary={summary} snapshot={snapshot} onEvidence={onEvidence} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />
+    <ChannelWideTable variant="diagnosis" summary={summary} snapshot={snapshot} onEvidence={onEvidence} onDrill={onDrill} ariaLabel={labels.overview.sections.channelTableAria} caption={labels.overview.sections.channelTableCaption} />
   </section>
   </>;
 }
