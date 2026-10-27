@@ -22,6 +22,7 @@
 //   （core/scoring.js：不適用、資訊、手動的稽核權重為 0，其餘加權平均）去掉 canonical 重算；或改在 preview 上量（需使用者當次同意）。
 // V42-0（docs/revamp-v4.2/06_BATCHES.md V42-0 第 6 項；D-V42-21＝A）：為第六步 timespan「商品毛利切到品類視角」留位置（SIXTH_STEP、SIXTH_STEP_ENABLED＝false），V42-3 起啟用並實作；
 //   V42-0 到 V42-2b 的 user-flow、報告與 metrics.json 的 lighthouse 鍵都不變（390 仍是五個 timespan）。
+// V42-2a（D-V42-35＝A）：metrics.json 的 lighthouse 鍵多一個 environment（每視口的 benchmarkIndex、benchmarkIndexBySteps、chrome；說明頁每頁的摘要也多 environment），其餘鍵與 user-flow 不變。
 import { existsSync, readdirSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir, loadavg } from "node:os";
@@ -123,6 +124,7 @@ function summarizeGuide(path, lhr) {
     seoFailedAudits: (lhr.categories.seo?.auditRefs ?? []).map(ref => lhr.audits[ref.id]).filter(audit => audit && (audit.scoreDisplayMode === "error" || (["binary", "numeric", "metricSavings"].includes(audit.scoreDisplayMode) && audit.score !== 1))).map(audit => audit.id),
     seoScoreExcludingCanonical: seoScoreExcluding(lhr, ["canonical"]),
     canonicalAudit: canonical ? { score: canonical.score, scoreDisplayMode: canonical.scoreDisplayMode, explanation: canonical.explanation ?? null } : null,
+    environment: lhrEnvironment(lhr),
     ...(lhr.runtimeError ? { runtimeError: `${lhr.runtimeError.code}：${lhr.runtimeError.message}` } : {}),
   };
 }
@@ -131,6 +133,10 @@ const loadBefore = loadavg().map(value => Math.round(value * 100) / 100);
 const chrome = await chromeLauncher.launch({ chromeFlags: ["--headless=new", "--no-first-run", "--no-default-browser-check", "--disable-extensions"] });
 const results = {};
 const lazyChunks = {};
+// V42-2a（D-V42-35＝A）：每視口的量測環境——Lighthouse 開跑時量的 CPU 速度指標 benchmarkIndex（越高越快）與 Chrome 版本，從 lhr.environment 取；
+// 判定規則不變（D-V4-36、D-V4-47＝B），只給驗收文件的 TBT 表多一欄，讓「低負載」能對照 CPU 速度（V42-1b 補量時 1 分鐘負載 2.22 的那次 benchmarkIndex 反而最低）。
+const environment = {};
+const lhrEnvironment = lhr => ({ benchmarkIndex: lhr.environment?.benchmarkIndex === undefined ? null : Math.round(lhr.environment.benchmarkIndex), chrome: /Chrome\/([\d.]+)/.exec(lhr.environment?.hostUserAgent ?? "")?.[1] ?? null });
 const guideResults = {};
 // timespan 模式不支援 accessibility 類別，所以 timespan 只跑 performance；navigation 與 snapshot 跑兩類。
 const both = ["performance", "accessibility"];
@@ -175,11 +181,15 @@ try {
     const insideTimespans = chunks.flatMap(chunk => windows.filter(window => chunk.end >= window.from && chunk.start <= window.to).map(window => ({ file: chunk.file, step: window.step })));
     lazyChunks[size.name] = { windows: windows.map(window => ({ step: window.step, from: round1(window.from), to: round1(window.to) })), chunks: chunks.map(chunk => ({ file: chunk.file, start: round1(chunk.start), end: round1(chunk.end) })), insideTimespans };
     const result = await flow.createFlowResult();
+    // 取「載入示範資料」timespan 那一步的環境（benchmarkIndex 每一步都有，同一次 flow 同一個 Chrome）；沒有就取第一步。
+    const envStep = result.steps.find(step => step.name.startsWith("載入示範資料")) ?? result.steps[0];
+    environment[size.name] = { ...lhrEnvironment(envStep.lhr), benchmarkIndexBySteps: result.steps.map(step => step.lhr.environment?.benchmarkIndex === undefined ? null : Math.round(step.lhr.environment.benchmarkIndex)) };
     await writeFile(join(out, "lighthouse", `flow-${size.name}.html`), await flow.generateReport());
     results[size.name] = result.steps.map(summarize);
     await context.close();
     console.log(size.name, JSON.stringify(results[size.name].map(step => [step.step, step.accessibility, step.performance, step.performanceAudits, step.metrics.tbtMs, step.metrics.cls, step.failedAccessibilityAudits.join(" ")])));
     console.log(size.name, "lazy chunks", JSON.stringify({ count: lazyChunks[size.name].chunks.length, insideTimespans: lazyChunks[size.name].insideTimespans }));
+    console.log(size.name, "environment", JSON.stringify(environment[size.name]));
   }
   // V41-1：說明頁的獨立 navigation（每頁、每尺寸一個新的 browser context；form factor、螢幕與節流同上面的 user-flow）。
   for (const size of sizes) {
@@ -203,5 +213,5 @@ try {
 const file = join(out, "metrics.json");
 let json = {};
 try { json = JSON.parse(await readFile(file, "utf8")); } catch { json = {}; }
-json.lighthouse = { version: lighthouseVersion, base, generatedAt: new Date().toISOString(), lazyChunks, loadAverage: { before: loadBefore, after: loadavg().map(value => Math.round(value * 100) / 100), note: "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準" }, method: "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844", ...results, guide: { method: "V41-1：GUIDE_NAV_PAGES 每頁、desktop 1440 與 mobile 390 各一次獨立 navigation（accessibility、performance、seo；設定同 user-flow）；seoScoreExcludingCanonical＝依報告的 SEO 稽核權重去掉 canonical 重算（127.0.0.1 上 canonical 指向正式站網域，canonicalAudit 記錄原因）", pages: guideResults } };
+json.lighthouse = { version: lighthouseVersion, base, generatedAt: new Date().toISOString(), lazyChunks, environment, loadAverage: { before: loadBefore, after: loadavg().map(value => Math.round(value * 100) / 100), note: "os.loadavg()（1／5／15 分鐘）；本機負載高時 timespan 的 TBT／INP 會偏高，比較時以同負載重跑為準" }, method: "user-flow：navigate（空狀態首頁）→ timespan（載入示範資料）→ snapshot（總覽）→ 每頁 timespan（側欄切頁）＋ snapshot；accessibility 取 snapshot、performance 0–100 只有 navigation 有，timespan 記 TBT／CLS／INP；desktop 用 lighthouse desktopConfig、mobile 用預設（模擬節流）並改成 390×844", ...results, guide: { method: "V41-1：GUIDE_NAV_PAGES 每頁、desktop 1440 與 mobile 390 各一次獨立 navigation（accessibility、performance、seo；設定同 user-flow）；seoScoreExcludingCanonical＝依報告的 SEO 稽核權重去掉 canonical 重算（127.0.0.1 上 canonical 指向正式站網域，canonicalAudit 記錄原因）", pages: guideResults } };
 await writeFile(file, `${JSON.stringify(json, null, 2)}\n`);
